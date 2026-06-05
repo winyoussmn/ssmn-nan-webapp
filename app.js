@@ -360,7 +360,29 @@ async function loadStateFromCloudflare() {
       appState.schoolProfiles = data.schoolProfiles || {};
       appState.schoolPasswords = data.schoolPasswords || {};
       appState.certifications = data.certifications || {};
-      appState.documents = data.documents || [];
+      if (data.documents && data.documents.length > 0) {
+        appState.documents = data.documents;
+      } else {
+        // หากข้อมูลบนคลาวด์ว่างเปล่า ให้กู้คืนจาก LocalStorage หรือ DEFAULT_DOCUMENTS เพื่อป้องกันปัญหายอดดาวน์โหลดหาย
+        const cachedDocs = localStorage.getItem("สสมน_NAN_DOCS");
+        let docsLoaded = false;
+        if (cachedDocs) {
+          try {
+            const parsedDocs = JSON.parse(cachedDocs);
+            if (parsedDocs && parsedDocs.length > 0) {
+              appState.documents = parsedDocs;
+              docsLoaded = true;
+            }
+          } catch(e) {}
+        }
+        if (!docsLoaded) {
+          appState.documents = [ ...DEFAULT_DOCUMENTS ];
+        }
+        // ซิงค์ยอดเงินกลับขึ้นคลาวด์เพื่อเป็นการ Seeding อัตโนมัติ
+        setTimeout(() => {
+          syncStateToCloudflare();
+        }, 1000);
+      }
       appState.announcements = data.announcements || [];
       appState.centralBankBalance = data.centralBankBalance || 250000;
       appState.centralBankUpdateDate = data.centralBankUpdateDate || "2026-06-01";
@@ -499,6 +521,17 @@ function generateMemberId(schoolId, position) {
 }
 
 // ==================== 4. SYSTEM CALCULATORS & VIEW CONTROLLER ====================
+function getMemberRegistrationType(member) {
+  if (!member.ledger) return "existing";
+  const hasNewFee = member.ledger.some(entry => 
+    entry.amount === 50 && 
+    (entry.description.includes("จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่") || 
+     entry.description.includes("แรกสมัครใหม่") || 
+     entry.description.includes("ค่าแรกเข้า"))
+  );
+  return hasNewFee ? "new" : "existing";
+}
+
 function calculateStats() {
   const activeMembers = appState.members.filter(m => m.status === "active");
   const deceasedMembers = appState.members.filter(m => m.status === "deceased");
@@ -542,6 +575,34 @@ function calculateStats() {
     document.getElementById("lbl-funds-title").textContent = "ยอดกองทุนสะสมล่วงหน้ารวม";
     document.getElementById("stat-funds-total").textContent = "฿" + totalFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("stat-funds-subtitle").textContent = "ยอดสะสมสำรองของสมาชิกทั้งจังหวัด";
+
+    // คำนวณค่าธรรมเนียมการสมัครสมาชิกระดับจังหวัด
+    let provinceNewCount = 0;
+    let provinceOldCount = 0;
+    activeMembers.forEach(m => {
+      if (getMemberRegistrationType(m) === "new") {
+        provinceNewCount++;
+      } else {
+        provinceOldCount++;
+      }
+    });
+    const provinceNewFees = provinceNewCount * 50;
+    const provinceOldFees = provinceOldCount * 0;
+    const provinceTotalFees = provinceNewFees + provinceOldFees;
+
+    const lblNewTotal = document.getElementById("stat-fees-new-total");
+    const lblNewCount = document.getElementById("stat-fees-new-count");
+    const lblOldTotal = document.getElementById("stat-fees-old-total");
+    const lblOldCount = document.getElementById("stat-fees-old-count");
+    const lblGrandTotal = document.getElementById("stat-fees-grand-total");
+    const lblAllCount = document.getElementById("stat-fees-all-count");
+
+    if (lblNewTotal) lblNewTotal.textContent = "฿" + provinceNewFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblNewCount) lblNewCount.textContent = provinceNewCount.toLocaleString();
+    if (lblOldTotal) lblOldTotal.textContent = "฿" + provinceOldFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblOldCount) lblOldCount.textContent = provinceOldCount.toLocaleString();
+    if (lblGrandTotal) lblGrandTotal.textContent = "฿" + provinceTotalFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblAllCount) lblAllCount.textContent = (provinceNewCount + provinceOldCount).toLocaleString();
 
     let totalDeposits = 0;
     let totalCharges = 0;
@@ -626,6 +687,34 @@ function calculateStats() {
     document.getElementById("lbl-funds-title").textContent = "ยอดเงินสะสมล่วงหน้าของสังกัด";
     document.getElementById("stat-funds-total").textContent = "฿" + schoolFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("stat-funds-subtitle").textContent = `เงินสำรองทำบุญสะสมของ ${currentSchool.name}`;
+
+    // คำนวณค่าธรรมเนียมการสมัครสมาชิกระดับโรงเรียน
+    let schoolNewCount = 0;
+    let schoolOldCount = 0;
+    schoolMembers.forEach(m => {
+      if (getMemberRegistrationType(m) === "new") {
+        schoolNewCount++;
+      } else {
+        schoolOldCount++;
+      }
+    });
+    const schoolNewFees = schoolNewCount * 50;
+    const schoolOldFees = schoolOldCount * 0;
+    const schoolTotalFees = schoolNewFees + schoolOldFees;
+
+    const lblNewTotal = document.getElementById("stat-fees-new-total");
+    const lblNewCount = document.getElementById("stat-fees-new-count");
+    const lblOldTotal = document.getElementById("stat-fees-old-total");
+    const lblOldCount = document.getElementById("stat-fees-old-count");
+    const lblGrandTotal = document.getElementById("stat-fees-grand-total");
+    const lblAllCount = document.getElementById("stat-fees-all-count");
+
+    if (lblNewTotal) lblNewTotal.textContent = "฿" + schoolNewFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblNewCount) lblNewCount.textContent = schoolNewCount.toLocaleString();
+    if (lblOldTotal) lblOldTotal.textContent = "฿" + schoolOldFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblOldCount) lblOldCount.textContent = schoolOldCount.toLocaleString();
+    if (lblGrandTotal) lblGrandTotal.textContent = "฿" + schoolTotalFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    if (lblAllCount) lblAllCount.textContent = (schoolNewCount + schoolOldCount).toLocaleString();
 
     let totalDeposits = 0;
     let totalCharges = 0;
@@ -4643,8 +4732,12 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
   const profileFormBlock = document.getElementById("block-school-profile-editor");
   const directoryBlock = document.getElementById("block-province-schools-directory");
   const liquidityAnalyserBlock = document.getElementById("block-province-liquidity-analyser");
+  const sidebarContact = document.getElementById("province-admin-contact-sidebar");
+  const dashboardContact = document.getElementById("block-school-province-contact");
 
   if (appState.activeRole === "province") {
+    if (sidebarContact) sidebarContact.style.display = "none";
+    if (dashboardContact) dashboardContact.style.display = "none";
     if (roleLabel) roleLabel.textContent = "แอดมินจังหวัด";
     if (scopeLabel) scopeLabel.textContent = "จังหวัดน่าน (ทั้งหมด)";
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
@@ -4666,6 +4759,8 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
     const sch = SCHOOLS.find(s => s.id === appState.activeSchoolId);
     const schName = sch ? sch.name : "สถานศึกษาในสังกัด";
     
+    if (sidebarContact) sidebarContact.style.display = "block";
+    if (dashboardContact) dashboardContact.style.display = "block";
     if (roleLabel) roleLabel.textContent = "แอดมินโรงเรียน";
     if (scopeLabel) scopeLabel.textContent = schName;
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";

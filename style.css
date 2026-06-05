@@ -367,7 +367,7 @@ body {
   padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
   max-width: calc(100vw - 280px);
   min-height: 100vh;
 }
@@ -492,7 +492,7 @@ body {
 .view-panel {
   display: none;
   flex-direction: column;
-  gap: 32px;
+  gap: 20px;
   animation: fadeIn var(--transition-slow) forwards;
   height: 100%;
 }

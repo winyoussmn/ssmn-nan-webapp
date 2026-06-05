@@ -202,6 +202,16 @@
           <span>⚠️</span>
           <span><strong>คำเตือน:</strong> หากกดนำเข้าข้อมูล ข้อมูลที่แก้ไขและเอกสารประกอบที่กรอกไว้ทั้งหมดจะหายทันที!</span>
         </div>
+        <!-- Province Admin Contact Info for School Admin -->
+        <div id="province-admin-contact-sidebar" style="display: none; margin-top: 8px; font-size: 11.5px; color: var(--color-text-muted); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px; border-radius: var(--radius-md); line-height: 1.5;">
+          <div style="font-weight: 700; color: var(--color-accent-amber); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+            <span>📞 แอดมินจังหวัด (ศูนย์ประสานงาน)</span>
+          </div>
+          <div style="color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</div>
+          <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 2px;">
+            <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
+          </div>
+        </div>
         <div class="footer-system-status">
           <span class="status-dot"></span>
           <span>เซิร์ฟเวอร์จำลอง: พร้อมใช้งาน</span>
@@ -264,8 +274,28 @@
       <!-- VIEW 1: DASHBOARD VIEW (Province / School) -->
       <section id="view-panel-dashboard" class="view-panel active">
         
+        <!-- Province Admin Contact Banner (Only for School Admins) -->
+        <div id="block-school-province-contact" class="widget-card glass animate-scale" style="display: none; padding: 16px 20px; background: rgba(20, 184, 166, 0.03); border: 1px solid rgba(20, 184, 166, 0.15); border-left: 4px solid var(--color-accent-teal) !important;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 20px;">📞</span>
+              <div>
+                <h4 style="margin: 0 0 2px 0; font-size: 13.5px; color: var(--color-accent-teal); font-weight: 700;">เบอร์โทรศัพท์ติดต่อและประสานงานแอดมินจังหวัด สสมน.น่าน</h4>
+                <p style="margin: 0; font-size: 12px; color: var(--color-text-muted);">หากมีปัญหาเกี่ยวกับสิทธิ์การใช้งาน ข้อมูลสมาชิกค้างระบบ หรือการโอนเงินสะสม สามารถติดต่อแอดมินจังหวัดได้โดยตรง</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
+              <span style="font-size: 12.5px; color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</span>
+              <span style="color: rgba(255,255,255,0.15);">|</span>
+              <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
+                <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
+              </strong>
+            </div>
+          </div>
+        </div>
+
         <!-- Bi-Annual Member Verification Alert Panel -->
-        <div id="panel-certification-alert" class="certification-alert-banner glass animate-scale" style="display: none; margin-bottom: 24px; padding: 16px; border-radius: var(--radius-lg); background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.2); justify-content: space-between; align-items: center; gap: 16px;">
+        <div id="panel-certification-alert" class="certification-alert-banner glass animate-scale" style="display: none; padding: 16px; border-radius: var(--radius-lg); background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.2); justify-content: space-between; align-items: center; gap: 16px;">
           <div class="cert-alert-content" style="display: flex; gap: 14px; align-items: flex-start;">
             <div class="cert-alert-icon" style="background: rgba(244, 63, 94, 0.1); padding: 8px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-rose)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -290,7 +320,7 @@
         </div>
 
         <!-- System Condolences & Payout Announcements Bulletin Board (Round 4) -->
-        <div id="block-system-announcements" class="widget-card glass animate-scale" style="margin-bottom: 24px; display: block; border-left: 4px solid var(--color-accent-gold) !important; background: rgba(251, 191, 36, 0.02) !important;">
+        <div id="block-system-announcements" class="widget-card glass animate-scale" style="display: block; border-left: 4px solid var(--color-accent-gold) !important; background: rgba(251, 191, 36, 0.02) !important;">
           <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">🕯️</span>
@@ -310,7 +340,7 @@
         </div>
 
         <!-- Central Fund Liquidity Analyser Widget -->
-        <div id="block-province-liquidity-analyser" class="widget-card glass full-width-widget animate-scale" style="display: none; padding: 20px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px;">
+        <div id="block-province-liquidity-analyser" class="widget-card glass full-width-widget animate-scale" style="display: none; padding: 20px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06);">
           <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">🏦</span>
@@ -394,6 +424,21 @@
               <div id="stat-funds-breakdown" style="font-size: 11px; margin-top: 6px; display: flex; gap: 8px; color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 6px; flex-wrap: wrap;">
                 <span style="color: var(--color-accent-emerald); font-weight: 500;">📈 ฝากสะสม: <span id="stat-funds-total-deposits">฿0.00</span></span>
                 <span style="color: var(--color-accent-rose); font-weight: 500;">📉 หักสะสม: <span id="stat-funds-total-charges">฿0.00</span></span>
+              </div>
+              <!-- Membership Fee Summary Breakdown -->
+              <div id="stat-fees-breakdown" style="font-size: 11px; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.75);">
+                  <span>🆕 ค่าสมัครสมาชิกใหม่ (50฿):</span>
+                  <span style="color: var(--color-accent-emerald); font-weight: 600;"><span id="stat-fees-new-total">฿0.00</span> (<span id="stat-fees-new-count">0</span> คน)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.75);">
+                  <span>👴 ค่าสมัครสมาชิกเก่า (ยกเว้น):</span>
+                  <span style="color: rgba(255,255,255,0.5); font-weight: 500;"><span id="stat-fees-old-total">฿0.00</span> (<span id="stat-fees-old-count">0</span> คน)</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px; margin-top: 2px;">
+                  <span>💰 ยอดค่าสมัครรวมทั้งหมด:</span>
+                  <span style="color: var(--color-accent-gold);"><span id="stat-fees-grand-total">฿0.00</span> (<span id="stat-fees-all-count">0</span> คน)</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1047,7 +1092,7 @@
             </div>
             <div class="province-hotline-badge glass" style="background: rgba(251, 191, 36, 0.05); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid rgba(251, 191, 36, 0.2); text-align: right;">
               <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;">สายตรงแอดมินจังหวัด:</span>
-              <strong style="color: white; font-size: 14.5px; font-family: var(--font-number); letter-spacing: 0.5px;">089-999-9999</strong>
+              <strong style="color: white; font-size: 13px; font-family: var(--font-number); letter-spacing: 0.5px;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง 097-215-1119</strong>
             </div>
           </div>
 
