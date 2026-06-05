@@ -4095,16 +4095,75 @@ function updateSchoolCertificationWidget() {
 window.certifySchoolRound = function(round) {
   const now = new Date();
   const year = now.getFullYear() + 543;
-  const key = `${year}_R${round}`;
   const schoolId = appState.activeSchoolId;
   const school = SCHOOLS.find(s => s.id === schoolId);
   const profile = appState.schoolProfiles[schoolId] || {};
 
-  const roundText = round === 1 ? "ครั้งที่ 1 (30 มิ.ย.)" : "ครั้งที่ 2 (30 ธ.ค.)";
+  // กำหนดชื่อรอบและเซฟลงฟอร์มซ่อน
+  document.getElementById("cert-review-round-input").value = round;
+  document.getElementById("modal-school-certify-title").textContent = `📋 ตรวจสอบรายชื่อสมาชิกและยืนยันรับรองข้อมูล (ครั้งที่ ${round} รอบ 30 มิ.ย./ธ.ค.)`;
 
-  if (!confirm(`คุณต้องการยืนยันและรับรองว่า "รายชื่อข้อมูลสมาชิก สสมน. ในสังกัดของ ${school ? school.name : ''}" ${roundText} ณ ปัจจุบันถูกต้องสมบูรณ์ ตรงตามทะเบียนประวัติบุคลากรเรียบร้อยแล้วใช่หรือไม่?\n*(การรับรองความถูกต้องนี้จะบันทึกประวัติส่งเชื่อมโยงไปยังส่วนกลางจังหวัด)`)) {
+  // ดึงรายชื่อสมาชิกที่ยังมีสถานะ Active ในโรงเรียนนี้
+  const schoolMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  document.getElementById("lbl-cert-review-total-count").textContent = schoolMembers.length;
+
+  let html = "";
+  schoolMembers.forEach(m => {
+    const balance = parseFloat(m.prepayBalance || 0);
+    const balanceText = balance >= 0 
+      ? `฿${balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` 
+      : `-฿${Math.abs(balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const balanceClass = balance < 0 ? "text-danger font-weight-bold" : "text-success";
+    
+    html += `
+      <tr>
+        <td class="font-weight-bold text-warning">${m.id}</td>
+        <td class="font-weight-bold">${m.title || ""}${m.firstname} ${m.lastname}</td>
+        <td>${m.position}</td>
+        <td class="text-currency">${maskCitizenId(m.citizenId)}</td>
+        <td>${m.phone}</td>
+        <td class="${balanceClass}">${balanceText}</td>
+      </tr>
+    `;
+  });
+  
+  if (schoolMembers.length === 0) {
+    html = `<tr><td colspan="6" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลรายชื่อสมาชิกที่เปิดใช้งานในโรงเรียนนี้</td></tr>`;
+  }
+  document.getElementById("tbl-body-cert-review-members").innerHTML = html;
+
+  // ป้อนชื่อผู้รับรองและเบอร์ติดต่อเริ่มต้นตามโปรไฟล์
+  document.getElementById("school-cert-reviewer-name").value = profile.coordinator || "";
+  document.getElementById("school-cert-reviewer-phone").value = profile.coordinatorPhone || "";
+
+  // เปิด Modal
+  document.getElementById("modal-school-certify-review").classList.add("active");
+};
+
+window.rejectCertifyReviewAndEdit = function() {
+  document.getElementById("modal-school-certify-review").classList.remove("active");
+  switchTab("members");
+  alert("ระบบได้เปลี่ยนหน้าไปยังแท็บ 'รายชื่อสมาชิก สสมน.' เรียบร้อยแล้ว\nกรุณาทำการ เพิ่ม/แก้ไข/ลบ ข้อมูลสมาชิกในสังกัดของท่านให้ถูกต้องตรงตามจริง เมื่อเสร็จเรียบร้อยแล้วโปรดกลับมารับรองข้อมูลอีกครั้งครับ");
+};
+
+// ดักจับการยืนยันส่งฟอร์มรับรองข้อมูล
+document.getElementById("form-school-certify-submit").addEventListener("submit", function(e) {
+  e.preventDefault();
+  
+  const round = parseInt(document.getElementById("cert-review-round-input").value) || 1;
+  const reviewerName = document.getElementById("school-cert-reviewer-name").value.trim();
+  const reviewerPhone = document.getElementById("school-cert-reviewer-phone").value.trim();
+
+  if (!reviewerName || !reviewerPhone) {
+    alert("กรุณากรอกข้อมูลชื่อ-นามสกุล และเบอร์โทรศัพท์ผู้รับรองข้อมูลให้ครบถ้วน");
     return;
   }
+
+  const now = new Date();
+  const year = now.getFullYear() + 543;
+  const key = `${year}_R${round}`;
+  const schoolId = appState.activeSchoolId;
+  const roundText = round === 1 ? "ครั้งที่ 1 (30 มิ.ย.)" : "ครั้งที่ 2 (30 ธ.ค.)";
 
   if (!appState.certifications[key]) {
     appState.certifications[key] = {};
@@ -4113,16 +4172,21 @@ window.certifySchoolRound = function(round) {
   const currentDateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
   appState.certifications[key][schoolId] = {
     certified: true,
-    certifiedBy: profile.coordinator || "เจ้าหน้าที่ประสานงาน สสมน.",
+    certifiedBy: reviewerName,
+    certifiedPhone: reviewerPhone,
     certifiedDate: currentDateStr
   };
 
   saveStateToLocalStorage();
+  
+  // ปิด Modal
+  document.getElementById("modal-school-certify-review").classList.remove("active");
+  
   alert(`🟢 การกดยืนยันและรับรองข้อมูลสมาชิก ${roundText} เสร็จสมบูรณ์!\nระบบส่วนกลางจังหวัดน่านได้รับการบันทึกข้อมูลประวัติผู้รับรองของสถานศึกษาท่านเรียบร้อยแล้วเมื่อ ${currentDateStr}`);
   
   checkBiAnnualCertificationStatus();
   updateSchoolCertificationWidget();
-};
+});
 
 window.updateSchoolCertificationWidget = updateSchoolCertificationWidget;
 

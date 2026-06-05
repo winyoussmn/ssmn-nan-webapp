@@ -1678,6 +1678,79 @@
     </div>
   </div>
 
+  <!-- MODAL: BI-ANNUAL DATA REVIEW & CERTIFICATION -->
+  <div id="modal-school-certify-review" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal" style="max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h2 id="modal-school-certify-title">📋 ตรวจสอบรายชื่อสมาชิกและยืนยันรับรองข้อมูล</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <div class="modal-scroll-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+        <div style="background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+          <h4 style="color: var(--color-accent-amber); margin: 0 0 6px 0; font-size: 14px;">⚠️ คำชี้แจงในการรับรองข้อมูลครึ่งปี:</h4>
+          <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0; line-height: 1.5;">
+            กรุณาตรวจสอบรายชื่อและจำนวนสมาชิก สสมน. ในสังกัดของท่านด้านล่างนี้ หากพบว่าข้อมูลไม่ถูกต้อง เช่น มีสมาชิกที่ย้ายออกหรือเกษียณแล้ว หรือมีสมาชิกตกหล่น ให้กดปุ่ม <strong>"ไม่ถูกต้อง (กลับไปแก้ไข)"</strong> เพื่อจัดการรายชื่อให้เรียบร้อยก่อนทำการกดรับรอง
+          </p>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <strong style="font-size: 14px; color: white; display: block; margin-bottom: 8px;">
+            📊 จำนวนสมาชิก สสมน. ในสังกัดปัจจุบันทั้งหมด: <span id="lbl-cert-review-total-count" style="color: var(--color-accent-gold); font-size: 16px;">0</span> คน
+          </strong>
+          
+          <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); background: rgba(0,0,0,0.2);">
+            <table class="premium-data-table" style="width: 100%; font-size: 12.5px; margin: 0;">
+              <thead>
+                <tr>
+                  <th>รหัสสมาชิก</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>ตำแหน่งงาน</th>
+                  <th>เลขประจำตัวประชาชน</th>
+                  <th>เบอร์โทรศัพท์</th>
+                  <th>สถานะเงินสะสม</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-body-cert-review-members">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <form id="form-school-certify-submit" autocomplete="off" class="standard-form" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+          <input type="hidden" id="cert-review-round-input">
+          
+          <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; margin-bottom: 12px;">✍️ ข้อมูลผู้ทำการยืนยันและรับรองความถูกต้อง</h4>
+          
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="school-cert-reviewer-name">ชื่อ-นามสกุล ผู้รับรองความถูกต้อง: <span class="required">*</span></label>
+              <input type="text" id="school-cert-reviewer-name" required placeholder="ระบุชื่อจริงและนามสกุลของคุณ" class="form-control">
+            </div>
+            <div class="form-group col-6">
+              <label for="school-cert-reviewer-phone">เบอร์โทรศัพท์มือถือ ผู้รับรอง: <span class="required">*</span></label>
+              <input type="tel" id="school-cert-reviewer-phone" required placeholder="ระบุเบอร์โทรศัพท์ติดต่อ 10 หลัก" class="form-control">
+            </div>
+          </div>
+          
+          <p style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.4;">
+            * ข้อมูลผู้รับรองและเวลาบันทึกจะถูกบันทึกเข้าระบบส่งเชื่อมโยงโดยตรงไปยังส่วนกลางจังหวัดน่าน เพื่อเป็นหลักฐานรับรองการตรวจสอบประวัติประจำรอบปี
+          </p>
+
+          <div class="modal-footer" style="padding: 16px 0 0 0; border-top: none; display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn btn-secondary" onclick="rejectCertifyReviewAndEdit()" style="background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.2); color: var(--color-accent-rose);">
+              ❌ ไม่ถูกต้อง (กลับไปแก้ไขรายชื่อ)
+            </button>
+            <button type="submit" class="btn btn-primary" style="background: var(--color-accent-emerald); border-color: var(--color-accent-emerald); color: white;">
+              ✔️ ข้อมูลถูกต้องและกดยืนยันรับรอง
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADD NEW DOWNLOAD DOCUMENT (Province Admin Mode - Round 4) -->
   <div id="modal-add-document" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content glass animate-scale">
