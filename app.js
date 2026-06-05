@@ -871,6 +871,7 @@ function calculateStats() {
   populateReportDeathDropdowns();
   renderPendingDeathsVerification();
   renderApprovedDeathCasesList();
+  renderAnnouncementsBoard();
 }
 
 function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
@@ -5165,33 +5166,102 @@ function renderAnnouncementsBoard() {
   const list = [];
   
   approvedDeaths.forEach(death => {
+    // Check if the card should be hidden/deleted for the logged-in school
+    if (appState.activeRole === "school") {
+      const invoice = appState.schoolInvoices.find(
+        inv => inv.deathCaseId === death.id && inv.schoolId === appState.activeSchoolId
+      );
+      if (invoice && invoice.status === "paid") {
+        // Hide/delete this news card for this school since payment is completed
+        return;
+      }
+    } else if (appState.activeRole === "province" || appState.activeRole === "committee") {
+      // Hide/delete this news card for central admin if ALL schools have paid
+      const invoicesForCase = appState.schoolInvoices.filter(inv => inv.deathCaseId === death.id);
+      const allPaid = invoicesForCase.length > 0 && invoicesForCase.every(inv => inv.status === "paid");
+      if (allPaid) {
+        return;
+      }
+    }
+
     const member = appState.members.find(m => m.id === death.memberId) || {};
     const netPayout = death.netPayout || (member ? getDeathCalculationInfo(death.reportedDate, member).netPayout : 0);
     const beneficiaryName = death.beneficiaryName || (member.beneficiary ? (member.beneficiary.title || "") + member.beneficiary.name : "ไม่ระบุ");
     const thDateStr = formatDateThai(death.reportedDate);
 
+    // Extract timestamp from ID for chronological sorting
+    const timestamp = death.id.startsWith("DEATH_") ? parseInt(death.id.replace("DEATH_", "")) : 0;
+
+    // School payment details message
+    let schoolPaymentHtml = "";
+    if (appState.activeRole === "school") {
+      const invoice = appState.schoolInvoices.find(
+        inv => inv.deathCaseId === death.id && inv.schoolId === appState.activeSchoolId
+      );
+      if (invoice) {
+        let statusBadge = "";
+        let actionBtn = "";
+        if (invoice.status === "unpaid") {
+          statusBadge = `<span class="badge" style="background: rgba(244, 63, 94, 0.15); color: var(--color-accent-rose); font-size: 11px; padding: 2px 6px;">🔴 ค้างชำระ</span>`;
+          actionBtn = `<button class="btn btn-mini btn-primary" onclick="openUploadSlipModalForCase('${death.id}')" style="padding: 4px 12px; font-size: 11px; margin-top: 8px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); font-weight: 600; cursor: pointer; border-radius: var(--radius-sm);" type="button">✍️ แนบหลักฐานชำระเงิน</button>`;
+        } else if (invoice.status === "pending") {
+          statusBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: var(--color-accent-amber); font-size: 11px; padding: 2px 6px;">🟡 รอตรวจสอบสลิป</span>`;
+        }
+
+        schoolPaymentHtml = `
+          <div style="margin-top: 10px; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius-sm); font-size: 12.5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <span>🔔 <strong>แจ้งยอดทำบุญสังกัดคุณ:</strong> สมาชิกในโรงเรียน <strong>${invoice.activeCount}</strong> คน ยอดเงินชำระ <strong>฿${invoice.totalOwed.toLocaleString()}</strong> (คนละ 30 บาท)</span>
+              ${statusBadge}
+            </div>
+            ${actionBtn}
+          </div>
+        `;
+      }
+    } else if (appState.activeRole === "province" || appState.activeRole === "committee") {
+      const invoicesForCase = appState.schoolInvoices.filter(inv => inv.deathCaseId === death.id);
+      const totalSchools = invoicesForCase.length;
+      const paidSchools = invoicesForCase.filter(inv => inv.status === "paid");
+      const unpaidSchools = invoicesForCase.filter(inv => inv.status !== "paid");
+      const paidCount = paidSchools.length;
+
+      schoolPaymentHtml = `
+        <div style="margin-top: 10px; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: var(--radius-sm); font-size: 12.5px;">
+          <div style="font-weight: 700; color: var(--color-accent-gold); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">📊 ติดตามการชำระเงินของสถาบัน:</div>
+          <div>โอนเงินเรียบร้อยแล้ว <strong>${paidCount}/${totalSchools}</strong> โรงเรียน (คงเหลือค้างชำระ <strong>${unpaidSchools.length}</strong> แห่ง)</div>
+          ${unpaidSchools.length > 0 ? `<div style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.45;">รายชื่อโรงเรียนค้างชำระ: ${unpaidSchools.map(u => u.schoolName).join(", ")}</div>` : ""}
+        </div>
+      `;
+    }
+
     list.push({
       type: "death",
       date: death.reportedDate || "",
+      timestamp: timestamp,
       html: `
-        <div class="condolence-announce-card animate-scale" style="margin-bottom: 8px;">
-          <div class="announce-left-meta">
-            <span style="font-size: 16px; margin-top: 2px;">🕯️</span>
-            <div class="announce-condolence-text">
-              ขอแสดงความเสียใจอย่างสุดซึ้งต่อการจากไปของ 
-              <strong>${death.name}</strong> (รหัสสมาชิก สสมน. <span class="announce-gold-highlight">${death.memberId}</span>) 
-              สังกัด <strong>${death.schoolName}</strong> ซึ่งถึงแก่กรรมเมื่อวันที่ ${thDateStr}
-              <div style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.45;">
-                ขณะนี้ระบบส่วนกลางจังหวัดน่านได้ประมวลยอดเงินสงเคราะห์สุทธิเสร็จสมบูรณ์เรียบร้อยเป็นเงินจำนวน 
-                <strong style="color:var(--color-accent-emerald); font-weight:700;">฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> 
-                มอบให้แก่ผู้รับผลประโยชน์ <strong style="color:white;">${beneficiaryName}</strong> 
-                ขอแจ้งแอดมินทุกโรงเรียนเพื่อตรวจสอบประวัติสมาชิกในสังกัดและโอนชำระเงินทำบุญส่วนต่างตามกำหนดต่อไป
+        <div class="condolence-announce-card animate-scale" style="margin-bottom: 8px; flex-direction: column; align-items: stretch; border-left: 3px solid var(--color-accent-rose) !important;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; width: 100%;">
+            <div class="announce-left-meta" style="flex-grow: 1;">
+              <span style="font-size: 20px; margin-top: 2px;">🕯️</span>
+              <div class="announce-condolence-text" style="width: 100%;">
+                <span style="color: var(--color-accent-rose); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">📢 ประกาศแจ้งฌาปนกิจและสงเคราะห์ สสมน.</span>
+                ขอแสดงความเสียใจอย่างสุดซึ้งต่อการจากไปของ 
+                <strong>${death.name}</strong> (รหัสสมาชิก สสมน. <span class="announce-gold-highlight">${death.memberId}</span>) 
+                สังกัด <strong>${death.schoolName}</strong> ซึ่งถึงแก่กรรมเมื่อวันที่ ${thDateStr}
+                <br><strong>และขอเชิญชวนสมาชิกทุกท่านร่วมส่งแรงใจ แสดงความเสียใจ และร่วมแสดงความไว้อาลัยแก่ครอบครัวของผู้เสียชีวิตมา ณ ที่นี้</strong>
+                <div style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 6px; line-height: 1.45;">
+                  ขณะนี้ระบบส่วนกลางจังหวัดน่านได้ประมวลยอดเงินสงเคราะห์สุทธิเสร็จสมบูรณ์เรียบร้อยเป็นเงินจำนวน 
+                  <strong style="color:var(--color-accent-emerald); font-weight:700;">฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> 
+                  มอบให้แก่ผู้รับผลประโยชน์ <strong style="color:white;">${beneficiaryName}</strong> 
+                  ขอแจ้งแอดมินสถาบันตรวจสอบสิทธิ์และดำเนินการส่งเงินสงเคราะห์ภายในเวลาที่กำหนด
+                </div>
+                ${schoolPaymentHtml}
               </div>
             </div>
-          </div>
-          <div class="announce-right-date">
-            แจ้งข่าว<br>
-            สสมน.น่าน
+            <div class="announce-right-date">
+              แจ้งข่าว<br>
+              สสมน.น่าน
+            </div>
           </div>
         </div>
       `
@@ -5218,6 +5288,7 @@ function renderAnnouncementsBoard() {
     list.push({
       type: "custom",
       date: ann.date || "",
+      timestamp: 0,
       html: `
         <div class="condolence-announce-card animate-scale" style="margin-bottom: 8px; border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.025);">
           <div class="announce-left-meta" style="flex-grow: 1;">
@@ -5244,7 +5315,12 @@ function renderAnnouncementsBoard() {
     });
   });
 
-  list.sort((a, b) => b.date.localeCompare(a.date));
+  // Sort by date descending. If equal, sort by timestamp descending.
+  list.sort((a, b) => {
+    const dateCompare = b.date.localeCompare(a.date);
+    if (dateCompare !== 0) return dateCompare;
+    return b.timestamp - a.timestamp;
+  });
 
   const displayList = list.slice(0, 5);
 
@@ -5255,6 +5331,38 @@ function renderAnnouncementsBoard() {
 
   container.innerHTML = displayList.map(item => item.html).join("");
 }
+
+// ฟังก์ชันเปิดฟอร์มยื่นสลิปจากบอร์ดประกาศโดยตรงสำหรับโรงเรียน
+window.openUploadSlipModalForCase = function(deathId) {
+  const activeSchool = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+  const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathId && inv.schoolId === appState.activeSchoolId);
+  if (!invoice) return;
+
+  const debtsHtml = `
+    <div class="slip-debt-line">
+      <span>เคสทำบุญศพ: ${invoice.deathCaseName}</span>
+      <strong class="text-currency">฿${invoice.totalOwed.toLocaleString()}</strong>
+    </div>
+  `;
+
+  document.getElementById("slip-school-id").value = appState.activeSchoolId;
+  document.getElementById("slip-death-ids").value = deathId;
+  document.getElementById("slip-preview-school-name").textContent = activeSchool.name;
+  document.getElementById("slip-preview-debts-list").innerHTML = debtsHtml;
+  document.getElementById("slip-preview-total-amount").textContent = "฿" + invoice.totalOwed.toLocaleString(undefined, {minimumFractionDigits: 2});
+  document.getElementById("slip-transfer-amount").value = invoice.totalOwed;
+
+  document.getElementById("slip-image-file").value = "";
+  document.getElementById("block-slip-preview").style.display = "none";
+  document.getElementById("img-slip-preview-tag").src = "";
+  document.getElementById("slip-notes").value = "";
+  
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById("slip-transfer-date").value = now.toISOString().slice(0, 16);
+
+  document.getElementById("modal-upload-slip").classList.add("active");
+};
 
 // Helper date formatter
 function formatDateThai(dateStr) {
