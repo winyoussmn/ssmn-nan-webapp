@@ -393,6 +393,40 @@ window.toggleTitleOtherInput = function(type) {
   }
 };
 
+// ฟังก์ชันสลับเงื่อนไขค่าสมัครและการสะสมเงินล่วงหน้าเมื่อเลือกประเภทการเป็นสมาชิก
+window.toggleMemberStatusOptions = function() {
+  const statusOption = document.getElementById("member-status-option")?.value || "new";
+  const prepayLabel = document.querySelector("label[for='member-prepay-balance']");
+  const prepayInput = document.getElementById("member-prepay-balance");
+  const feeLabel = document.getElementById("lbl-member-fee-paid");
+
+  if (statusOption === "existing") {
+    // เป็นสมาชิกอยู่แล้ว (ย้าย/กู้คืน)
+    if (prepayLabel) prepayLabel.innerHTML = 'จำนวนเงินสะสมล่วงหน้าเดิมที่เคยชำระไว้ (บาท) <span style="color:#9ca3af; font-weight:normal;">(ไม่บังคับกรอก)</span>:';
+    if (prepayInput) {
+      prepayInput.removeAttribute("required");
+      prepayInput.setAttribute("min", "0");
+      prepayInput.placeholder = "ไม่ระบุจะเริ่มต้นที่ 0 บาท";
+      if (prepayInput.value === "90" || prepayInput.value === "150" || prepayInput.value === "") {
+        prepayInput.value = "";
+      }
+    }
+    if (feeLabel) feeLabel.textContent = "ได้รับการยกเว้นค่าธรรมเนียมแรกเข้า (เป็นสมาชิกอยู่แล้ว)";
+  } else {
+    // สมัครสมาชิกใหม่
+    if (prepayLabel) prepayLabel.innerHTML = 'เงินสะสมล่วงหน้าเริ่มต้น (บาท) <span class="required">*</span> <span style="color:var(--color-accent-amber); font-weight:500;">(ขั้นต่ำ 90 บาท)</span>:';
+    if (prepayInput) {
+      prepayInput.setAttribute("required", "true");
+      prepayInput.setAttribute("min", "90");
+      prepayInput.placeholder = "แนะนำ 150 บาท (ขั้นต่ำ 90 บาท)";
+      if (prepayInput.value === "" || parseFloat(prepayInput.value) < 90) {
+        prepayInput.value = "90";
+      }
+    }
+    if (feeLabel) feeLabel.textContent = "ชำระค่าธรรมเนียมแรกเข้า 50 บาทเรียบร้อย";
+  }
+};
+
 // ==================== 3. AUTOMATED MEMBER ID GENERATOR ====================
 function generateMemberId(schoolId, position) {
   // ดึงค่า T (ตัวเลขตัวที่ 5) ตามกลุ่มตำแหน่ง
@@ -1067,7 +1101,8 @@ document.getElementById("form-member").addEventListener("submit", async function
   const gender = document.getElementById("member-gender").value;
   const position = document.getElementById("member-position").value;
   const schoolId = document.getElementById("member-school").value;
-  const prepayBalance = parseFloat(document.getElementById("member-prepay-balance").value);
+  const prepayBalanceRaw = document.getElementById("member-prepay-balance").value;
+  const prepayBalance = prepayBalanceRaw !== "" ? (parseFloat(prepayBalanceRaw) || 0) : 0;
   const address = document.getElementById("member-address").value.trim();
 
   // ข้อมูลผู้รับผลประโยชน์
@@ -1096,10 +1131,15 @@ document.getElementById("form-member").addEventListener("submit", async function
 
   if (actionType === "create") {
     const generatedId = generateMemberId(schoolId, position);
-    const ledger = [
-      INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่"),
-      INITIAL_LEDGER_ENTRY(prepayBalance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน.")
-    ];
+    const isExisting = document.getElementById("member-status-option").value === "existing";
+
+    const ledger = [];
+    if (!isExisting) {
+      ledger.push(INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่"));
+      ledger.push(INITIAL_LEDGER_ENTRY(prepayBalance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน."));
+    } else {
+      ledger.push(INITIAL_LEDGER_ENTRY(prepayBalance, "ย้ายข้อมูลฐานเงินสะสมล่วงหน้าเดิมที่เคยชำระไว้"));
+    }
 
     const newMember = {
       id: generatedId,
@@ -2971,7 +3011,14 @@ function openAddMemberModal() {
   schoolSelect.value = appState.activeSchoolId;
   schoolSelect.disabled = appState.activeRole === "school";
 
-  document.getElementById("member-prepay-balance").value = 150;
+  const statusOption = document.getElementById("member-status-option");
+  if (statusOption) statusOption.value = "new";
+  
+  const prepayInput = document.getElementById("member-prepay-balance");
+  if (prepayInput) prepayInput.value = 90;
+
+  if (window.toggleMemberStatusOptions) window.toggleMemberStatusOptions();
+
   document.getElementById("member-address").value = "";
 
   document.getElementById("modal-member").classList.add("active");

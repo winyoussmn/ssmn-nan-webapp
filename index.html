@@ -1329,17 +1329,28 @@
           <p class="field-help-text">หมายเหตุ: เฉพาะแอดมินระดับสูงที่จะแก้ไขรหัสนี้ได้โดยตรง</p>
         </div>
 
+        <!-- Selection: Is already a member or not? -->
+        <div class="form-row" style="margin-bottom: 14px;">
+          <div class="form-group col-12">
+            <label for="member-status-option">ประวัติสถานะความเป็นสมาชิก สสมน.: <span class="required">*</span></label>
+            <select id="member-status-option" required class="form-control" onchange="toggleMemberStatusOptions()">
+              <option value="new" selected>ยังไม่เคยเป็นสมาชิก (สมัครใหม่)</option>
+              <option value="existing">เป็นสมาชิกอยู่แล้ว (ย้ายสังกัด / กู้คืนข้อมูลเข้าระบบกลาง)</option>
+            </select>
+          </div>
+        </div>
+
         <div class="form-row" id="block-financial-inputs">
           <div class="form-group col-6">
             <label>ค่าสมัครสมาชิกใหม่: <span class="required">*</span></label>
             <div class="checkbox-input-group">
               <input type="checkbox" id="member-fee-paid" checked disabled>
-              <label for="member-fee-paid">ชำระค่าธรรมเนียมแรกเข้า 50 บาทเรียบร้อย</label>
+              <label for="member-fee-paid" id="lbl-member-fee-paid">ชำระค่าธรรมเนียมแรกเข้า 50 บาทเรียบร้อย</label>
             </div>
           </div>
           <div class="form-group col-6">
-            <label for="member-prepay-balance">เงินสะสมล่วงหน้าเริ่มต้น (บาท): <span class="required">*</span></label>
-            <input type="number" id="member-prepay-balance" value="150" min="1" placeholder="แนะนำ 150 บาท" required class="form-control">
+            <label for="member-prepay-balance">เงินสะสมล่วงหน้าเริ่มต้น (บาท) <span class="required">*</span> <span style="color:var(--color-accent-amber); font-weight:500;">(ขั้นต่ำ 90 บาท)</span>:</label>
+            <input type="number" id="member-prepay-balance" value="90" min="90" placeholder="แนะนำ 150 บาท (ขั้นต่ำ 90 บาท)" required class="form-control">
           </div>
         </div>
 
