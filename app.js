@@ -1945,7 +1945,7 @@ function triggerDeathDeduction(memberId, reportedDate, chargeAmount, cause, docu
   
   appState.deathCases.unshift(deathCase);
 
-  // 3. หักเงินสะสมล่วงหน้าของสมาชิกที่เหลือทุกคน 20 บาทอัตโนมัติ
+  // 3. หักเงินสะสมล่วงหน้าของสมาชิกที่เหลือทุกคน 30 บาทอัตโนมัติ
   const activeMembers = appState.members.filter(m => m.status === "active");
   const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
@@ -2022,7 +2022,7 @@ document.getElementById("form-school-report-death").addEventListener("submit", a
     schoolName: school.name,
     schoolId: deceasedMember.schoolId,
     reportedDate,
-    chargeAmount: 20, // ค่าคงที่หัก 20 บาท
+    chargeAmount: 30, // ค่าคงที่หัก 30 บาท
     cause,
     status: "pending_approval", // รอแอดมินจังหวัดอนุมัติเอกสาร
     documents: {
@@ -2201,7 +2201,7 @@ window.approvePendingDeath = function(deathCaseId) {
 
   const death = appState.deathCases[deathCaseIndex];
   
-  if (!confirm(`คุณต้องการอนุมัติการถึงแก่กรรมของ ${death.name} หรือไม่?\n*(เมื่ออนุมัติ ระบบจะรันกระบวนการหักเงินคนละ 20 บาท และส่งบิลหนี้รายโรงเรียนทันที)`)) {
+  if (!confirm(`คุณต้องการอนุมัติการถึงแก่กรรมของ ${death.name} หรือไม่?\n*(เมื่ออนุมัติ ระบบจะรันกระบวนการหักเงินคนละ 30 บาท และส่งบิลหนี้รายโรงเรียนทันที)`)) {
     return;
   }
 
@@ -3849,7 +3849,7 @@ function generateDemoData() {
     schoolName: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
     schoolId: "02",
     reportedDate: "2026-05-15",
-    chargeAmount: 20,
+    chargeAmount: 30,
     cause: "กล้ามเนื้อหัวใจขาดเลือดเฉียบพลัน",
     status: "approved",
     documents: {
@@ -3866,24 +3866,24 @@ function generateDemoData() {
   };
   appState.deathCases.push(deathCase);
 
-  // หักเงินทุกคน 20 บาท
+  // หักเงินทุกคน 30 บาท
   const activeList = appState.members.filter(m => m.status === "active");
   activeList.forEach(m => {
     const curBal = parseFloat(m.prepayBalance);
-    m.prepayBalance = curBal - 20;
+    m.prepayBalance = curBal - 30;
     m.ledger.push({
       date: dateStr,
       type: "charge",
-      amount: -20,
+      amount: -30,
       description: `หักเงินสงเคราะห์รายศพกรณีการเสียชีวิตของ นายประเสริฐ แงงงาม (${deadPerson.id})`,
-      balanceAfter: curBal - 20
+      balanceAfter: curBal - 30
     });
   });
 
   // สร้าง Invoices 33 โรงเรียน
   SCHOOLS.forEach(sch => {
     const schoolActiveCount = activeList.filter(m => m.schoolId === sch.id).length;
-    const totalOwed = schoolActiveCount * 20;
+    const totalOwed = schoolActiveCount * 30;
 
     let status = "unpaid";
     let slipData = null;
@@ -3914,7 +3914,7 @@ function generateDemoData() {
       schoolId: sch.id,
       schoolName: sch.name,
       activeCount: schoolActiveCount,
-      deductionAmount: 20,
+      deductionAmount: 30,
       totalOwed: totalOwed,
       status: status,
       slipData: slipData
@@ -3932,7 +3932,7 @@ function generateDemoData() {
     schoolName: "โรงเรียนปัว",
     schoolId: "03",
     reportedDate: "2026-06-01",
-    chargeAmount: 20,
+    chargeAmount: 30,
     cause: "โรคมะเร็งตับระยะสุดท้าย",
     status: "pending_approval",
     documents: {
