@@ -2456,6 +2456,18 @@ window.openProfileViewer = function(memberId) {
 
   document.getElementById("topup-member-row-index").value = memberId;
   document.getElementById("topup-amount").value = 100;
+  
+  const topupActionType = document.getElementById("topup-action-type");
+  if (topupActionType) {
+    topupActionType.value = "add";
+  }
+  const topupNote = document.getElementById("topup-note");
+  if (topupNote) {
+    topupNote.value = "";
+  }
+  if (typeof window.onTopupActionTypeChange === "function") {
+    window.onTopupActionTypeChange();
+  }
 
   const topupSection = document.getElementById("block-topup-section");
   if (member.status !== "active") {
@@ -2501,29 +2513,71 @@ function renderLedgerBook(ledger = []) {
   tbody.innerHTML = html;
 }
 
+window.onTopupActionTypeChange = function() {
+  const type = document.getElementById("topup-action-type").value;
+  const btn = document.getElementById("btn-submit-topup");
+  const helpText = document.getElementById("topup-help-text");
+  
+  if (type === "add") {
+    btn.style.background = "var(--color-accent-emerald)";
+    btn.style.borderColor = "var(--color-accent-emerald)";
+    btn.textContent = "ดำเนินการเพิ่มเงินสะสม";
+    helpText.innerHTML = "* ป้อนยอดเงินเพื่อปรับปรุงยอดเงินสะสมล่วงหน้าของสมาชิกในสมุดคู่ฝากและประวัติบัญชี";
+  } else {
+    btn.style.background = "var(--color-accent-rose)";
+    btn.style.borderColor = "var(--color-accent-rose)";
+    btn.textContent = "ดำเนินการลดเงินสะสม";
+    helpText.innerHTML = "* ระบุยอดเงินเพื่อหักออกหรือลดเงินสะสมของสมาชิก (เช่น การคืนเงิน หรือปรับปรุงยอด)";
+  }
+};
+
 document.getElementById("form-profile-topup").addEventListener("submit", function(e) {
   e.preventDefault();
 
   const memberId = document.getElementById("topup-member-row-index").value;
   const topupAmount = parseFloat(document.getElementById("topup-amount").value);
+  const actionType = document.getElementById("topup-action-type").value;
+  const note = document.getElementById("topup-note").value.trim();
 
   const member = appState.members.find(m => m.id === memberId);
   if (!member) return;
 
-  const currentBal = parseFloat(member.prepayBalance);
-  const nextBal = currentBal + topupAmount;
-  
+  if (isNaN(topupAmount) || topupAmount <= 0) {
+    alert("กรุณากรอกจำนวนเงินให้ถูกต้องและมากกว่า 0 บาท");
+    return;
+  }
+
+  const currentBal = parseFloat(member.prepayBalance) || 0;
+  let nextBal = currentBal;
+  let ledgerType = "deposit";
+  let amountVal = topupAmount;
+  let defaultDesc = "";
+
+  if (actionType === "add") {
+    nextBal = currentBal + topupAmount;
+    ledgerType = "deposit";
+    amountVal = topupAmount;
+    defaultDesc = "โอนเติมเงินสะสมล่วงหน้าเข้าระบบ สสมน.";
+  } else if (actionType === "reduce") {
+    nextBal = currentBal - topupAmount;
+    ledgerType = "charge";
+    amountVal = -topupAmount;
+    defaultDesc = "ลด/ปรับปรุงเงินสะสมล่วงหน้าออกจากระบบ";
+  }
+
   member.prepayBalance = nextBal;
   member.ledger.push({
     date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-    type: "deposit",
-    amount: topupAmount,
-    description: "โอนเติมเงินสะสมล่วงหน้าเข้าระบบ สสมน.",
+    type: ledgerType,
+    amount: amountVal,
+    description: note || defaultDesc,
     balanceAfter: nextBal
   });
 
   saveStateToLocalStorage();
-  alert(`เติมเงินสำเร็จ!\nคงเหลือปัจจุบัน ฿${nextBal.toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+  
+  const actionText = actionType === "add" ? "เพิ่มเงินสะสมสำเร็จ!" : "ลดเงินสะสมสำเร็จ!";
+  alert(`${actionText}\nคงเหลือปัจจุบัน ฿${nextBal.toLocaleString(undefined, {minimumFractionDigits: 2})}`);
   
   openProfileViewer(memberId);
   calculateStats();
@@ -3257,7 +3311,7 @@ modalsList.forEach(m => {
 
 // ==================== 14. DEMO DATA GENERATOR SYSTEM ====================
 function generateDemoData() {
-  if (!confirm("คุณต้องการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?\n*(การดำเนินการนี้จะเคลียร์และลบข้อมูลที่กำลังคีย์อยู่ทิ้งทั้งหมดก่อนเริ่มเขียนใหม่)")) {
+  if (!confirm("⚠️ คำเตือนสำคัญ: การดำเนินการนี้จะล้างข้อมูลสมาชิกและประวัติเอกสารประกอบทั้งหมดที่ท่านกรอกหรือแก้ไขไว้ในขณะนี้ออกไปจนหมด\n\nคุณต้องการนำเข้าข้อมูลทดสอบระบบเพื่อเคลียร์ฐานข้อมูลทับใหม่ใช่หรือไม่?")) {
     return;
   }
 

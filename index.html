@@ -191,12 +191,16 @@
       
       <!-- Sidebar Footer Info -->
       <div class="sidebar-footer">
-        <button id="btn-gen-demo-data" class="btn btn-secondary btn-demo-action" title="สร้างข้อมูลจำลองประวัติทางการเงิน สมาชิก และการย้ายโรงเรียนเพื่อให้ง่ายต่อการประเมินและสาธิตงาน">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <button id="btn-gen-demo-data" class="btn btn-secondary btn-demo-action" style="border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.05); color: #fda4af;" title="สร้างข้อมูลจำลองประวัติทางการเงิน สมาชิก และการย้ายโรงเรียนเพื่อให้ง่ายต่อการประเมินและสาธิตงาน">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-accent-rose);">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
           </svg>
-          <span>นำเข้าข้อมูลทดสอบระบบ</span>
+          <span style="color: #fda4af; font-weight: 600;">นำเข้าข้อมูลทดสอบระบบ</span>
         </button>
+        <div style="font-size: 10.5px; color: #fecdd3; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); padding: 8px; border-radius: 6px; line-height: 1.45; display: flex; align-items: start; gap: 5.5px; margin-top: -4px;">
+          <span>⚠️</span>
+          <span><strong>คำเตือน:</strong> หากกดนำเข้าข้อมูล ข้อมูลที่แก้ไขและเอกสารประกอบที่กรอกไว้ทั้งหมดจะหายทันที!</span>
+        </div>
         <div class="footer-system-status">
           <span class="status-dot"></span>
           <span>เซิร์ฟเวอร์จำลอง: พร้อมใช้งาน</span>
@@ -1450,6 +1454,9 @@
 
         <!-- Supporting application documents -->
         <h3 class="section-title" style="margin-top:12px; margin-bottom:8px;">3. เอกสารประกอบการสมัคร (ไฟล์แนบเพื่อเปิดดูย้อนหลัง)</h3>
+        <p class="field-help-text" style="color: var(--color-accent-amber); margin-bottom: 10px; font-weight: 500;">
+          💡 <em>หากมีไฟล์เอกสารเดิมอยู่ในระบบแล้ว (แสดงเป็นปุ่มสีเขียว) ท่านไม่จำเป็นต้องแนบไฟล์ซ้ำ เว้นแต่ต้องการแก้ไขหรือเปลี่ยนรูปภาพชุดใหม่</em>
+        </p>
         <div class="form-row">
           <div class="form-group col-4">
             <label for="member-doc-application">ใบสมัคร สสมน. (รูปภาพ):</label>
@@ -1561,20 +1568,35 @@
               <!-- Dynamically populated document buttons -->
             </div>
             
-            <!-- Quick Top-up box (Active for both roles for their school members) -->
-            <div class="topup-action-box glass" id="block-topup-section" style="margin-top:12px;">
-              <h5>เติมเงินเงินสะสมล่วงหน้า</h5>
-              <form id="form-profile-topup" class="form-inline-mini">
+            <!-- Manage/Adjust Balance box (Active for both roles for their school members) -->
+            <div class="topup-action-box glass" id="block-topup-section" style="margin-top:12px; background: rgba(251, 191, 36, 0.02); border-color: rgba(251, 191, 36, 0.15);">
+              <h5 style="color: white; font-size: 13.5px; font-weight: 700; margin-bottom: 10px;">💵 จัดการเงินสะสมล่วงหน้า (เพิ่ม / ลด)</h5>
+              <form id="form-profile-topup" class="standard-form" style="display: flex; flex-direction: column; gap: 10px;">
                 <input type="hidden" id="topup-member-row-index">
-                <div class="form-group flex-fill">
-                  <label for="topup-amount" class="sr-only">จำนวนเงินโอนเงินเติมเงิน (บาท):</label>
-                  <input type="number" id="topup-amount" value="100" min="20" max="5000" step="10" required class="form-control input-mini">
+                
+                <div class="form-row" style="margin: 0; gap: 8px;">
+                  <div class="form-group col-4" style="margin: 0; padding: 0;">
+                    <select id="topup-action-type" class="form-control input-mini" style="height: 38px; font-weight: 600;" onchange="onTopupActionTypeChange()">
+                      <option value="add" selected>➕ เพิ่มเงินสะสม</option>
+                      <option value="reduce">➖ ลดเงินสะสม</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-8" style="margin: 0; padding: 0;">
+                    <input type="number" id="topup-amount" value="100" min="1" max="50000" step="1" required class="form-control input-mini" style="height: 38px;" placeholder="ระบุจำนวนเงิน (บาท)">
+                  </div>
                 </div>
-                <button type="submit" class="btn btn-success btn-mini">
-                  เติมเงินสะสม
+
+                <div class="form-group" style="margin: 0; padding: 0;">
+                  <input type="text" id="topup-note" placeholder="ระบุหมายเหตุ/เหตุผลประกอบรายการ (เช่น เติมเงินผ่านผู้ประสานงาน, ถอนเงินคืน)" class="form-control input-mini" style="height: 38px;">
+                </div>
+
+                <button type="submit" id="btn-submit-topup" class="btn btn-primary btn-mini" style="height: 38px; width: 100%; font-weight: 700; background: var(--color-accent-emerald); border-color: var(--color-accent-emerald); color: white;">
+                  ดำเนินการปรับปรุงเงินสะสม
                 </button>
               </form>
-              <p class="field-help-text">ขั้นต่ำ 20 บาท ป้อนยอดเงินโอนสะสมเพิ่มเพื่อชำระหนี้กรณีค้างจ่าย</p>
+              <p class="field-help-text" id="topup-help-text" style="margin-top: 6px; font-size: 11px; color: var(--color-text-dim);">
+                * ป้อนยอดเงินเพื่อปรับปรุงยอดเงินสะสมล่วงหน้าของสมาชิกในสมุดคู่ฝากและประวัติบัญชี
+              </p>
             </div>
           </div>
           
