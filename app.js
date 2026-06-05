@@ -1,0 +1,4592 @@
+/* 
+  สสมน.น่าน // ระบบบริหารจัดการสมาชิกและกองทุนฌาปนกิจสงเคราะห์
+  Core Business Logic & JavaScript Controller
+*/
+
+// ==================== 1. CONSTANTS & STATIC DATA CONFIGURATION ====================
+// ข้อมูลสังกัดสถานศึกษา 32 โรงเรียน + 1 หน่วยข้าราชการบำนาญ (รวม 33 สังกัด)
+const SCHOOLS = [
+  { id: "01", name: "โรงเรียนสตรีศรีน่าน", totalPersonnel: { director: 1, deputy: 4, teacher: 132, other: 18 } },
+  { id: "02", name: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน", totalPersonnel: { director: 1, deputy: 4, teacher: 128, other: 22 } },
+  { id: "03", name: "โรงเรียนปัว", totalPersonnel: { director: 1, deputy: 4, teacher: 110, other: 15 } },
+  { id: "04", name: "โรงเรียนท่าวังผาพิทยาคม", totalPersonnel: { director: 1, deputy: 3, teacher: 85, other: 12 } },
+  { id: "05", name: "โรงเรียนสา", totalPersonnel: { director: 1, deputy: 2, teacher: 74, other: 11 } },
+  { id: "06", name: "โรงเรียนนาน้อย", totalPersonnel: { director: 1, deputy: 2, teacher: 58, other: 9 } },
+  { id: "07", name: "โรงเรียนเชียงกลาง \"ประชาพัฒนา\"", totalPersonnel: { director: 1, deputy: 2, teacher: 65, other: 10 } },
+  { id: "08", name: "โรงเรียนบ่อเกลือ", totalPersonnel: { director: 1, deputy: 1, teacher: 32, other: 4 } },
+  { id: "09", name: "โรงเรียนมัธยมป่ากลาง", totalPersonnel: { director: 1, deputy: 1, teacher: 33, other: 5 } },
+  { id: "10", name: "โรงเรียนทุ่งช้าง", totalPersonnel: { director: 1, deputy: 2, teacher: 45, other: 7 } },
+  { id: "11", name: "โรงเรียนแม่จริม", totalPersonnel: { director: 1, deputy: 1, teacher: 38, other: 5 } },
+  { id: "12", name: "โรงเรียนนันทบุรีวิทยาในพระบรมราชานุเคราะห์", totalPersonnel: { director: 1, deputy: 2, teacher: 30, other: 5 } },
+  { id: "13", name: "โรงเรียนสันติสุขพิทยาคม", totalPersonnel: { director: 1, deputy: 2, teacher: 42, other: 6 } },
+  { id: "14", name: "โรงเรียนบ้านหลวง", totalPersonnel: { director: 1, deputy: 1, teacher: 34, other: 5 } },
+  { id: "15", name: "โรงเรียนนาหมื่นพิทยาคม", totalPersonnel: { director: 1, deputy: 1, teacher: 25, other: 4 } },
+  { id: "16", name: "โรงเรียนมัธยมพระราชทานเฉลิมพระเกียรติ", totalPersonnel: { director: 1, deputy: 1, teacher: 28, other: 8 } },
+  { id: "17", name: "โรงเรียนไตรเขตประชาสามัคคีรัชมังคลาภิเษก", totalPersonnel: { director: 1, deputy: 1, teacher: 18, other: 2 } },
+  { id: "18", name: "โรงเรียนน่านนคร", totalPersonnel: { director: 1, deputy: 2, teacher: 40, other: 6 } },
+  { id: "19", name: "โรงเรียนบ่อสวกวิทยาคาร", totalPersonnel: { director: 1, deputy: 1, teacher: 27, other: 4 } },
+  { id: "20", name: "โรงเรียนเมืองแงง", totalPersonnel: { director: 1, deputy: 1, teacher: 26, other: 4 } },
+  { id: "21", name: "โรงเรียนพระธาตุพิทยาคม", totalPersonnel: { director: 1, deputy: 1, teacher: 24, other: 3 } },
+  { id: "22", name: "โรงเรียนศรัทธาศิลาเพชรรังสรรค์", totalPersonnel: { director: 1, deputy: 1, teacher: 22, other: 3 } },
+  { id: "23", name: "โรงเรียนเมืองยมวิทยาคาร", totalPersonnel: { director: 1, deputy: 1, teacher: 20, other: 3 } },
+  { id: "24", name: "โรงเรียนหนองบัวพิทยาคม", totalPersonnel: { director: 1, deputy: 1, teacher: 25, other: 4 } },
+  { id: "25", name: "โรงเรียนสาธุกิจประชาสรรค์รัชมังคลาภิเษก", totalPersonnel: { director: 1, deputy: 1, teacher: 35, other: 6 } },
+  { id: "26", name: "โรงเรียนสารทิศพิทยาคม", totalPersonnel: { director: 1, deputy: 1, teacher: 15, other: 2 } },
+  { id: "27", name: "โรงเรียนเมืองลีประชาสามัคคี", totalPersonnel: { director: 1, deputy: 1, teacher: 18, other: 2 } },
+  { id: "28", name: "โรงเรียนน่านประชาอุทิศ", totalPersonnel: { director: 1, deputy: 1, teacher: 25, other: 4 } },
+  { id: "29", name: "โรงเรียนศรีนครน่าน", totalPersonnel: { director: 1, deputy: 1, teacher: 28, other: 4 } },
+  { id: "30", name: "โรงเรียนสารธรรมวิทยาคาร", totalPersonnel: { director: 1, deputy: 1, teacher: 23, other: 3 } },
+  { id: "31", name: "โรงเรียนน่านปัญญานุกูล", totalPersonnel: { director: 1, deputy: 2, teacher: 35, other: 8 } },
+  { id: "32", name: "โรงเรียนราชประชานุเคราะห์ที่ 56", totalPersonnel: { director: 1, deputy: 3, teacher: 55, other: 12 } },
+  { id: "33", name: "หน่วยข้าราชการบำนาญ", totalPersonnel: { director: 1, deputy: 0, teacher: 10, other: 5 } }
+];
+
+// ดึงข้อมูลจำนวนครูและบุคลากรแยกตามตำแหน่ง (คืนค่า dynamic ถ้ามี หรือคืนค่า static ถ้าไม่มี)
+function getSchoolPersonnel(schoolId) {
+  const sch = SCHOOLS.find(s => s.id === schoolId);
+  const profile = appState.schoolProfiles ? appState.schoolProfiles[schoolId] : null;
+  if (profile && profile.directorCount !== undefined) {
+    return {
+      director: parseInt(profile.directorCount) || 0,
+      deputy: parseInt(profile.deputyCount) || 0,
+      teacher: parseInt(profile.teacherCount) || 0,
+      other: parseInt(profile.otherCount) || 0
+    };
+  }
+  return sch ? { ...sch.totalPersonnel } : { director: 0, deputy: 0, teacher: 0, other: 0 };
+}
+
+const DEFAULT_SCHOOL_PROFILES = {
+  "01": { address: "148/1", moo: "1", tumbon: "ในเวียง", amphoe: "เมืองน่าน", phone: "054-710321", fax: "054-710322", director: "นายสมชาย แสนน่าน", directorPhone: "089-123-4567", coordinator: "นางสิริรัตน์ จิตใจดี", coordinatorPhone: "081-2345678" },
+  "02": { address: "8", moo: "5", tumbon: "ดู่ใต้", amphoe: "เมืองน่าน", phone: "054-771569", fax: "054-771570", director: "นายพิจิตร แก้วมณี", directorPhone: "089-234-5678", coordinator: "นายสมคิด ทองรุ่ง", coordinatorPhone: "089-7654321" },
+  "03": { address: "109", moo: "3", tumbon: "ปัว", amphoe: "ปัว", phone: "054-791244", fax: "054-791245", director: "นายเกรียงไกร สูงศักดิ์", directorPhone: "089-345-6789", coordinator: "นางเพ็ญศรี สุขเกษม", coordinatorPhone: "082-3456789" },
+  "04": { address: "44", moo: "2", tumbon: "ท่าวังผา", amphoe: "ท่าวังผา", phone: "054-751101", fax: "054-751102", director: "นายเดชา แก้วหลวง", directorPhone: "089-456-7890", coordinator: "นายวิศรุต สว่างเวียง", coordinatorPhone: "084-5678901" },
+  "05": { address: "201", moo: "4", tumbon: "กลางเวียง", amphoe: "สา", phone: "054-781522", fax: "054-781523", director: "นายประสิทธิ์ ศรีวิชัย", directorPhone: "089-678-9012", coordinator: "นายวุฒิชัย ยอดรัก", coordinatorPhone: "086-7890123" },
+  "06": { address: "55", moo: "8", tumbon: "ศรีสะเกษ", amphoe: "นาน้อย", phone: "054-789098", fax: "054-789099", director: "นายอำนวย นาน้อย", directorPhone: "089-789-0123", coordinator: "นางสาวสมพร แสนขุนเขา", coordinatorPhone: "087-8901234" },
+  "07": { address: "12", moo: "1", tumbon: "เชียงกลาง", amphoe: "เชียงกลาง", phone: "054-797115", fax: "054-797116", director: "นายสมเกียรติ ยศกลาง", directorPhone: "089-567-8901", coordinator: "นางมณีวรรณ เมืองน่าน", coordinatorPhone: "085-6789012" },
+  "08": { address: "88", moo: "1", tumbon: "บ่อเกลือใต้", amphoe: "บ่อเกลือ", phone: "054-778088", fax: "054-778089", director: "นายเฉลิม ขุนบ่อ", directorPhone: "089-123-9876", coordinator: "นางสาวศิริพร ใจงาม", coordinatorPhone: "081-9876543" },
+  "09": { address: "47", moo: "7", tumbon: "ป่ากลาง", amphoe: "ปัว", phone: "054-791047", fax: "054-791048", director: "นายวัชระ ป่ากลาง", directorPhone: "089-333-4444", coordinator: "นางสาวสุดา แก้วหวาน", coordinatorPhone: "084-3456789" },
+  "10": { address: "123", moo: "5", tumbon: "ทุ่งช้าง", amphoe: "ทุ่งช้าง", phone: "054-795123", fax: "054-795124", director: "นายรังสรรค์ แสนทุ่ง", directorPhone: "089-012-3456", coordinator: "นายกิติพงษ์ แก้วดี", coordinatorPhone: "080-1234567" },
+  "11": { address: "15", moo: "1", tumbon: "แหนด", amphoe: "แม่จริม", phone: "054-769015", fax: "054-769016", director: "นายบุญยืน ขุนเขา", directorPhone: "089-901-2345", coordinator: "นางสาวพิกุล แก้วมณี", coordinatorPhone: "089-0123456" },
+  "12": { address: "180", moo: "6", tumbon: "ในเวียง", amphoe: "เมืองน่าน", phone: "054-710180", fax: "054-710181", director: "พระครูนันทบุรีวิทยา", directorPhone: "089-777-8888", coordinator: "นายสมเกียรติ ยศหลวง", coordinatorPhone: "088-3456789" },
+  "13": { address: "99", moo: "3", tumbon: "ป่าแลวหลวง", amphoe: "สันติสุข", phone: "054-775199", fax: "054-775198", director: "นายสุรพล แสนคำ", directorPhone: "089-890-1234", coordinator: "นายธีระ จิตภักดี", coordinatorPhone: "088-9012345" },
+  "14": { address: "100", moo: "1", tumbon: "บ้านหลวง", amphoe: "บ้านหลวง", phone: "054-776100", fax: "054-776101", director: "นายวิทยา ป่าข่อย", directorPhone: "089-901-9876", coordinator: "นายเกรียงศักดิ์ สมใจ", coordinatorPhone: "089-9876543" },
+  "15": { address: "88", moo: "1", tumbon: "นาหมื่น", amphoe: "นาหมื่น", phone: "054-785088", fax: "054-785089", director: "นายกิติกร ยอดรัก", directorPhone: "089-888-9999", coordinator: "นางวิลาวรรณ สมใจ", coordinatorPhone: "089-345-6789" },
+  "16": { address: "1", moo: "10", tumbon: "ห้วยโก๋น", amphoe: "เฉลิมพระเกียรติ", phone: "054-799001", fax: "054-799002", director: "นายสมบูรณ์ ชายแดน", directorPhone: "089-234-9876", coordinator: "นายอภิชาติ สุขดี", coordinatorPhone: "082-9876543" },
+  "17": { address: "33", moo: "9", tumbon: "ไตรเขต", amphoe: "สองแคว", phone: "054-793033", fax: "054-793034", director: "นายธีระศักดิ์ ยศกลาง", directorPhone: "089-555-6666", coordinator: "นางสาวสมบูรณ์ ดินดี", coordinatorPhone: "086-3456789" },
+  "18": { address: "99", moo: "1", tumbon: "ดู่ใต้", amphoe: "เมืองน่าน", phone: "054-771100", fax: "054-771101", director: "นายประมวล แสนเมือง", directorPhone: "089-777-1111", coordinator: "นางสาวดวงใจ ปัญญาใจ", coordinatorPhone: "086-111-2222" },
+  "19": { address: "66", moo: "3", tumbon: "บ่อสวก", amphoe: "เมืองน่าน", phone: "054-710066", fax: "054-710067", director: "นายไพโรจน์ สุวรรณ", directorPhone: "089-890-9876", coordinator: "นางสาวกัญญา พงษ์ดี", coordinatorPhone: "088-9876543" },
+  "20": { address: "40", moo: "4", tumbon: "เจดีย์ชัย", amphoe: "ปัว", phone: "054-791040", fax: "054-791041", director: "นายณรงค์ ศิริวงค์", directorPhone: "089-345-9876", coordinator: "นางรพีพร แก้วใจ", coordinatorPhone: "083-9876543" },
+  "21": { address: "77", moo: "3", tumbon: "พระธาตุ", amphoe: "เชียงกลาง", phone: "054-797077", fax: "054-797078", director: "นายประวิตร ยศแงง", directorPhone: "089-456-9876", coordinator: "นายรุ่งโรจน์ จิตงาม", coordinatorPhone: "084-9876543" },
+  "22": { address: "9", moo: "6", tumbon: "ศิลาเพชร", amphoe: "ปัว", phone: "054-791009", fax: "054-791010", director: "นายพีระพันธ์ เพชรหลวง", directorPhone: "089-567-9876", coordinator: "นางสาวจันทรา ศิลา", coordinatorPhone: "085-9876543" },
+  "23": { address: "2", moo: "1", tumbon: "เมืองยม", amphoe: "ท่าวังผา", phone: "054-751002", fax: "054-751003", director: "นายสุรพล แสนคำ", directorPhone: "089-444-5555", coordinator: "นายอนุรักษ์ โพธิ์ดี", coordinatorPhone: "085-3456789" },
+  "24": { address: "14", moo: "2", tumbon: "หนองบัว", amphoe: "ท่าวังผา", phone: "054-751014", fax: "054-751015", director: "นายธเนศ บัวหลวง", directorPhone: "089-678-9876", coordinator: "นายประพันธ์ ใจมั่น", coordinatorPhone: "086-9876543" },
+  "25": { address: "89", moo: "2", tumbon: "ศรีษะเกษ", amphoe: "นาน้อย", phone: "054-789089", fax: "054-789090", director: "นายทนงศักดิ์ แสนขุนเขา", directorPhone: "089-012-9876", coordinator: "นายเจตน์ จิตใจดี", coordinatorPhone: "081-3456789" },
+  "26": { address: "15", moo: "2", tumbon: "ศิลาเพชร", amphoe: "ปัว", phone: "054-791111", fax: "054-791112", director: "นายสุวรรณ จิตใจดี", directorPhone: "089-111-3333", coordinator: "นางสาวศิริลักษณ์ ใจงาม", coordinatorPhone: "082-111-2222" },
+  "27": { address: "12", moo: "3", tumbon: "เมืองลี", amphoe: "นาหมื่น", phone: "054-785012", fax: "054-785013", director: "นายเกรียติศักดิ์ เมืองลี", directorPhone: "089-222-4444", coordinator: "นายสมควร แสนปัญญา", coordinatorPhone: "083-222-3333" },
+  "28": { address: "12", moo: "4", tumbon: "สองแคว", amphoe: "สองแคว", phone: "054-793012", fax: "054-793013", director: "นายอิทธิพล สองแคว", directorPhone: "089-111-2222", coordinator: "นางสาวรจนา ใจงาม", coordinatorPhone: "082-3456789" },
+  "29": { address: "150", moo: "2", tumbon: "แสนทอง", amphoe: "ท่าวังผา", phone: "054-751150", fax: "054-751151", director: "นายประเสริฐ ดีจริง", directorPhone: "089-555-7777", coordinator: "นางสาวพิกุล แสนเมือง", coordinatorPhone: "086-555-6666" },
+  "30": { address: "15", moo: "3", tumbon: "สะเนียน", amphoe: "เมืองน่าน", phone: "054-710015", fax: "054-710016", director: "นายบุญเลิศ ขุนเขา", directorPhone: "089-999-0000", coordinator: "นายรุ่งโรจน์ แสนแฮ", coordinatorPhone: "080-3456789" },
+  "31": { address: "555", moo: "1", tumbon: "ดู่ใต้", amphoe: "เมืองน่าน", phone: "054-771555", fax: "054-771556", director: "นายสมพร ดีจริง", directorPhone: "089-200-3000", coordinator: "นางภัทรา ใจมั่น", coordinatorPhone: "082-4567890" },
+  "32": { address: "2", moo: "5", tumbon: "กลางเวียง", amphoe: "สา", phone: "054-781002", fax: "054-781003", director: "นายอเนก บุญยิ่ง", directorPhone: "089-300-4000", coordinator: "นายวีระชัย ยอดรัก", coordinatorPhone: "083-4567890" },
+  "33": { address: "หน่วยข้าราชการบำนาญ", moo: "-", tumbon: "ในเวียง", amphoe: "เมืองน่าน", phone: "089-999-9999", fax: "-", director: "ประธานข้าราชการบำนาญ", directorPhone: "089-999-9999", coordinator: "ผู้ประสานงานบำนาญ สสมน.น่าน", coordinatorPhone: "089-999-9999" }
+};
+
+const CURRENT_BE_YEAR_SHORT = "69"; // 2569
+
+// ==================== 2. STATE MANAGEMENT ====================
+let appState = {
+  activeRole: "province",     
+  activeSchoolId: "01",       
+  activeTab: "dashboard",     
+  members: [],                
+  deathCases: [],             
+  schoolInvoices: [],         
+  transferLogs: [],           
+  schoolProfiles: {},         // ข้อมูลพื้นฐาน 33 สังกัด
+  certifications: {},         // สถานะการยืนยันตรวจสอบประจำครึ่งปี
+  documents: [],              // คลังเอกสาร
+  schoolPasswords: {},        // รหัสผ่านเข้าใช้งานระดับโรงเรียน (33 สังกัด)
+  simulatedReviewWindow: false, // สำหรับสลับสิทธิ์การจำลองวันครึ่งปี 30 มิ.ย. และ 30 ธ.ค.
+  announcements: [],          // ประกาศแบบกำหนดเอง (Custom Announcements)
+  centralBankBalance: 250000, // ยอดเงินในบัญชีส่วนกลาง
+  centralBankUpdateDate: "2026-06-01", // วันที่อัปเดตยอดบัญชีส่วนกลางล่าสุด
+  centralOperatingFee: 0      // ยอดหักเงินค่าดำเนินการสะสมร้อยละ 5
+};
+
+// บันทึกและดึงข้อมูลจาก LocalStorage
+function saveStateToLocalStorage() {
+  if (appState.members) {
+    appState.members.forEach(m => {
+      // Dual-Compatibility Sync: Sync camelCase and lowercase name keys
+      if (m.firstName && !m.firstname) m.firstname = m.firstName;
+      if (m.firstname && !m.firstName) m.firstName = m.firstname;
+      if (m.lastName && !m.lastname) m.lastname = m.lastName;
+      if (m.lastname && !m.lastName) m.lastName = m.lastname;
+      
+      // Sync beneficiary properties
+      if (m.beneficiary) {
+        if (!m.beneficiaryTitle) m.beneficiaryTitle = m.beneficiary.title || "นาย";
+        if (!m.beneficiaryFirstName || m.beneficiaryFirstName === "-") {
+          const parts = (m.beneficiary.name || "").split(" ");
+          m.beneficiaryFirstName = parts[0] || "-";
+          m.beneficiaryLastName = parts.slice(1).join(" ") || "";
+        }
+        if (!m.beneficiaryPhone) m.beneficiaryPhone = m.beneficiary.phone || "-";
+        if (!m.beneficiaryRelation) m.beneficiaryRelation = m.beneficiary.relation || "-";
+      } else if (m.beneficiaryFirstName) {
+        m.beneficiary = {
+          title: m.beneficiaryTitle || "นาย",
+          name: (m.beneficiaryFirstName + " " + (m.beneficiaryLastName || "")).trim(),
+          phone: m.beneficiaryPhone || "-",
+          relation: m.beneficiaryRelation || "-"
+        };
+      }
+    });
+  }
+  localStorage.setItem("สสมน_NAN_MEMBERS", JSON.stringify(appState.members));
+  localStorage.setItem("สสมน_NAN_DEATHS", JSON.stringify(appState.deathCases));
+  localStorage.setItem("สสมน_NAN_INVOICES", JSON.stringify(appState.schoolInvoices));
+  localStorage.setItem("สสมน_NAN_TRANSFERS", JSON.stringify(appState.transferLogs));
+  localStorage.setItem("สสมน_NAN_PROFILES", JSON.stringify(appState.schoolProfiles));
+  localStorage.setItem("สสมน_NAN_CERTS", JSON.stringify(appState.certifications));
+  localStorage.setItem("สสมน_NAN_DOCS", JSON.stringify(appState.documents));
+  localStorage.setItem("สสมน_NAN_SCHOOL_PASSWORDS", JSON.stringify(appState.schoolPasswords));
+  localStorage.setItem("สสมน_NAN_ANNOUNCEMENTS", JSON.stringify(appState.announcements || []));
+  localStorage.setItem("สสมน_NAN_CENTRAL_BANK_BALANCE", appState.centralBankBalance.toString());
+  localStorage.setItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE", appState.centralBankUpdateDate);
+  localStorage.setItem("สสมน_NAN_CENTRAL_OPERATING_FEE", (appState.centralOperatingFee || 0).toString());
+
+  // ยิงซิงค์ไปยัง Cloudflare D1 Database ในเบื้องหลัง
+  syncStateToCloudflare();
+}
+
+function loadStateFromLocalStorage() {
+  const cachedMembers = localStorage.getItem("สสมน_NAN_MEMBERS");
+  const cachedDeaths = localStorage.getItem("สสมน_NAN_DEATHS");
+  const cachedInvoices = localStorage.getItem("สสมน_NAN_INVOICES");
+  const cachedTransfers = localStorage.getItem("สสมน_NAN_TRANSFERS");
+  const cachedProfiles = localStorage.getItem("สสมน_NAN_PROFILES");
+  const cachedCerts = localStorage.getItem("สสมน_NAN_CERTS");
+  const cachedDocs = localStorage.getItem("สสมน_NAN_DOCS");
+  const cachedPasswords = localStorage.getItem("สสมน_NAN_SCHOOL_PASSWORDS");
+  const cachedAnnouncements = localStorage.getItem("สสมน_NAN_ANNOUNCEMENTS");
+  const cachedBankBalance = localStorage.getItem("สสมน_NAN_CENTRAL_BANK_BALANCE");
+  const cachedBankUpdateDate = localStorage.getItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE");
+
+  if (cachedMembers) {
+    appState.members = JSON.parse(cachedMembers);
+    appState.members.forEach(m => {
+      // Self-Healing Migration
+      if (m.firstName && !m.firstname) m.firstname = m.firstName;
+      if (m.firstname && !m.firstName) m.firstName = m.firstname;
+      if (m.lastName && !m.lastname) m.lastname = m.lastName;
+      if (m.lastname && !m.lastName) m.lastName = m.lastname;
+      
+      if (m.beneficiary) {
+        if (!m.beneficiaryTitle) m.beneficiaryTitle = m.beneficiary.title || "นาย";
+        if (!m.beneficiaryFirstName || m.beneficiaryFirstName === "-") {
+          const parts = (m.beneficiary.name || "").split(" ");
+          m.beneficiaryFirstName = parts[0] || "-";
+          m.beneficiaryLastName = parts.slice(1).join(" ") || "";
+        }
+        if (!m.beneficiaryPhone) m.beneficiaryPhone = m.beneficiary.phone || "-";
+        if (!m.beneficiaryRelation) m.beneficiaryRelation = m.beneficiary.relation || "-";
+      } else if (m.beneficiaryFirstName) {
+        m.beneficiary = {
+          title: m.beneficiaryTitle || "นาย",
+          name: (m.beneficiaryFirstName + " " + (m.beneficiaryLastName || "")).trim(),
+          phone: m.beneficiaryPhone || "-",
+          relation: m.beneficiaryRelation || "-"
+        };
+      }
+    });
+  }
+  if (cachedDeaths) appState.deathCases = JSON.parse(cachedDeaths);
+  if (cachedInvoices) appState.schoolInvoices = JSON.parse(cachedInvoices);
+  if (cachedTransfers) appState.transferLogs = JSON.parse(cachedTransfers);
+  
+  if (cachedProfiles) {
+    appState.schoolProfiles = JSON.parse(cachedProfiles);
+  } else {
+    appState.schoolProfiles = { ...DEFAULT_SCHOOL_PROFILES };
+  }
+  
+  if (cachedCerts) {
+    appState.certifications = JSON.parse(cachedCerts);
+  } else {
+    appState.certifications = {};
+  }
+
+  if (cachedDocs) {
+    appState.documents = JSON.parse(cachedDocs);
+  } else {
+    appState.documents = [ ...DEFAULT_DOCUMENTS ];
+  }
+
+  if (cachedPasswords) {
+    appState.schoolPasswords = JSON.parse(cachedPasswords);
+  } else {
+    appState.schoolPasswords = {};
+    // Set default password 'school1234' for all schools
+    SCHOOLS.forEach(s => {
+      appState.schoolPasswords[s.id] = "school1234";
+    });
+  }
+
+  if (cachedAnnouncements) {
+    appState.announcements = JSON.parse(cachedAnnouncements);
+  } else {
+    appState.announcements = [];
+  }
+
+  if (cachedBankBalance) {
+    appState.centralBankBalance = parseFloat(cachedBankBalance);
+  } else {
+    appState.centralBankBalance = 250000;
+  }
+
+  if (cachedBankUpdateDate) {
+    appState.centralBankUpdateDate = cachedBankUpdateDate;
+  } else {
+    appState.centralBankUpdateDate = "2026-06-01";
+  }
+
+  const cachedOperatingFee = localStorage.getItem("สสมน_NAN_CENTRAL_OPERATING_FEE");
+  if (cachedOperatingFee) {
+    appState.centralOperatingFee = parseFloat(cachedOperatingFee);
+  } else {
+    appState.centralOperatingFee = 0;
+  }
+}
+
+// ฟังก์ชันซิงค์ข้อมูลฝั่ง Client ขึ้นฐานข้อมูล Cloudflare D1
+async function syncStateToCloudflare() {
+  const syncBtnStatus = document.querySelector(".footer-system-status");
+  try {
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:#fbbf24;"></span><span>ระบบคลาวด์: กำลังซิงค์...</span>';
+    }
+
+    const response = await fetch("/api/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      body: JSON.stringify({
+        members: appState.members,
+        deathCases: appState.deathCases,
+        schoolProfiles: appState.schoolProfiles,
+        schoolPasswords: appState.schoolPasswords,
+        certifications: appState.certifications,
+        documents: appState.documents,
+        announcements: appState.announcements,
+        centralBankBalance: appState.centralBankBalance,
+        centralBankUpdateDate: appState.centralBankUpdateDate,
+        centralOperatingFee: appState.centralOperatingFee
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:var(--color-accent-teal);"></span><span>ระบบคลาวด์: ซิงค์สำเร็จ</span>';
+    }
+  } catch (err) {
+    console.warn("Cloudflare D1 Sync error (offline / dev mode):", err.message);
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:#9ca3af;"></span><span>ระบบจำลอง (LocalStorage): พร้อมใช้</span>';
+    }
+  }
+}
+
+// ฟังก์ชันดึงข้อมูลจากฐานข้อมูล Cloudflare D1 บนคลาวด์มาเขียนทับสเตท (Stale-While-Revalidate)
+async function loadStateFromCloudflare() {
+  const syncBtnStatus = document.querySelector(".footer-system-status");
+  try {
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:#fbbf24;"></span><span>ระบบคลาวด์: กำลังโหลด...</span>';
+    }
+
+    const response = await fetch("/api/sync");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    
+    // หากข้อมูลในฐานข้อมูล D1 ไม่ว่างเปล่า (มีสมาชิก หรือเคยซิงค์แล้ว) ให้เขียนทับแอปสเตท
+    if (data.members && data.members.length > 0) {
+      appState.members = data.members;
+      appState.deathCases = data.deathCases || [];
+      appState.schoolProfiles = data.schoolProfiles || {};
+      appState.schoolPasswords = data.schoolPasswords || {};
+      appState.certifications = data.certifications || {};
+      appState.documents = data.documents || [];
+      appState.announcements = data.announcements || [];
+      appState.centralBankBalance = data.centralBankBalance || 250000;
+      appState.centralBankUpdateDate = data.centralBankUpdateDate || "2026-06-01";
+      appState.centralOperatingFee = data.centralOperatingFee || 0;
+      
+      // บันทึกทับ LocalStorage เพื่อเป็นระบบสำรองการทำงานแบบออฟไลน์
+      localStorage.setItem("สสมน_NAN_MEMBERS", JSON.stringify(appState.members));
+      localStorage.setItem("สสมน_NAN_DEATHS", JSON.stringify(appState.deathCases));
+      localStorage.setItem("สสมน_NAN_PROFILES", JSON.stringify(appState.schoolProfiles));
+      localStorage.setItem("สสมน_NAN_CERTS", JSON.stringify(appState.certifications));
+      localStorage.setItem("สสมน_NAN_DOCS", JSON.stringify(appState.documents));
+      localStorage.setItem("สสมน_NAN_SCHOOL_PASSWORDS", JSON.stringify(appState.schoolPasswords));
+      localStorage.setItem("สสมน_NAN_ANNOUNCEMENTS", JSON.stringify(appState.announcements));
+      localStorage.setItem("สสมน_NAN_CENTRAL_BANK_BALANCE", appState.centralBankBalance.toString());
+      localStorage.setItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE", appState.centralBankUpdateDate);
+      localStorage.setItem("สสมน_NAN_CENTRAL_OPERATING_FEE", appState.centralOperatingFee.toString());
+
+      // ประมวลผลและตรวจสอบกำลังคน/สถิติต่างๆ
+      ensureSchoolProfilesStats();
+      calculateStats();
+      
+      // สั่งรีเรนเดอร์ตารางและคอมโพเนนต์ต่างๆ ทั้งหมดใหม่
+      initSchoolProfileForm();
+      checkBiAnnualCertificationStatus();
+      renderSchoolsDirectory();
+      renderDocumentsGrid();
+      renderAnnouncementsBoard();
+      renderCremationPayoutsTable();
+      renderLiquidityAnalyzer();
+      renderMembersDirectory();
+      renderSchoolRankingsTable();
+      populateReportDeathDropdowns();
+    }
+
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:var(--color-accent-teal);"></span><span>ระบบคลาวด์: ซิงค์ล่าสุดเรียบร้อย</span>';
+    }
+  } catch (err) {
+    console.warn("Cloudflare D1 Load error (offline / dev mode):", err.message);
+    if (syncBtnStatus) {
+      syncBtnStatus.innerHTML = '<span class="status-dot" style="background:#9ca3af;"></span><span>ระบบจำลอง (LocalStorage): พร้อมใช้</span>';
+    }
+  }
+}
+
+// โครงสร้างประวัติสมุดแรกเข้า
+const INITIAL_LEDGER_ENTRY = (amount, description) => ({
+  date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+  type: amount >= 0 ? "deposit" : "charge",
+  amount: parseFloat(amount),
+  description: description,
+  balanceAfter: parseFloat(amount)
+});
+
+// ฟังก์ชันเปิด/ปิดกล่องกรอกคำนำหน้าแบบระบุเอง
+window.toggleTitleOtherInput = function(type) {
+  const select = document.getElementById(type === 'member' ? 'member-title' : 'member-beneficiary-title');
+  const otherBlock = document.getElementById(type === 'member' ? 'block-member-title-other' : 'block-beneficiary-title-other');
+  const otherInput = document.getElementById(type === 'member' ? 'member-title-other' : 'member-beneficiary-title-other');
+  
+  if (select && select.value === 'อื่น ๆ') {
+    otherBlock.style.display = 'block';
+    if (otherInput) otherInput.required = true;
+  } else {
+    if (otherBlock) otherBlock.style.display = 'none';
+    if (otherInput) {
+      otherInput.required = false;
+      otherInput.value = '';
+    }
+  }
+};
+
+// ==================== 3. AUTOMATED MEMBER ID GENERATOR ====================
+function generateMemberId(schoolId, position) {
+  // ดึงค่า T (ตัวเลขตัวที่ 5) ตามกลุ่มตำแหน่ง
+  let positionCode = "3"; // ข้าราชการครูเป็นดีฟอลต์
+  if (position) {
+    const pos = position.toString().toLowerCase();
+    if (pos.includes("ผู้อำนวยการ") || pos.includes("ผอ.") || pos === "director") {
+      positionCode = "1";
+    } else if (pos.includes("รองผู้อำนวยการ") || pos.includes("รอง ผอ.") || pos.includes("รองผอ") || pos === "deputy") {
+      positionCode = "2";
+    } else if (pos.includes("ครู") || pos === "teacher") {
+      positionCode = "3";
+    } else {
+      positionCode = "4"; // บุคลากรอื่น ๆ
+    }
+  }
+
+  const schoolPrefix = CURRENT_BE_YEAR_SHORT + schoolId + positionCode; // YYSS + T (5 หลัก)
+  const matchedMembers = appState.members.filter(m => m.id.startsWith(schoolPrefix));
+  
+  let nextSeq = 1;
+  if (matchedMembers.length > 0) {
+    const sequences = matchedMembers.map(m => parseInt(m.id.substring(5))); // ลำดับเริ่มจากตัวที่ 6 (Substring index 5)
+    const maxSeq = Math.max(...sequences);
+    nextSeq = maxSeq + 1;
+  }
+  
+  const seqString = String(nextSeq).padStart(3, "0");
+  return schoolPrefix + seqString;
+}
+
+// ==================== 4. SYSTEM CALCULATORS & VIEW CONTROLLER ====================
+function calculateStats() {
+  const activeMembers = appState.members.filter(m => m.status === "active");
+  const deceasedMembers = appState.members.filter(m => m.status === "deceased");
+  const transferredMembers = appState.members.filter(m => m.status === "transferred");
+  
+  const totalFunds = activeMembers.reduce((sum, m) => sum + parseFloat(m.prepayBalance), 0);
+  const arrearsCount = activeMembers.filter(m => parseFloat(m.prepayBalance) < 0).length;
+  const currentSchool = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+
+  if (appState.activeRole === "province") {
+    // --- สิทธิ์จังหวัด ---
+    document.getElementById("page-title").textContent = "ระบบแดชบอร์ดภาพรวมจังหวัด";
+    document.getElementById("page-subtitle").textContent = "แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน";
+    document.getElementById("btn-action-primary").style.display = "inline-flex";
+    document.getElementById("text-action-primary").textContent = "แจ้งสมาชิกเสียชีวิต";
+    document.getElementById("btn-action-primary").className = "btn btn-danger btn-icon-text";
+    
+    document.getElementById("btn-action-primary").querySelector("svg").innerHTML = `
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/>
+    `;
+    
+    let totalProvincePersonnel = 0;
+    SCHOOLS.forEach(s => {
+      if (s.id !== "33") {
+        const p = getSchoolPersonnel(s.id);
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + p.other;
+      }
+    });
+
+    const activePensioners = activeMembers.filter(m => m.schoolId === "33").length;
+    totalProvincePersonnel += activePensioners; 
+
+    const provinceMembershipRatio = totalProvincePersonnel > 0 ? Math.round((activeMembers.length / totalProvincePersonnel) * 100) : 0;
+    const nonMembersProvince = totalProvincePersonnel - activeMembers.length;
+
+    document.getElementById("stat-active-members").textContent = activeMembers.length.toLocaleString() + " คน";
+    document.getElementById("stat-active-members-subtitle").textContent = `กำลังพลรวมวิเคราะห์ ${totalProvincePersonnel.toLocaleString()} คน`;
+    document.getElementById("stat-membership-ratio").textContent = provinceMembershipRatio + "%";
+    document.getElementById("stat-membership-ratio-subtitle").textContent = `บุคลากรยังไม่สมัคร สสมน. ${nonMembersProvince.toLocaleString()} คน`;
+    
+    document.getElementById("lbl-funds-title").textContent = "ยอดกองทุนสะสมล่วงหน้ารวม";
+    document.getElementById("stat-funds-total").textContent = "฿" + totalFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("stat-funds-subtitle").textContent = "ยอดสะสมสำรองของสมาชิกทั้งจังหวัด";
+    
+    // ตั้งค่ากล่องแจ้งเตือน (คดีตายรออนุมัติ + สลิปค้างตรวจ)
+    const pendingSlipsCount = appState.schoolInvoices.filter(inv => inv.status === "pending").length;
+    const pendingDeathsCount = appState.deathCases.filter(d => d.status === "pending_approval").length;
+    
+    document.getElementById("lbl-arrears-title").textContent = "เคสเสียชีวิต & สลิปรอตรวจ";
+    document.getElementById("stat-alerts-count").textContent = `${pendingDeathsCount} เคส / ${pendingSlipsCount} สลิป`;
+    document.getElementById("stat-alerts-subtitle").textContent = `สมาชิกยอดเงินสำรองติดลบมี ${arrearsCount} ราย`;
+    document.getElementById("badge-pending-slips").textContent = pendingSlipsCount + pendingDeathsCount;
+    document.getElementById("badge-pending-slips").style.display = (pendingSlipsCount + pendingDeathsCount) > 0 ? "flex" : "none";
+    
+    if (pendingSlipsCount > 0 || pendingDeathsCount > 0) {
+      document.getElementById("kpi-alerts-panel").classList.add("alert-active");
+    } else {
+      document.getElementById("kpi-alerts-panel").classList.remove("alert-active");
+    }
+
+    document.getElementById("provincial-school-filter-wrapper").style.display = "block";
+    document.getElementById("block-province-death-creation").style.display = "block";
+    document.getElementById("block-province-verify-deaths").style.display = "block";
+    document.getElementById("block-province-payment-matrix").style.display = "block";
+    document.getElementById("block-province-payment-arrears-checker").style.display = "block";
+    document.getElementById("block-school-payments-actions").style.display = "none";
+    document.getElementById("block-school-death-creation").style.display = "none";
+    document.getElementById("widget-provincial-schools-rankings").style.display = "block";
+
+    renderProvincialPositionStats(activeMembers, totalProvincePersonnel);
+    
+  } else {
+    // --- สิทธิ์โรงเรียน ---
+    document.getElementById("page-title").textContent = `ระบบของ ${currentSchool.name}`;
+    document.getElementById("page-subtitle").textContent = `แดชบอร์ดจัดการข้อมูล ติดตามการเงิน และยื่นสลิปค่าสงเคราะห์รายศพสังกัด ${currentSchool.name}`;
+    document.getElementById("btn-action-primary").style.display = "inline-flex";
+    document.getElementById("text-action-primary").textContent = "เพิ่มสมาชิกใหม่";
+    document.getElementById("btn-action-primary").className = "btn btn-primary btn-icon-text";
+    
+    document.getElementById("btn-action-primary").querySelector("svg").innerHTML = `
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    `;
+
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId);
+    const schoolFunds = schoolMembers.reduce((sum, m) => sum + parseFloat(m.prepayBalance), 0);
+    const schoolArrears = schoolMembers.filter(m => parseFloat(m.prepayBalance) < 0).length;
+
+    let schoolPersonnelTotal = 0;
+    if (appState.activeSchoolId === "33") {
+      schoolPersonnelTotal = schoolMembers.length;
+    } else {
+      const p = getSchoolPersonnel(appState.activeSchoolId);
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + p.other;
+    }
+
+    const schoolMembershipRatio = schoolPersonnelTotal > 0 ? Math.round((schoolMembers.length / schoolPersonnelTotal) * 100) : 0;
+    const nonMembersSchool = schoolPersonnelTotal - schoolMembers.length;
+
+    document.getElementById("stat-active-members").textContent = schoolMembers.length.toLocaleString() + " คน";
+    document.getElementById("stat-active-members-subtitle").textContent = `กำลังพลทั้งหมดในสังกัด ${schoolPersonnelTotal.toLocaleString()} คน`;
+    document.getElementById("stat-membership-ratio").textContent = schoolMembershipRatio + "%";
+    document.getElementById("stat-membership-ratio-subtitle").textContent = `บุคลากรยังไม่ได้สมัคร ${nonMembersSchool.toLocaleString()} คน`;
+    
+    document.getElementById("lbl-funds-title").textContent = "ยอดเงินสะสมล่วงหน้าของสังกัด";
+    document.getElementById("stat-funds-total").textContent = "฿" + schoolFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("stat-funds-subtitle").textContent = `เงินสำรองทำบุญสะสมของ ${currentSchool.name}`;
+    
+    // ค้างชำระของแอดมินโรงเรียน
+    const schoolUnpaidInvoices = appState.schoolInvoices.filter(inv => inv.schoolId === appState.activeSchoolId && inv.status === "unpaid");
+    const schoolPendingDeaths = appState.deathCases.filter(d => d.schoolId === appState.activeSchoolId && d.status === "pending_approval").length;
+
+    document.getElementById("lbl-arrears-title").textContent = "ค้างจ่ายศพ & รอตรวจสอบตาย";
+    document.getElementById("stat-alerts-count").textContent = `${schoolUnpaidInvoices.length} ศพ / ${schoolPendingDeaths} รออนุมัติ`;
+    document.getElementById("stat-alerts-subtitle").textContent = `สมาชิกยอดติดลบในสังกัดมี ${schoolArrears} ราย`;
+    
+    const totalSchoolAlerts = schoolUnpaidInvoices.length + schoolPendingDeaths;
+    document.getElementById("badge-pending-slips").textContent = totalSchoolAlerts;
+    document.getElementById("badge-pending-slips").style.display = totalSchoolAlerts > 0 ? "flex" : "none";
+
+    if (totalSchoolAlerts > 0 || schoolArrears > 0) {
+      document.getElementById("kpi-alerts-panel").classList.add("alert-active");
+    } else {
+      document.getElementById("kpi-alerts-panel").classList.remove("alert-active");
+    }
+
+    document.getElementById("provincial-school-filter-wrapper").style.display = "none";
+    document.getElementById("block-province-death-creation").style.display = "none";
+    document.getElementById("block-province-verify-deaths").style.display = "none";
+    document.getElementById("block-province-payment-matrix").style.display = "none";
+    document.getElementById("block-province-payment-arrears-checker").style.display = "none";
+    document.getElementById("block-school-payments-actions").style.display = "block";
+    document.getElementById("block-school-death-creation").style.display = "block";
+    document.getElementById("widget-provincial-schools-rankings").style.display = "none";
+
+    renderSchoolPositionStats(schoolMembers, currentSchool);
+  }
+
+  // --- อัปเดตตัวกราฟิกพรีเมียม สรุปการสมัครสมาชิกเป็นสมาชิก/ไม่เป็นสมาชิก ---
+  const visualMembersRing = document.getElementById("visual-members-ring");
+  const visualMembersPercent = document.getElementById("visual-members-percent");
+  const visualMembersCount = document.getElementById("visual-members-count");
+  const visualMembersBar = document.getElementById("visual-members-bar");
+  const visualNonmembersCount = document.getElementById("visual-nonmembers-count");
+  const visualNonmembersBar = document.getElementById("visual-nonmembers-bar");
+  const visualTotalCount = document.getElementById("visual-total-count");
+  const visualStatusIndicator = document.getElementById("visual-status-indicator");
+  const graphicsTitle = document.getElementById("membership-graphics-title");
+  const graphicsSubtitle = document.getElementById("membership-graphics-subtitle");
+
+  let currentTotal = 0;
+  let currentActive = 0;
+  let currentNonActive = 0;
+  let currentRatio = 0;
+
+  if (appState.activeRole === "province") {
+    let totalProvincePersonnel = 0;
+    SCHOOLS.forEach(s => {
+      if (s.id !== "33") {
+        const p = getSchoolPersonnel(s.id);
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + p.other;
+      }
+    });
+    const activePensioners = activeMembers.filter(m => m.schoolId === "33").length;
+    totalProvincePersonnel += activePensioners; 
+
+    currentTotal = totalProvincePersonnel;
+    currentActive = activeMembers.length;
+    currentNonActive = totalProvincePersonnel - activeMembers.length;
+    currentRatio = totalProvincePersonnel > 0 ? Math.round((activeMembers.length / totalProvincePersonnel) * 100) : 0;
+    
+    if (graphicsTitle) graphicsTitle.querySelector("span").textContent = "สรุปสถานะการสมัครสมาชิก สสมน. (Nan Province Membership Status Visualizer)";
+    if (graphicsSubtitle) graphicsSubtitle.textContent = "กราฟิกเปรียบเทียบสัดส่วนยอดการเป็นสมาชิกและผู้ประสงค์ไม่เป็นสมาชิก สสมน. ทั้งจังหวัดน่าน";
+  } else {
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId);
+    let schoolPersonnelTotal = 0;
+    if (appState.activeSchoolId === "33") {
+      schoolPersonnelTotal = schoolMembers.length;
+    } else {
+      const p = getSchoolPersonnel(appState.activeSchoolId);
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + p.other;
+    }
+
+    currentTotal = schoolPersonnelTotal;
+    currentActive = schoolMembers.length;
+    currentNonActive = schoolPersonnelTotal - schoolMembers.length;
+    currentRatio = schoolPersonnelTotal > 0 ? Math.round((schoolMembers.length / schoolPersonnelTotal) * 100) : 0;
+
+    if (graphicsTitle) graphicsTitle.querySelector("span").textContent = `สรุปสถานะการสมัครสมาชิก สสมน. สังกัด ${currentSchool.name}`;
+    if (graphicsSubtitle) graphicsSubtitle.textContent = `กราฟิกเปรียบเทียบสัดส่วนยอดการเป็นสมาชิกและผู้ประสงค์ไม่เป็นสมาชิก สสมน. ในสังกัด ${currentSchool.name}`;
+  }
+
+  // อัปเดตค่าวัดและข้อความ
+  if (visualMembersPercent) visualMembersPercent.textContent = currentRatio + "%";
+  if (visualMembersCount) visualMembersCount.textContent = currentActive.toLocaleString();
+  if (visualNonmembersCount) visualNonmembersCount.textContent = (currentNonActive < 0 ? 0 : currentNonActive).toLocaleString();
+  if (visualTotalCount) visualTotalCount.textContent = currentTotal.toLocaleString();
+
+  // คำนวณความกว้างบาร์ %
+  const activeBarPercent = currentRatio;
+  const nonActiveBarPercent = currentTotal > 0 ? Math.round(((currentNonActive < 0 ? 0 : currentNonActive) / currentTotal) * 100) : 0;
+
+  if (visualMembersBar) visualMembersBar.style.width = activeBarPercent + "%";
+  if (visualNonmembersBar) visualNonmembersBar.style.width = nonActiveBarPercent + "%";
+
+  // คำนวณวงแหวนรอบ Donut SVG
+  // เส้นรอบวง = 2 * PI * r = 2 * 3.14159 * 58 = 364.42
+  const circumference = 364.42;
+  const strokeDashoffset = circumference - (currentRatio / 100) * circumference;
+  if (visualMembersRing) {
+    visualMembersRing.style.strokeDasharray = circumference;
+    visualMembersRing.style.strokeDashoffset = strokeDashoffset;
+  }
+
+  // อัปเดตข้อบ่งชี้ความมั่นคงโครงการ/สังกัด
+  if (visualStatusIndicator) {
+    if (currentRatio >= 75) {
+      visualStatusIndicator.textContent = "ดีเยี่ยม (Excellent)";
+      visualStatusIndicator.style.color = "var(--color-accent-emerald)";
+    } else if (currentRatio >= 50) {
+      visualStatusIndicator.textContent = "มั่นคง (Stable)";
+      visualStatusIndicator.style.color = "var(--color-accent-blue)";
+    } else if (currentRatio >= 25) {
+      visualStatusIndicator.textContent = "ปานกลาง (Moderate)";
+      visualStatusIndicator.style.color = "var(--color-accent-gold)";
+    } else {
+      visualStatusIndicator.textContent = "ควรปรับปรุง (Low)";
+      visualStatusIndicator.style.color = "var(--color-accent-rose)";
+    }
+  }
+
+  renderMembersDirectory();
+  renderCremationMatrix();
+  renderSchoolCremationInvoices();
+  renderProvinceArrearsCheckerSelector();
+  renderSchoolRankingsTable();
+  renderTransferLogsTimeline();
+  populateReportDeathDropdowns();
+  renderPendingDeathsVerification();
+  renderApprovedDeathCasesList();
+}
+
+function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
+  const container = document.getElementById("widget-position-stats");
+  const roles = [
+    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ.)", dbKey: "director" },
+    { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
+    { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
+  ];
+  
+  let html = "";
+  roles.forEach(role => {
+    const membersCount = activeMembers.filter(m => m.position === role.key).length;
+    let totalWorking = 0;
+    SCHOOLS.forEach(s => {
+      if (s.id !== "33") {
+        totalWorking += getSchoolPersonnel(s.id)[role.dbKey];
+      }
+    });
+
+    let label = role.label;
+    if (role.key === "ครู") {
+      const pensionersCount = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ").length;
+      label = "ข้าราชการครู & ครูบำนาญ";
+    }
+
+    const percentage = totalWorking > 0 ? Math.round((membersCount / totalWorking) * 100) : 100;
+    const boundedPercent = percentage > 100 ? 100 : percentage;
+    const nonMembers = totalWorking - membersCount < 0 ? 0 : totalWorking - membersCount;
+
+    html += `
+      <div class="stat-item-row">
+        <div class="stat-row-meta">
+          <div class="position-label-wrapper">
+            <span class="position-name">${label}</span>
+            <span class="personnel-ratio-detail">สมาชิก ${membersCount} ราย / ไม่เป็นสมาชิก ${nonMembers} ราย (ทั้งหมด ${totalWorking} คน)</span>
+          </div>
+          <div class="stat-percentages-text">
+            <span class="percentage-value">${percentage}%</span>
+            <span class="members-active-count">ร้อยละการเข้าร่วม สสมน.</span>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: ${boundedPercent}%"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  const activePensioners = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ").length;
+  html += `
+    <div class="stat-item-row">
+      <div class="stat-row-meta">
+        <div class="position-label-wrapper">
+          <span class="position-name">ข้าราการบำนาญ (สังกัดบำนาญหน่วย 33)</span>
+          <span class="personnel-ratio-detail">เป็นสมาชิก สสมน. แล้วทั้งหมด ${activePensioners} คน</span>
+        </div>
+        <div class="stat-percentages-text">
+          <span class="percentage-value">${activePensioners} คน</span>
+          <span class="members-active-count">สมาชิก สสมน. บำนาญ</span>
+        </div>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: 100%"></div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+function renderSchoolPositionStats(schoolMembers, school) {
+  const container = document.getElementById("widget-position-stats");
+  if (school.id === "33") {
+    const membersCount = schoolMembers.length;
+    container.innerHTML = `
+      <div class="stat-item-row">
+        <div class="stat-row-meta">
+          <div class="position-label-wrapper">
+            <span class="position-name">สมาชิกโครงการบำนาญน่าน</span>
+            <span class="personnel-ratio-detail">ยอดข้าราชการบำนาญที่เข้าร่วมสิทธิ ณ สังกัด 33</span>
+          </div>
+          <div class="stat-percentages-text">
+            <span class="percentage-value">${membersCount} คน</span>
+            <span class="members-active-count">จำนวนสมาชิก</span>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: 100%"></div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const roles = [
+    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ.)", dbKey: "director" },
+    { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
+    { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
+  ];
+  
+  let html = "";
+  roles.forEach(role => {
+    const membersCount = schoolMembers.filter(m => m.position === role.key).length;
+    const totalWorking = getSchoolPersonnel(school.id)[role.dbKey];
+    const percentage = totalWorking > 0 ? Math.round((membersCount / totalWorking) * 100) : 0;
+    const nonMembers = totalWorking - membersCount < 0 ? 0 : totalWorking - membersCount;
+
+    html += `
+      <div class="stat-item-row">
+        <div class="stat-row-meta">
+          <div class="position-label-wrapper">
+            <span class="position-name">${role.label}</span>
+            <span class="personnel-ratio-detail">สมาชิก ${membersCount} ราย / ไม่เป็นสมาชิก ${nonMembers} ราย (ทั้งหมด ${totalWorking} คน)</span>
+          </div>
+          <div class="stat-percentages-text">
+            <span class="percentage-value">${percentage}%</span>
+            <span class="members-active-count">อัตราการเป็นสมาชิก</span>
+          </div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderSchoolRankingsTable() {
+  const tbody = document.getElementById("tbl-body-school-rankings");
+  if (!tbody) return;
+
+  const orderFilter = document.getElementById("filter-ranking-order").value;
+  const activeMembers = appState.members.filter(m => m.status === "active");
+
+  let data = SCHOOLS.map(school => {
+    const schoolMembersCount = activeMembers.filter(m => m.schoolId === school.id).length;
+    let totalWorking = 0;
+    if (school.id === "33") {
+      totalWorking = schoolMembersCount; 
+    } else {
+      const p = getSchoolPersonnel(school.id);
+      totalWorking = p.director + p.deputy + p.teacher + p.other;
+    }
+
+    const ratio = totalWorking > 0 ? Math.round((schoolMembersCount / totalWorking) * 100) : 0;
+    const nonMembers = totalWorking - schoolMembersCount < 0 ? 0 : totalWorking - schoolMembersCount;
+
+    return {
+      id: school.id,
+      name: school.name,
+      totalPersonnel: totalWorking,
+      members: schoolMembersCount,
+      nonMembers: nonMembers,
+      ratio: ratio
+    };
+  });
+
+  if (orderFilter === "ratio-desc") {
+    data.sort((a, b) => b.ratio - a.ratio || b.members - a.members);
+  } else if (orderFilter === "ratio-asc") {
+    data.sort((a, b) => a.ratio - b.ratio || a.members - b.members);
+  } else if (orderFilter === "total-personnel") {
+    data.sort((a, b) => b.totalPersonnel - a.totalPersonnel);
+  } else if (orderFilter === "non-members") {
+    data.sort((a, b) => b.nonMembers - a.nonMembers);
+  }
+
+  let html = "";
+  data.forEach(item => {
+    html += `
+      <tr>
+        <td class="text-center font-weight-bold text-currency">${item.id}</td>
+        <td class="font-weight-bold">${item.name}</td>
+        <td class="text-center text-currency">${item.totalPersonnel.toLocaleString()}</td>
+        <td class="text-center text-currency text-success font-weight-bold">${item.members.toLocaleString()}</td>
+        <td class="text-center text-currency ${item.nonMembers > 0 ? 'text-warning' : ''}">${item.nonMembers.toLocaleString()}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="progress-bar-container" style="width: 80px; height: 6px; margin: 0;">
+              <div class="progress-bar-fill" style="width: ${item.ratio}%"></div>
+            </div>
+            <span class="text-currency font-weight-bold" style="font-size:12px;">${item.ratio}%</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+function populateSchoolsDropdowns() {
+  const filterSchool = document.getElementById("filter-member-school");
+  const formSchool = document.getElementById("member-school");
+  const transferNewSchool = document.getElementById("transfer-new-school-id");
+  const loginSchoolSelect = document.getElementById("login-select-school");
+
+  let filterHtml = '<option value="all">ทุกโรงเรียน/หน่วยงาน</option>';
+  let formHtml = '<option value="" disabled selected>-- เลือกสังกัดโรงเรียน --</option>';
+  let loginHtml = '';
+
+  SCHOOLS.forEach(s => {
+    const optionText = `${s.id} - ${s.name}`;
+    filterHtml += `<option value="${s.id}">${optionText}</option>`;
+    formHtml += `<option value="${s.id}">${optionText}</option>`;
+    loginHtml += `<option value="${s.id}">${optionText}</option>`;
+  });
+
+  if (filterSchool) filterSchool.innerHTML = filterHtml;
+  if (formSchool) formSchool.innerHTML = formHtml;
+  if (transferNewSchool) transferNewSchool.innerHTML = formHtml;
+  if (loginSchoolSelect) {
+    loginSchoolSelect.innerHTML = loginHtml;
+    loginSchoolSelect.value = appState.activeSchoolId;
+  }
+}
+
+// ==================== 5. MEMBER DIRECTORY & FILE UPLOADS ====================
+// ตัวแปลงไฟล์เอกสารประกอบเป็น Base64
+function getBase64FromFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderMembersDirectory() {
+  const tbody = document.getElementById("tbl-body-members");
+  const emptyState = document.getElementById("tbl-members-empty");
+  const resultCounter = document.getElementById("count-directory-results");
+  const scopeLabel = document.getElementById("txt-directory-scope");
+  
+  if (!tbody) return;
+
+  const searchQuery = document.getElementById("member-search-input").value.trim().toLowerCase();
+  const positionFilter = document.getElementById("filter-member-position").value;
+  const schoolFilter = appState.activeRole === "province" ? document.getElementById("filter-member-school").value : appState.activeSchoolId;
+  const statusFilter = document.getElementById("filter-member-status").value;
+
+  let filtered = appState.members.filter(m => {
+    if (appState.activeRole === "school") {
+      return m.schoolId === appState.activeSchoolId;
+    } else {
+      if (schoolFilter !== "all" && m.schoolId !== schoolFilter) return false;
+    }
+    return true;
+  });
+
+  if (positionFilter !== "all") {
+    filtered = filtered.filter(m => m.position === positionFilter);
+  }
+
+  if (statusFilter === "active") {
+    filtered = filtered.filter(m => m.status === "active");
+  } else if (statusFilter === "transferred") {
+    filtered = filtered.filter(m => m.status === "transferred");
+  } else if (statusFilter === "deceased") {
+    filtered = filtered.filter(m => m.status === "deceased");
+  } else if (statusFilter === "arrears") {
+    filtered = filtered.filter(m => m.status === "active" && parseFloat(m.prepayBalance) < 0);
+  }
+
+  if (searchQuery) {
+    filtered = filtered.filter(m => 
+      m.id.toLowerCase().includes(searchQuery) ||
+      m.firstname.toLowerCase().includes(searchQuery) ||
+      m.lastname.toLowerCase().includes(searchQuery) ||
+      m.citizenId.toLowerCase().includes(searchQuery) ||
+      m.phone.toLowerCase().includes(searchQuery)
+    );
+  }
+
+  resultCounter.textContent = filtered.length;
+  
+  if (appState.activeRole === "school") {
+    const sch = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+    scopeLabel.textContent = `แสดงผลเฉพาะบุคลากรสังกัด ${sch.name} ทั้งที่สังกัดอยู่และที่โอนย้ายออกแล้ว`;
+  } else {
+    scopeLabel.textContent = "ตารางสารบบข้อมูลสมาชิกพร้อมสถานะเงินกองกลางฌาปนกิจน่านทั้งจังหวัด";
+  }
+
+  const isAnyFilterActive = searchQuery || positionFilter !== "all" || statusFilter !== "active" || (appState.activeRole === "province" && schoolFilter !== "all");
+  document.getElementById("btn-clear-directory-filters").style.display = isAnyFilterActive ? "inline-block" : "none";
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = "";
+    emptyState.style.display = "flex";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  let html = "";
+  
+  filtered.forEach(member => {
+    const sch = SCHOOLS.find(s => s.id === member.schoolId);
+    const balance = parseFloat(member.prepayBalance);
+    
+    let balanceClass = "text-success font-weight-bold";
+    let statusBadge = `<span class="badge badge-active">ใช้งานอยู่</span>`;
+    
+    if (member.status === "deceased") {
+      statusBadge = `<span class="badge badge-deceased">เสียชีวิต</span>`;
+      balanceClass = "text-currency text-muted";
+    } else if (member.status === "transferred") {
+      statusBadge = `<span class="badge badge-transferred">ย้ายสังกัดแล้ว</span>`;
+      balanceClass = "text-currency text-muted";
+    } else if (balance < 0) {
+      statusBadge = `<span class="badge badge-arrears">ค้างชำระ (เงินลบ)</span>`;
+      balanceClass = "text-danger font-weight-bold";
+    }
+
+    let actionButtons = "";
+    if (member.status === "active") {
+      actionButtons = `
+        <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดสมุดคู่ฝากและแฟ้มประวัติ">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+        <button class="btn-action-icon transfer-btn" onclick="openTransferSchoolModal('${member.id}')" title="แจ้งโยกย้ายสังกัดโรงเรียนใหม่">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+        </button>
+        <button class="btn-action-icon delete-btn" onclick="deleteMember('${member.id}')" title="ลบข้อมูลถาวร">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      `;
+    } else {
+      actionButtons = `
+        <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดดูประวัติและหลักฐาน">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+      `;
+    }
+
+    const rowClass = member.status === "deceased" ? "row-deceased" : (member.status === "transferred" ? "row-transferred" : "");
+
+    html += `
+      <tr class="${rowClass}">
+        <td class="font-weight-bold text-currency text-warning">${member.id}</td>
+        <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
+        <td>${member.position}</td>
+        <td class="text-currency">${member.citizenId}</td>
+        <td>${sch ? sch.name : 'ไม่ระบุ'}</td>
+        <td class="text-currency">${member.phone}</td>
+        <td class="text-right text-currency ${balanceClass}">
+          ${balance >= 0 ? '฿' + balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-฿' + Math.abs(balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        </td>
+        <td class="text-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${member.applicationFeePaid ? '#10b981' : '#f43f5e'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            ${member.applicationFeePaid ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
+          </svg>
+        </td>
+        <td class="text-center">${statusBadge}</td>
+        <td class="text-center">
+          <div class="action-buttons-group">${actionButtons}</div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+// ยื่นสมัครหรือลงทะเบียนสมาชิกใหม่พร้อมอัปโหลดไฟล์ประกอบการสมัคร
+document.getElementById("form-member").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  
+  const actionType = document.getElementById("member-action-type").value;
+  
+  const memberTitleSelect = document.getElementById("member-title").value;
+  const memberTitle = memberTitleSelect === "อื่น ๆ" ? document.getElementById("member-title-other").value.trim() : memberTitleSelect;
+  
+  const firstname = document.getElementById("member-firstname").value.trim();
+  const lastname = document.getElementById("member-lastname").value.trim();
+  const citizenId = document.getElementById("member-citizen-id").value.trim();
+  const phone = document.getElementById("member-phone").value.trim();
+  const gender = document.getElementById("member-gender").value;
+  const position = document.getElementById("member-position").value;
+  const schoolId = document.getElementById("member-school").value;
+  const prepayBalance = parseFloat(document.getElementById("member-prepay-balance").value);
+  const address = document.getElementById("member-address").value.trim();
+
+  // ข้อมูลผู้รับผลประโยชน์
+  const beneficiaryTitleSelect = document.getElementById("member-beneficiary-title").value;
+  const beneficiaryTitle = beneficiaryTitleSelect === "อื่น ๆ" ? document.getElementById("member-beneficiary-title-other").value.trim() : beneficiaryTitleSelect;
+  const beneficiaryName = document.getElementById("member-beneficiary-name").value.trim();
+  const beneficiaryPhone = document.getElementById("member-beneficiary-phone").value.trim();
+  const beneficiaryRelation = document.getElementById("member-beneficiary-relation").value;
+
+  const duplicate = appState.members.find(m => m.citizenId === citizenId && m.status === "active");
+  if (actionType === "create" && duplicate) {
+    alert("ขออภัย! เลขประจำตัวประชาชนนี้ได้รับการสมัครเป็นสมาชิกและมีสิทธิในระบบแล้ว");
+    return;
+  }
+
+  // อ่านไฟล์ภาพเอกสารแนบสมัคร (ถ้าคีย์เข้ามา)
+  const fileApp = document.getElementById("member-doc-application").files[0];
+  const fileCit = document.getElementById("member-doc-citizen").files[0];
+  const fileHouse = document.getElementById("member-doc-household").files[0];
+  const fileBeneficiaryId = document.getElementById("member-doc-beneficiary-id").files[0];
+
+  const docApplication = fileApp ? await getBase64FromFile(fileApp) : null;
+  const docCitizen = fileCit ? await getBase64FromFile(fileCit) : null;
+  const docHousehold = fileHouse ? await getBase64FromFile(fileHouse) : null;
+  const docBeneficiaryId = fileBeneficiaryId ? await getBase64FromFile(fileBeneficiaryId) : null;
+
+  if (actionType === "create") {
+    const generatedId = generateMemberId(schoolId, position);
+    const ledger = [
+      INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่"),
+      INITIAL_LEDGER_ENTRY(prepayBalance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน.")
+    ];
+
+    const newMember = {
+      id: generatedId,
+      title: memberTitle,
+      firstname,
+      lastname,
+      citizenId,
+      phone,
+      gender,
+      position,
+      schoolId,
+      prepayBalance: prepayBalance,
+      applicationFeePaid: true,
+      status: "active",
+      address,
+      beneficiary: {
+        title: beneficiaryTitle,
+        name: beneficiaryName,
+        phone: beneficiaryPhone,
+        relation: beneficiaryRelation
+      },
+      documents: {
+        application: docApplication,
+        citizen: docCitizen,
+        household: docHousehold,
+        beneficiaryId: docBeneficiaryId
+      },
+      ledger: ledger
+    };
+
+    appState.members.push(newMember);
+    alert(`สมัครสมาชิกร่วม สสมน.น่าน สำเร็จ!\nหมายเลขสมาชิกของท่านคือ: ${generatedId}`);
+  } else {
+    const id = document.getElementById("member-custom-id").value;
+    const member = appState.members.find(m => m.id === id);
+    
+    if (member) {
+      member.title = memberTitle;
+      member.firstname = firstname;
+      member.lastname = lastname;
+      member.citizenId = citizenId;
+      member.phone = phone;
+      member.gender = gender;
+      member.position = position;
+      member.schoolId = schoolId;
+      member.address = address;
+      
+      member.beneficiary = {
+        title: beneficiaryTitle,
+        name: beneficiaryName,
+        phone: beneficiaryPhone,
+        relation: beneficiaryRelation
+      };
+
+      // ถ่ายรูปใหม่ถ้าแนบรูปเข้ามาใหม่
+      if (docApplication) member.documents.application = docApplication;
+      if (docCitizen) member.documents.citizen = docCitizen;
+      if (docHousehold) member.documents.household = docHousehold;
+      if (docBeneficiaryId) member.documents.beneficiaryId = docBeneficiaryId;
+
+      alert("แก้ไขข้อมูลส่วนตัวสมาชิกเรียบร้อยแล้ว");
+    }
+  }
+
+  saveStateToLocalStorage();
+  document.getElementById("modal-member").classList.remove("active");
+  calculateStats();
+});
+
+window.deleteMember = function(memberId) {
+  if (!confirm(`คุณต้องการลบข้อมูลสมาชิกหมายเลข ${memberId} ออกจากระบบ สสมน. อย่างถาวรใช่หรือไม่?\n*(การดำเนินการนี้จะไม่สามารถย้อนคืนค่าได้)`)) {
+    return;
+  }
+  appState.members = appState.members.filter(m => m.id !== memberId);
+  saveStateToLocalStorage();
+  calculateStats();
+};
+
+// เปิดดูรูปหลักฐานในระบบ Lightbox
+window.viewDocumentLightbox = function(base64Data, title) {
+  if (!base64Data) {
+    alert("ไม่มีไฟล์หลักฐานเอกสารนี้แนบอยู่ในระบบ");
+    return;
+  }
+  document.getElementById("modal-doc-viewer-title").textContent = title;
+  document.getElementById("img-doc-viewer-tag").src = base64Data;
+  document.getElementById("modal-doc-viewer").classList.add("active");
+};
+
+// ==================== 6. SCHOOL TRANSFER & LOGGING LOGIC ====================
+// ==================== 6. SCHOOL TRANSFER & LOGGING LOGIC ====================
+window.openTransferSchoolModal = function(memberId) {
+  const member = appState.members.find(m => m.id === memberId);
+  if (!member) return;
+
+  document.getElementById("transfer-member-row-index").value = memberId;
+  document.getElementById("transfer-preview-name").textContent = `${member.firstname} ${member.lastname}`;
+  
+  const sch = SCHOOLS.find(s => s.id === member.schoolId);
+  document.getElementById("transfer-preview-meta").textContent = `รหัสเดิม: ${member.id} // ตำแหน่ง: ${member.position} // สังกัดเดิม: ${sch ? sch.name : 'ไม่ระบุ'}`;
+  document.getElementById("transfer-old-school-name").value = sch ? sch.name : 'ไม่ระบุ';
+
+  // ป๊อปปูเลตตัวเลือกเหตุผลการย้ายตามตำแหน่งงานแบบไดนามิก!
+  const selectReasonType = document.getElementById("transfer-reason-type");
+  let reasonHtml = "";
+  const pos = member.position.toString().toLowerCase();
+  const isExec = pos.includes("ผู้อำนวยการ") || pos.includes("ผอ.") || pos.includes("รองผู้อำนวยการ") || pos.includes("รอง ผอ.");
+  
+  if (isExec) {
+    reasonHtml = `
+      <option value="ย้ายตามรอบ">ย้ายตามรอบการสับเปลี่ยนผู้บริหาร</option>
+      <option value="ย้ายกรณีพิเศษ">ย้ายกรณีพิเศษ</option>
+    `;
+  } else {
+    reasonHtml = `
+      <option value="ย้ายประจำปี พ.ศ. ครั้งที่ 1">ย้ายประจำปีครั้งที่ 1</option>
+      <option value="ย้ายประจำปี พ.ศ. ครั้งที่ 2">ย้ายประจำปีครั้งที่ 2</option>
+      <option value="ย้ายสับเปลี่ยน">ย้ายสับเปลี่ยน</option>
+      <option value="ย้ายกรณีพิเศษ">ย้ายกรณีพิเศษ</option>
+    `;
+  }
+  selectReasonType.innerHTML = reasonHtml;
+
+  // เคลียร์ฟิลด์และตั้งค่าเริ่มต้น
+  document.getElementById("group-transfer-reason-year").style.display = "none";
+  document.getElementById("transfer-reason-year").value = "2569";
+  document.getElementById("transfer-effective-date").value = new Date().toISOString().substring(0, 10);
+  document.getElementById("transfer-reason-note").value = "";
+
+  const selectNewSchool = document.getElementById("transfer-new-school-id");
+  let options = `<option value="" disabled selected>-- เลือกสังกัดโรงเรียนปลายทาง --</option>`;
+  SCHOOLS.forEach(s => {
+    if (s.id !== member.schoolId) {
+      options += `<option value="${s.id}">${s.id} - ${s.name}</option>`;
+    }
+  });
+  selectNewSchool.innerHTML = options;
+
+  document.getElementById("modal-transfer-school").classList.add("active");
+};
+
+// ฟังก์ชันเปิด/ปิดกล่องกรอกปี พ.ศ. ของตัวเลือกเหตุผล
+window.toggleTransferReasonYear = function() {
+  const type = document.getElementById("transfer-reason-type").value;
+  const yearGroup = document.getElementById("group-transfer-reason-year");
+  if (type.includes("ย้ายประจำปี")) {
+    yearGroup.style.display = "block";
+    document.getElementById("transfer-reason-year").required = true;
+  } else {
+    yearGroup.style.display = "none";
+    document.getElementById("transfer-reason-year").required = false;
+  }
+};
+
+document.getElementById("form-member-transfer").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const memberId = document.getElementById("transfer-member-row-index").value;
+  const newSchoolId = document.getElementById("transfer-new-school-id").value;
+  
+  // แกะข้อมูลเหตุผลย้ายระดับลึก
+  const reasonType = document.getElementById("transfer-reason-type").value;
+  const reasonYear = document.getElementById("transfer-reason-year").value;
+  const effectiveDate = document.getElementById("transfer-effective-date").value;
+  const reasonNote = document.getElementById("transfer-reason-note").value.trim();
+
+  const oldMember = appState.members.find(m => m.id === memberId);
+  if (!oldMember) return;
+
+  const oldSchool = SCHOOLS.find(s => s.id === oldMember.schoolId);
+  const newSchool = SCHOOLS.find(s => s.id === newSchoolId);
+  
+  // รันรหัสใหม่โดยคงสิทธิ์การแยกกลุ่มรหัสสมาชิกตามตำแหน่ง
+  const newMemberId = generateMemberId(newSchoolId, oldMember.position);
+  const currentDateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  // สรุปข้อความเหตุผลเชิงลึกและมีผลย้ายระบุวันที่
+  let formattedReason = reasonType;
+  if (reasonType.includes("ย้ายประจำปี")) {
+    formattedReason = `${reasonType} ${reasonYear}`;
+  }
+  if (reasonNote) {
+    formattedReason += ` (${reasonNote})`;
+  }
+  
+  // แปลงรูปแบบวันที่ให้อ่านง่าย เช่น 2026-06-02 -> 02/06/2026
+  let dateParts = effectiveDate.split("-");
+  let displayDate = effectiveDate;
+  if (dateParts.length === 3) {
+    displayDate = `${dateParts[2]}/${dateParts[1]}/${parseInt(dateParts[0]) + 543}`; // แปลงเป็น พ.ศ.
+  }
+  
+  formattedReason += ` [มีผลย้าย ณ วันที่: ${displayDate}]`;
+
+  const newLedger = [
+    ...oldMember.ledger,
+    {
+      date: currentDateStr,
+      type: "deposit",
+      amount: 0,
+      description: `ย้ายเข้า: โอนฐานเงินสะสมจากสังกัดเก่า ${oldSchool.name} (รหัสเดิม: ${oldMember.id})`,
+      balanceAfter: parseFloat(oldMember.prepayBalance)
+    }
+  ];
+
+  const newActiveRecord = {
+    ...oldMember,
+    id: newMemberId,
+    schoolId: newSchoolId,
+    ledger: newLedger
+  };
+
+  oldMember.status = "transferred";
+  oldMember.ledger.push({
+    date: currentDateStr,
+    type: "charge",
+    amount: 0,
+    description: `ย้ายออก: โอนเงินและปิดรหัสไปยัง ${newSchool.name} (รหัสใหม่คือ ${newMemberId}) // เหตุผล: ${formattedReason}`,
+    balanceAfter: parseFloat(oldMember.prepayBalance)
+  });
+
+  appState.members.push(newActiveRecord);
+
+  const provincialLog = {
+    date: currentDateStr,
+    memberName: `${oldMember.firstname} ${oldMember.lastname}`,
+    oldSchool: oldSchool.name,
+    newSchool: newSchool.name,
+    oldId: oldMember.id,
+    newId: newMemberId,
+    reason: formattedReason
+  };
+  
+  appState.transferLogs.unshift(provincialLog);
+
+  saveStateToLocalStorage();
+  document.getElementById("modal-transfer-school").classList.remove("active");
+  alert(`โอนย้ายสถิติตำแหน่งสมาชิกสำเร็จ!\n${oldMember.firstname} ${oldMember.lastname} ได้รับการย้ายไปยัง ${newSchool.name}\nรหัสสมาชิกใหม่คือ: ${newMemberId}\nด้วยเหตุผล: ${formattedReason}`);
+  calculateStats();
+});
+
+function renderTransferLogsTimeline() {
+  const container = document.getElementById("widget-transfer-logs");
+  if (!container) return;
+
+  if (appState.transferLogs.length === 0) {
+    container.innerHTML = `<div class="timeline-empty">ไม่พบประวัติการทำเรื่องย้ายสังกัดในระบบ สสมน.</div>`;
+    return;
+  }
+
+  let html = "";
+  appState.transferLogs.forEach(log => {
+    if (log.type === "system") {
+      html += `
+        <div class="transfer-log-card" style="border-color: rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.015);">
+          <div class="transfer-log-icon" style="color: var(--color-accent-gold); border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.05);">
+            ⚙️
+          </div>
+          <div class="transfer-log-content">
+            <h5 style="color: var(--color-accent-gold);">บันทึกการเบิกจ่าย / ระบบ</h5>
+            <p style="color: white; font-weight: 500;">${log.description}</p>
+          </div>
+          <div class="transfer-log-date">${log.date}</div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="transfer-log-card">
+          <div class="transfer-log-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l17 17"/>
+            </svg>
+          </div>
+          <div class="transfer-log-content">
+            <h5>${log.memberName}</h5>
+            <p>ย้ายสังกัดจาก <strong>${log.oldSchool}</strong> รหัสเดิม <span class="text-warning font-weight-bold">${log.oldId}</span></p>
+            <p>ไปยัง <strong>${log.newSchool}</strong> รับรหัสใหม่ <span class="text-success font-weight-bold">${log.newId}</span></p>
+            <p class="field-help-text" style="margin-top:2px;">เหตุผล: ${log.reason}</p>
+          </div>
+          <div class="transfer-log-date">${log.date}</div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML = html;
+}
+
+// ฟังก์ชันคำนวณเงินสงเคราะห์และหาสมาชิกอ้างอิง ณ วันเสียชีวิตตามช่วงเวลา (รอบที่ 3)
+function getDeathCalculationInfo(reportedDate, deceasedMember = null) {
+  if (!reportedDate) return {
+    refDateText: "-",
+    activeMembersCount: 0,
+    grossPayout: 0,
+    operatingFee: 0,
+    netPayout: 0,
+    beneficiaryName: "ไม่ระบุ"
+  };
+
+  const d = new Date(reportedDate);
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const md = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  let refYear = year;
+  let refMonth = 6;
+  let refDay = 30;
+  let refDateText = "";
+  let key = "";
+
+  if (md >= '06-30' && md <= '12-29') {
+    refYear = year;
+    refMonth = 6;
+    refDay = 30;
+    refDateText = `30 มิ.ย. ${refYear + 543}`;
+    key = `${refYear + 543}_R1`;
+  } else if (md >= '12-30' && md <= '12-31') {
+    refYear = year;
+    refMonth = 12;
+    refDay = 30;
+    refDateText = `30 ธ.ค. ${refYear + 543}`;
+    key = `${refYear + 543}_R2`;
+  } else {
+    // 01-01 ถึง 06-29
+    refYear = year - 1;
+    refMonth = 12;
+    refDay = 30;
+    refDateText = `30 ธ.ค. ${refYear + 543}`;
+    key = `${refYear + 543}_R2`;
+  }
+
+  // คำนวณจำนวนสมาชิกอ้างอิง (เพื่อความสมจริง ใช้ฐานครูจังหวัดน่าน 3400+ คน + สมาชิกในฐานข้อมูลจำลองจริง)
+  let baseMembersCount = 3400 + (refYear - 2025) * 60 + (refMonth === 6 ? 30 : 0);
+  
+  // ตรวจสอบว่าแอดมินเคยกดยืนยันรับรองและมียอดเก็บไว้หรือไม่
+  let certifiedCountSum = 0;
+  let certifiedSchoolsCount = 0;
+  if (appState.certifications && appState.certifications[key]) {
+    SCHOOLS.forEach(sch => {
+      const cert = appState.certifications[key][sch.id];
+      if (cert && cert.memberCount !== undefined) {
+        certifiedCountSum += cert.memberCount;
+        certifiedSchoolsCount++;
+      }
+    });
+  }
+
+  // ดึงยอดสมาชิกจริงในฐานข้อมูลมาสอดแทรกเพื่อความไดนามิก
+  const dbActiveCount = appState.members.filter(m => m.status === "active").length;
+  const finalActiveCount = baseMembersCount + dbActiveCount;
+
+  const grossPayout = finalActiveCount * 30;
+  const operatingFee = grossPayout * 0.05;
+  const netPayout = grossPayout - operatingFee;
+
+  let beneficiaryName = "ไม่ระบุ";
+  if (deceasedMember && deceasedMember.beneficiary) {
+    beneficiaryName = (deceasedMember.beneficiary.title || "") + (deceasedMember.beneficiary.name || "ไม่ระบุ");
+  }
+
+  return {
+    refDateText,
+    activeMembersCount: finalActiveCount,
+    grossPayout,
+    operatingFee,
+    netPayout,
+    beneficiaryName
+  };
+}
+
+// ==================== 7. CREMATION DEATH REPORTING & SYSTEM DEDUCTION ====================
+function populateReportDeathDropdowns() {
+  const selectProvince = document.getElementById("death-member-id");
+  const selectSchool = document.getElementById("school-death-member-id");
+
+  const activeMembers = appState.members.filter(m => m.status === "active");
+
+  if (selectProvince) {
+    let pOptions = `<option value="" disabled selected>-- เลือกสมาชิกที่เสียชีวิต (เฉพาะสัญชาติใช้งานอยู่) --</option>`;
+    activeMembers.forEach(m => {
+      const sch = SCHOOLS.find(s => s.id === m.schoolId);
+      pOptions += `<option value="${m.id}">${m.id} - ${m.firstname} ${m.lastname} (${sch ? sch.name : 'ไม่ระบุ'})</option>`;
+    });
+    selectProvince.innerHTML = pOptions;
+  }
+
+  if (selectSchool && appState.activeRole === "school") {
+    const schoolActiveMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId);
+    let sOptions = `<option value="" disabled selected>-- เลือกสมาชิกในสังกัดของคุณที่ถึงแก่กรรม --</option>`;
+    schoolActiveMembers.forEach(m => {
+      sOptions += `<option value="${m.id}">${m.id} - ${m.firstname} ${m.lastname} (${m.position})</option>`;
+    });
+    selectSchool.innerHTML = sOptions;
+  }
+}
+
+// 7.1 จังหวัดแจ้งสมาชิกถึงแก่กรรม (หักเงินทันที)
+document.getElementById("form-report-death").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const memberId = document.getElementById("death-member-id").value;
+  const reportedDate = document.getElementById("death-reported-date").value;
+  const chargeAmount = parseFloat(document.getElementById("death-deduction-amount").value);
+  const cause = document.getElementById("death-cause").value.trim() || "ธรรมชาติ";
+
+  // แนบไฟล์หลักฐานประกอบการตายระดับจังหวัด
+  const fileCertProv = document.getElementById("death-doc-cert-province").files[0];
+  const fileIdProv = document.getElementById("death-doc-id-province").files[0];
+  const fileHouseProv = document.getElementById("death-doc-house-province").files[0];
+
+  const docCert = fileCertProv ? await getBase64FromFile(fileCertProv) : null;
+  const docId = fileIdProv ? await getBase64FromFile(fileIdProv) : null;
+  const docHouse = fileHouseProv ? await getBase64FromFile(fileHouseProv) : null;
+
+  triggerDeathDeduction(memberId, reportedDate, chargeAmount, cause, {
+    certificate: docCert,
+    citizen: docId,
+    household: docHouse
+  });
+});
+
+// ตรรกะส่วนกลางในการหักเงินค่าศพสมาชิกทั้งจังหวัดและสร้างบิล
+function triggerDeathDeduction(memberId, reportedDate, chargeAmount, cause, documents) {
+  const deceasedMember = appState.members.find(m => m.id === memberId);
+  if (!deceasedMember) return;
+
+  const school = SCHOOLS.find(s => s.id === deceasedMember.schoolId);
+
+  // 1. เปลี่ยนสถานะผู้ตายเป็นเสียชีวิต
+  deceasedMember.status = "deceased";
+  deceasedMember.ledger.push({
+    date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+    type: "charge",
+    amount: 0,
+    description: `ถึงแก่กรรมอย่างเป็นทางการเมื่อวันที่ ${reportedDate} ปิดข้อมูลยอดกองทุนฌาปนกิจ`,
+    balanceAfter: parseFloat(deceasedMember.prepayBalance)
+  });
+
+  // 2. สร้างคดีผู้เสียชีวิตขึ้นมาในระบบ
+  const deathCaseId = "DEATH_" + new Date().getTime();
+  const calcInfo = getDeathCalculationInfo(reportedDate, deceasedMember);
+  const deathCase = {
+    id: deathCaseId,
+    memberId: deceasedMember.id,
+    name: `${deceasedMember.title || ''}${deceasedMember.firstname} ${deceasedMember.lastname}`,
+    schoolName: school.name,
+    schoolId: deceasedMember.schoolId,
+    reportedDate,
+    chargeAmount,
+    cause,
+    status: "approved", // อนุมัติทันที
+    documents: documents || { certificate: null, citizen: null, household: null },
+    
+    // ข้อมูลคำนวณเงินสงเคราะห์ (รอบที่ 3)
+    beneficiaryName: calcInfo.beneficiaryName,
+    referenceDateText: calcInfo.refDateText,
+    referenceMemberCount: calcInfo.activeMembersCount,
+    grossPayout: calcInfo.grossPayout,
+    operatingFee: calcInfo.operatingFee,
+    netPayout: calcInfo.netPayout
+  };
+  
+  appState.deathCases.unshift(deathCase);
+
+  // 3. หักเงินสะสมล่วงหน้าของสมาชิกที่เหลือทุกคน 20 บาทอัตโนมัติ
+  const activeMembers = appState.members.filter(m => m.status === "active");
+  const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  activeMembers.forEach(m => {
+    const curBal = parseFloat(m.prepayBalance);
+    const nextBal = curBal - chargeAmount;
+    m.prepayBalance = nextBal;
+    
+    m.ledger.push({
+      date: dateStr,
+      type: "charge",
+      amount: -chargeAmount,
+      description: `หักเงินสงเคราะห์รายศพกรณีการเสียชีวิตของ ${deceasedMember.firstname} ${deceasedMember.lastname} (${deceasedMember.id})`,
+      balanceAfter: nextBal
+    });
+  });
+
+  // 4. คำนวณใบแจ้งหนี้ให้โรงเรียน
+  SCHOOLS.forEach(sch => {
+    const schoolActiveCount = activeMembers.filter(m => m.schoolId === sch.id).length;
+    const totalOwed = schoolActiveCount * chargeAmount;
+
+    const invoice = {
+      deathCaseId: deathCaseId,
+      deathCaseName: `${deceasedMember.firstname} ${deceasedMember.lastname}`,
+      schoolId: sch.id,
+      schoolName: sch.name,
+      activeCount: schoolActiveCount,
+      deductionAmount: chargeAmount,
+      totalOwed: totalOwed,
+      status: totalOwed > 0 ? "unpaid" : "paid", 
+      slipData: null 
+    };
+    appState.schoolInvoices.push(invoice);
+  });
+
+  saveStateToLocalStorage();
+  alert(`แจ้งสิทธิ์ถึงแก่กรรมสมาชิกสำเร็จ!\nระบบทำรายการหักเงินค่าทำบุญจากสมาชิกที่เหลืออีก ${activeMembers.length} คนคนละ ${chargeAmount} บาทแล้ว`);
+  
+  // ล้างฟอร์มจังหวัด
+  document.getElementById("form-report-death").reset();
+  calculateStats();
+}
+
+// 7.2 โรงเรียนทำเรื่องแจ้งสมาชิกเสียชีวิต (ต้องแนบรูปใบมรณบัตร ปชช. ทะเบียนบ้าน)
+document.getElementById("form-school-report-death").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const memberId = document.getElementById("school-death-member-id").value;
+  const reportedDate = document.getElementById("school-death-reported-date").value;
+  const cause = document.getElementById("school-death-cause").value.trim() || "เจ็บป่วย";
+
+  // โหลดเอกสารแนบ 3 ตัว (บังคับ)
+  const fileCert = document.getElementById("death-doc-cert").files[0];
+  const fileId = document.getElementById("death-doc-id").files[0];
+  const fileHouse = document.getElementById("death-doc-house").files[0];
+
+  const docCert = await getBase64FromFile(fileCert);
+  const docId = await getBase64FromFile(fileId);
+  const docHouse = await getBase64FromFile(fileHouse);
+
+  const deceasedMember = appState.members.find(m => m.id === memberId);
+  if (!deceasedMember) return;
+
+  const school = SCHOOLS.find(s => s.id === deceasedMember.schoolId);
+
+  // สร้างคดีรอยืนยันการตาย (ยังไม่ตัดเงินจังหวัด)
+  const deathCaseId = "DEATH_PEND_" + new Date().getTime();
+  const calcInfo = getDeathCalculationInfo(reportedDate, deceasedMember);
+  const pendingDeathCase = {
+    id: deathCaseId,
+    memberId: deceasedMember.id,
+    name: `${deceasedMember.title || ''}${deceasedMember.firstname} ${deceasedMember.lastname}`,
+    schoolName: school.name,
+    schoolId: deceasedMember.schoolId,
+    reportedDate,
+    chargeAmount: 20, // ค่าคงที่หัก 20 บาท
+    cause,
+    status: "pending_approval", // รอแอดมินจังหวัดอนุมัติเอกสาร
+    documents: {
+      certificate: docCert,
+      citizen: docId,
+      household: docHouse
+    },
+    beneficiaryName: calcInfo.beneficiaryName,
+    referenceDateText: calcInfo.refDateText,
+    referenceMemberCount: calcInfo.activeMembersCount,
+    grossPayout: calcInfo.grossPayout,
+    operatingFee: calcInfo.operatingFee,
+    netPayout: calcInfo.netPayout
+  };
+
+  appState.deathCases.unshift(pendingDeathCase);
+  saveStateToLocalStorage();
+  alert("ส่งเรื่องแจ้งสมาชิกเสียชีวิตสำเร็จ!\nกรุณารอแอดมินจังหวัดตรวจสอบเอกสารแนบประกอบ เพื่ออนุมัติและรันยอดชำระเงินของจังหวัดต่อไป");
+  document.getElementById("form-school-report-death").reset();
+  calculateStats();
+});
+
+// 7.3 เรนเดอร์รายการค้างอนุมัติความถึงแก่กรรม (สำหรับแอดมินจังหวัดตรวจสิทธิ์)
+function renderPendingDeathsVerification() {
+  const container = document.getElementById("school-pending-deaths-list");
+  const counter = document.getElementById("count-pending-deaths");
+  
+  if (!container) return;
+
+  const pendingDeaths = appState.deathCases.filter(d => d.status === "pending_approval");
+  counter.textContent = pendingDeaths.length;
+
+  if (pendingDeaths.length === 0) {
+    container.innerHTML = `<div class="timeline-empty">ไม่มีรายงานแจ้งเสียชีวิตค้างการตรวจสอบอนุมัติ</div>`;
+    return;
+  }
+
+  let html = "";
+  pendingDeaths.forEach(death => {
+    html += `
+      <div class="transfer-log-card" style="border-color:rgba(239, 68, 68, 0.15); background:rgba(239, 68, 68, 0.02);">
+        <div class="transfer-log-icon" style="color:var(--color-accent-rose); border-color:rgba(239, 68, 68, 0.25); background:rgba(239, 68, 68, 0.05)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="transfer-log-content">
+          <h5 style="color:var(--color-accent-rose);">${death.name}</h5>
+          <p>รหัสสมาชิก: <strong>${death.memberId}</strong> // โรงเรียนเดิม: <strong>${death.schoolName}</strong></p>
+          <p class="field-help-text">วันที่แจ้งตาย: ${death.reportedDate} // สาเหตุ: ${death.cause}</p>
+          
+          <div class="supporting-docs-row" style="margin-top:10px;">
+            <button class="btn-doc-link" onclick="viewDocumentLightbox(appState.deathCases.find(d => d.id === '${death.id}').documents.certificate, 'ใบมรณบัตร: ${death.name}')">
+              📄 เปิดดูใบมรณบัตร
+            </button>
+            <button class="btn-doc-link" onclick="viewDocumentLightbox(appState.deathCases.find(d => d.id === '${death.id}').documents.citizen, 'สำเนาบัตร ปชช: ${death.name}')">
+              📄 เปิดดูบัตรประชาชนผู้ตาย
+            </button>
+            <button class="btn-doc-link" onclick="viewDocumentLightbox(appState.deathCases.find(d => d.id === '${death.id}').documents.household, 'สำเนาทะเบียนบ้าน: ${death.name}')">
+              📄 เปิดดูทะเบียนบ้าน
+            </button>
+          </div>
+          
+          <div class="verification-buttons-row" style="margin-top:12px; gap:8px;">
+            <button class="btn btn-secondary btn-mini" style="background:rgba(239, 68, 68, 0.1); border-color:rgba(239, 68, 68, 0.2); color:var(--color-accent-rose);" onclick="rejectPendingDeath('${death.id}')">
+              ปฏิเสธเคส
+            </button>
+            <button class="btn btn-success btn-mini" onclick="approvePendingDeath('${death.id}')">
+              อนุมัติการการเสียชีวิต
+            </button>
+          </div>
+        </div>
+        <div class="transfer-log-date">${death.reportedDate}</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// เรนเดอร์รายการสมาชิกผู้เสียชีวิตทั้งหมดพร้อมรายละเอียดการคำนวณเงินสงเคราะห์ (รอบที่ 3)
+function renderApprovedDeathCasesList() {
+  const container = document.getElementById("death-cases-items-list");
+  if (!container) return;
+
+  const approvedDeaths = appState.deathCases.filter(d => d.status !== "pending_approval");
+
+  if (approvedDeaths.length === 0) {
+    container.innerHTML = `<div class="empty-cases-message">ยังไม่มีรายงานสมาชิกถึงแก่กรรมในระบบ</div>`;
+    return;
+  }
+
+  let html = "";
+  approvedDeaths.forEach(death => {
+    const member = appState.members.find(m => m.id === death.memberId) || {};
+    
+    const calc = {
+      beneficiaryName: death.beneficiaryName || (member.beneficiary ? (member.beneficiary.title || "") + member.beneficiary.name : "ไม่ระบุ"),
+      refDateText: death.referenceDateText || getDeathCalculationInfo(death.reportedDate, member).refDateText,
+      activeMembersCount: death.referenceMemberCount || getDeathCalculationInfo(death.reportedDate, member).activeMembersCount,
+      grossPayout: death.grossPayout || getDeathCalculationInfo(death.reportedDate, member).grossPayout,
+      operatingFee: death.operatingFee || getDeathCalculationInfo(death.reportedDate, member).operatingFee,
+      netPayout: death.netPayout || getDeathCalculationInfo(death.reportedDate, member).netPayout
+    };
+
+    const thDateStr = death.reportedDate ? new Date(death.reportedDate).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : "ไม่ระบุ";
+
+    html += `
+      <div class="death-case-payout-card glass" style="margin-bottom:16px; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.06); border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-md); transition:transform var(--transition-fast), border-color var(--transition-fast);">
+        <div class="case-header" style="display:flex; justify-content:space-between; align-items:start; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+          <div class="deceased-info">
+            <h4 style="font-size:15.5px; font-weight:700; color:white; margin:0 0 4px 0; display:flex; align-items:center; gap:6px;">🕯️ ${death.name}</h4>
+            <div style="font-size:12px; color:var(--color-text-dim);">
+              รหัสสมาชิก: <strong style="color:var(--color-accent-gold); font-family:var(--font-number);">${death.memberId}</strong> | 
+              สังกัดเดิม: <strong>${death.schoolName}</strong>
+            </div>
+            <div style="font-size:11.5px; color:var(--color-text-muted); margin-top:2px;">สาเหตุ: ${death.cause}</div>
+          </div>
+          <div class="death-date-badge" style="background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.25); color:var(--color-accent-rose); font-size:11px; padding:4px 10px; border-radius:30px; font-weight:600;">
+            ถึงแก่กรรม: ${thDateStr}
+          </div>
+        </div>
+        
+        <div class="case-details-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; align-items:stretch;">
+          <div class="beneficiary-box glass" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); border-radius:var(--radius-md); padding:14px 16px; display:flex; flex-direction:column; justify-content:center; gap:6px;">
+            <div class="box-title" style="font-size:11px; font-weight:700; color:var(--color-accent-gold); letter-spacing:0.5px; text-transform:uppercase;">👤 สิทธิ์ผู้รับผลประโยชน์</div>
+            <div class="beneficiary-name" style="font-size:14.5px; font-weight:700; color:white;">${calc.beneficiaryName}</div>
+            <div class="beneficiary-meta" style="font-size:12px; color:var(--color-text-muted);">
+              ความสัมพันธ์: <span style="color:white; font-weight:600;">${member.beneficiary ? member.beneficiary.relation : "ไม่ระบุ"}</span>
+            </div>
+            <div style="font-size:11.5px; color:var(--color-text-dim); display:flex; align-items:center; gap:5px; margin-top:2px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--color-accent-gold);">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <span>${member.beneficiary ? member.beneficiary.phone : "-"}</span>
+            </div>
+          </div>
+          
+          <div class="payout-calculation-box glass" style="background:rgba(255,255,255,0.01); border:1px solid rgba(255,255,255,0.03); border-radius:var(--radius-md); padding:14px 16px; display:flex; flex-direction:column; gap:6px;">
+            <div class="box-title" style="font-size:11px; font-weight:700; color:var(--color-text-muted); letter-spacing:0.5px; text-transform:uppercase;">📊 บัญชีคำนวณเงินสงเคราะห์ (สสมน.)</div>
+            <div class="calc-row" style="display:flex; justify-content:space-between; font-size:12px; color:var(--color-text-muted);">
+              <span>จำนวนสมาชิก ณ วันอ้างอิง (${calc.refDateText})</span>
+              <strong style="color:white; font-family:var(--font-number);">${calc.activeMembersCount.toLocaleString()} คน</strong>
+            </div>
+            <div class="calc-row" style="display:flex; justify-content:space-between; font-size:12px; color:var(--color-text-muted);">
+              <span>เงินสงเคราะห์ (คนละ 30 บาท)</span>
+              <strong style="color:white; font-family:var(--font-number);">฿${calc.grossPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+            </div>
+            <div class="calc-row text-rose" style="display:flex; justify-content:space-between; font-size:12px; color:var(--color-accent-rose);">
+              <span>หักค่าดำเนินการ สสมน. (ร้อยละ 5)</span>
+              <strong style="font-family:var(--font-number);">-฿${calc.operatingFee.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+            </div>
+            <div class="calc-divider" style="height:1px; background:rgba(255,255,255,0.08); margin:4px 0;"></div>
+            <div class="calc-row net-payout-row" style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:700; color:white;">
+              <span style="color:var(--color-text-muted); font-size:11.5px; font-weight:600;">ยอดเงินสงเคราะห์สุทธิรับมอบ</span>
+              <strong class="text-glow-emerald" style="font-family:var(--font-number); font-size:16px; color:var(--color-accent-emerald); text-shadow:0 0 10px rgba(16, 185, 129, 0.25);">฿${calc.netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// อนุมัติใบแจ้งเสียชีวิตของโรงเรียน (Province Admin)
+window.approvePendingDeath = function(deathCaseId) {
+  const deathCaseIndex = appState.deathCases.findIndex(d => d.id === deathCaseId);
+  if (deathCaseIndex === -1) return;
+
+  const death = appState.deathCases[deathCaseIndex];
+  
+  if (!confirm(`คุณต้องการอนุมัติการถึงแก่กรรมของ ${death.name} หรือไม่?\n*(เมื่ออนุมัติ ระบบจะรันกระบวนการหักเงินคนละ 20 บาท และส่งบิลหนี้รายโรงเรียนทันที)`)) {
+    return;
+  }
+
+  // 1. นำข้อมูลเก่าออกจากลิสต์ pending (เพื่อไม่ให้ซ้ำซ้อน)
+  appState.deathCases.splice(deathCaseIndex, 1);
+
+  // 2. เรียกใช้งานระบบหักล้างยอดการเงินของจังหวัดโดยอัตโนมัติ
+  triggerDeathDeduction(death.memberId, death.reportedDate, death.chargeAmount, death.cause, death.documents);
+};
+
+// ปฏิเสธใบแจ้งเสียชีวิตของโรงเรียน
+window.rejectPendingDeath = function(deathCaseId) {
+  if (!confirm("คุณต้องการปฏิเสธคดีแจ้งตายของโรงเรียนนี้ใช่หรือไม่? ข้อมูลประวัติและไฟล์เอกสารแนบจะถูกคัดลบออกจากระบบ")) {
+    return;
+  }
+  appState.deathCases = appState.deathCases.filter(d => d.id !== deathCaseId);
+  saveStateToLocalStorage();
+  calculateStats();
+};
+
+// ==================== 8. CONSOLIDATED PAYMENT MATRIX & SLIPS VERIFICATION ====================
+function renderCremationMatrix() {
+  const container = document.getElementById("tbl-payment-matrix");
+  const emptyView = document.getElementById("matrix-empty-view");
+  const headerRow = document.getElementById("matrix-header-row");
+  const tbody = document.getElementById("matrix-body-rows");
+
+  if (!container || !tbody) return;
+
+  // กรองเอาเฉพาะเคสที่ได้รับการอนุมัติ (approved) เพื่อโชว์ใน Matrix
+  const approvedDeaths = appState.deathCases.filter(d => d.status !== "pending_approval");
+
+  if (approvedDeaths.length === 0) {
+    emptyView.style.display = "block";
+    container.style.display = "none";
+    return;
+  }
+
+  emptyView.style.display = "none";
+  container.style.display = "table";
+
+  let headerHtml = `<th>รายชื่อเคสศพผู้เสียชีวิต</th>`;
+  SCHOOLS.forEach(sch => {
+    headerHtml += `<th title="${sch.name}" style="cursor:help; text-align:center;">${sch.id}</th>`;
+  });
+  headerRow.innerHTML = headerHtml;
+
+  let bodyHtml = "";
+  approvedDeaths.forEach(death => {
+    bodyHtml += `<tr>`;
+    bodyHtml += `<td>
+      <div class="deceased-meta-data">
+        <h4>${death.name}</h4>
+        <p>รหัส: ${death.memberId} // สังกัด: ${death.schoolName}</p>
+        <p class="field-help-text">วันที่แจ้งเสียชีวิต: ${death.reportedDate}</p>
+      </div>
+    </td>`;
+
+    SCHOOLS.forEach(sch => {
+      const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === death.id && inv.schoolId === sch.id);
+      
+      if (!invoice || invoice.totalOwed === 0) {
+        bodyHtml += `<td><span style="color:var(--color-text-dim); font-size:11px;">-</span></td>`;
+      } else {
+        let cellClass = "cell-unpaid";
+        let cellSymbol = "🔴";
+        
+        if (invoice.status === "pending") {
+          cellClass = "cell-pending";
+          cellSymbol = "🟡";
+        } else if (invoice.status === "paid") {
+          cellClass = "cell-paid";
+          cellSymbol = "🟢";
+        }
+
+        const tooltip = `${sch.name}\nยอดชำระ: ฿${invoice.totalOwed.toLocaleString()}\nสถานะ: ${invoice.status === 'unpaid' ? 'ค้างจ่าย' : (invoice.status === 'pending' ? 'รออนุมัติสลิป' : 'ชำระเงินเรียบร้อย')}`;
+
+        bodyHtml += `
+          <td>
+            <button class="matrix-cell-status ${cellClass}" title="${tooltip}" onclick="handleMatrixCellClick('${death.id}', '${sch.id}')">
+            </button>
+          </td>
+        `;
+      }
+    });
+
+    bodyHtml += `</tr>`;
+  });
+
+  tbody.innerHTML = bodyHtml;
+}
+
+window.handleMatrixCellClick = function(deathCaseId, schoolId) {
+  const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathCaseId && inv.schoolId === schoolId);
+  if (!invoice) return;
+
+  if (appState.activeRole !== "province") {
+    alert(`สังกัด: ${invoice.schoolName}\nคดีศพ: ${invoice.deathCaseName}\nหนี้ค้างชำระ: ฿${invoice.totalOwed.toLocaleString()}\nสถานะชำระเงิน: ${invoice.status === 'unpaid' ? 'ยังไม่ได้โอนเงินและแนบหลักฐาน' : (invoice.status === 'pending' ? 'ส่งหลักฐานโอนเงินรอยืนยันแล้ว' : 'แอดมินจังหวัดยืนยันชำระแล้ว')}`);
+    return;
+  }
+
+  if (invoice.status === "unpaid") {
+    alert(`โรงเรียน ${invoice.schoolName} ยังไม่ได้ยื่นหลักฐานโอนเงิน ยอดค้างชำระคือ ฿${invoice.totalOwed.toLocaleString()}`);
+    return;
+  }
+
+  openVerificationModal(invoice, invoice.status === "paid");
+};
+
+function openVerificationModal(invoice, viewOnly = false) {
+  document.getElementById("verify-slip-image").src = invoice.slipData.imageUri;
+  document.getElementById("verify-slip-school").textContent = invoice.schoolName;
+  document.getElementById("verify-slip-date").textContent = invoice.slipData.transferDate.replace('T', ' ');
+  document.getElementById("verify-slip-amount").textContent = "฿" + parseFloat(invoice.slipData.transferAmount).toLocaleString(undefined, {minimumFractionDigits: 2});
+  document.getElementById("verify-slip-notes").textContent = invoice.slipData.notes || "ไม่มีการบันทึกหมายเหตุเพิ่มเติม";
+  document.getElementById("verify-slip-death-cases").textContent = invoice.deathCaseName;
+
+  document.getElementById("verify-slip-school-id").value = invoice.schoolId;
+  document.getElementById("verify-slip-death-ids-str").value = invoice.deathCaseId;
+  document.getElementById("verify-feedback-notes").value = "";
+
+  const actionBlock = document.querySelector(".verification-decisions-form");
+  if (viewOnly) {
+    actionBlock.style.display = "none";
+  } else {
+    actionBlock.style.display = "block";
+  }
+
+  document.getElementById("modal-verify-slip").classList.add("active");
+}
+
+document.getElementById("btn-approve-slip").addEventListener("click", function() {
+  const schoolId = document.getElementById("verify-slip-school-id").value;
+  const deathCaseId = document.getElementById("verify-slip-death-ids-str").value;
+
+  const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathCaseId && inv.schoolId === schoolId);
+  if (!invoice) return;
+
+  invoice.status = "paid";
+  
+  const activeMembersInSchool = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  activeMembersInSchool.forEach(m => {
+    m.ledger.push({
+      date: dateStr,
+      type: "deposit",
+      amount: invoice.deductionAmount,
+      description: `เงินโอนสงเคราะห์ล้างหนี้ศพของ ${invoice.deathCaseName} (ได้รับการอนุมัติบัญชี)`,
+      balanceAfter: parseFloat(m.prepayBalance) + invoice.deductionAmount
+    });
+    m.prepayBalance = parseFloat(m.prepayBalance) + invoice.deductionAmount;
+  });
+
+  saveStateToLocalStorage();
+  document.getElementById("modal-verify-slip").classList.remove("active");
+  alert(`ยืนยันการรับยอดและอนุมัติสลิปโอนเงิน โรงเรียน ${invoice.schoolName} เรียบร้อยแล้ว!`);
+  calculateStats();
+});
+
+document.getElementById("btn-reject-slip").addEventListener("click", function() {
+  const schoolId = document.getElementById("verify-slip-school-id").value;
+  const deathCaseId = document.getElementById("verify-slip-death-ids-str").value;
+  const feedback = document.getElementById("verify-feedback-notes").value.trim() || "รูปสลิปไม่ชัดเจนหรือยอดโอนค้างจ่ายไม่ตรงบิลหนี้";
+
+  const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathCaseId && inv.schoolId === schoolId);
+  if (!invoice) return;
+
+  invoice.status = "unpaid";
+  invoice.slipData = null;
+  
+  saveStateToLocalStorage();
+  document.getElementById("modal-verify-slip").classList.remove("active");
+  alert(`ปฏิเสธหลักฐานสำเร็จ!\nสถานะของโรงเรียน ${invoice.schoolName} ในคดีศพนี้ ถูกส่งกลับเป็น "ค้างชำระ"\nข้อความส่งกลับ: ${feedback}`);
+  calculateStats();
+});
+
+function renderProvinceArrearsCheckerSelector() {
+  const select = document.getElementById("select-arrears-death-case");
+  if (!select) return;
+
+  // เอาเฉพาะเคสที่อนุมัติแล้วมาติดตาม
+  const approvedDeaths = appState.deathCases.filter(d => d.status !== "pending_approval");
+
+  let html = `<option value="" disabled selected>-- เลือกเคสการเสียชีวิตเพื่อตรวจสอบ --</option>`;
+  approvedDeaths.forEach(death => {
+    html += `<option value="${death.id}">${death.name} (${death.memberId} // สังกัดเดิม: ${death.schoolName})</option>`;
+  });
+  select.innerHTML = html;
+}
+
+document.getElementById("select-arrears-death-case").addEventListener("change", function() {
+  const deathCaseId = this.value;
+  const resultsDiv = document.getElementById("arrears-checker-results");
+  
+  const invoices = appState.schoolInvoices.filter(inv => inv.deathCaseId === deathCaseId);
+  const unpaidInvoices = invoices.filter(inv => inv.status === "unpaid" && inv.totalOwed > 0);
+  const pendingInvoices = invoices.filter(inv => inv.status === "pending");
+
+  if (unpaidInvoices.length === 0 && pendingInvoices.length === 0) {
+    resultsDiv.innerHTML = `
+      <div class="kpi-card glass text-center" style="justify-content:center; background:rgba(16, 185, 129, 0.05);">
+        <strong class="text-success" style="font-size:15px;">🎉 ทุกโรงเรียน/หน่วยงาน ทั้งจังหวัด ทำการโอนเงินและอนุมัติชำระยอดในศพนี้เรียบร้อยสมบูรณ์!</strong>
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
+  if (pendingInvoices.length > 0) {
+    html += `<h5 style="color:var(--color-accent-gold); margin-bottom:8px; font-size:12.5px;">🟡 รอตรวจสอบการอนุมัติสลิป (${pendingInvoices.length} สังกัด):</h5>`;
+    pendingInvoices.forEach(inv => {
+      html += `
+        <div class="arrears-school-row" style="background:rgba(251, 191, 36, 0.03); border-color:rgba(251, 191, 36, 0.15); cursor:pointer;" onclick="handleMatrixCellClick('${inv.deathCaseId}', '${inv.schoolId}')">
+          <div class="arrears-school-info">
+            <span class="arrears-school-name">${inv.schoolName}</span>
+            <span class="arrears-member-count">สมาชิกที่โดนหัก ${inv.activeCount} คน // เงินโอนรออนุมัติ</span>
+          </div>
+          <span class="arrears-owe-cash text-warning">฿${inv.totalOwed.toLocaleString()}</span>
+        </div>
+      `;
+    });
+  }
+
+  if (unpaidInvoices.length > 0) {
+    html += `<h5 style="color:var(--color-accent-rose); margin:14px 0 8px 0; font-size:12.5px;">🔴 ค้างชำระเงินและสลิปหลักฐาน (${unpaidInvoices.length} สังกัด):</h5>`;
+    unpaidInvoices.forEach(inv => {
+      html += `
+        <div class="arrears-school-row">
+          <div class="arrears-school-info">
+            <span class="arrears-school-name">${inv.schoolName}</span>
+            <span class="arrears-member-count">สมาชิกโดนหักเงินสะสม ${inv.activeCount} คน</span>
+          </div>
+          <span class="arrears-owe-cash text-danger">฿${inv.totalOwed.toLocaleString()}</span>
+        </div>
+      `;
+    });
+  }
+
+  resultsDiv.innerHTML = html;
+});
+
+// ==================== 9. SCHOOL ADMIN - UPLOAD SLIPS CONSOLE ====================
+function renderSchoolCremationInvoices() {
+  const container = document.getElementById("school-invoice-select-container");
+  if (!container) return;
+
+  if (appState.activeRole !== "school") return;
+
+  const schoolInvoices = appState.schoolInvoices.filter(inv => inv.schoolId === appState.activeSchoolId);
+  const unpaid = schoolInvoices.filter(inv => inv.status === "unpaid" && inv.totalOwed > 0);
+  const pending = schoolInvoices.filter(inv => inv.status === "pending");
+  const paid = schoolInvoices.filter(inv => inv.status === "paid");
+
+  let html = "";
+  if (unpaid.length > 0) {
+    html += `<h5 style="color:var(--color-accent-rose); margin-bottom:12px; font-size:13.5px;">🔴 รายการค้างจ่ายค่าฌาปนกิจศพที่ต้องชำระ (${unpaid.length} เคส):</h5>`;
+    unpaid.forEach(inv => {
+      const death = appState.deathCases.find(d => d.id === inv.deathCaseId);
+      html += `
+        <div class="debt-invoice-selection-card" onclick="toggleDebtCardSelection(this, '${inv.deathCaseId}')">
+          <input type="checkbox" data-death-id="${inv.deathCaseId}" data-owed="${inv.totalOwed}" class="debt-invoice-checkbox" onclick="event.stopPropagation(); recalculateSelectedDebtSum();">
+          <div class="debt-card-details">
+            <h5>เสียชีวิต: ${inv.deathCaseName}</h5>
+            <p>วันที่เสียชีวิต: ${death ? death.reportedDate : 'ไม่ระบุ'} // หักบุคลากรสังกัดคุณ ${inv.activeCount} คน</p>
+          </div>
+          <div class="debt-card-price-tag">฿${inv.totalOwed.toLocaleString()}</div>
+        </div>
+      `;
+    });
+    
+    html += `
+      <div class="topup-action-box glass" style="margin-top:16px; background:rgba(217, 119, 6, 0.02); border-color:rgba(217, 119, 6, 0.15);">
+        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:14.5px; color:white; margin-bottom:12px;">
+          <span>ยอดรวมชำระคัดเลือก:</span>
+          <span id="school-selected-debt-sum-txt">฿0.00</span>
+        </div>
+        <button class="btn btn-primary btn-full-width btn-icon-text" id="btn-trigger-upload-slip" disabled onclick="openUploadSlipModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <path d="M12 8v8M8 12h8"></path>
+          </svg>
+          <span>แนบไฟล์สลิปเพื่อชำระหนี้โรงเรียน</span>
+        </button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="kpi-card glass text-center" style="justify-content:center; background:rgba(16, 185, 129, 0.05); margin-bottom:16px;">
+        <strong class="text-success" style="font-size:14px;">🎉 โรงเรียนของคุณชำระเงินค่าฌาปนกิจศพจังหวัดน่านครบถ้วนแล้ว!</strong>
+      </div>
+    `;
+  }
+
+  if (pending.length > 0) {
+    html += `<h5 style="color:var(--color-accent-gold); margin:20px 0 12px 0; font-size:13.5px;">🟡 รอแอดมินจังหวัดตรวจสอบการเงิน (${pending.length} เคส):</h5>`;
+    pending.forEach(inv => {
+      html += `
+        <div class="debt-invoice-selection-card" style="border-color:rgba(251, 191, 36, 0.2); cursor:default; background:rgba(251, 191, 36, 0.02);" onclick="handleMatrixCellClick('${inv.deathCaseId}', '${inv.schoolId}')">
+          <div class="debt-card-details">
+            <h5>ส่งสลิปแล้ว: ${inv.deathCaseName}</h5>
+            <p>ยอดเงินโอน: ฿${inv.totalOwed.toLocaleString()} // ยื่นหลักฐานเพื่อเข้าสู่กระบวนการตรวจสิทธิ</p>
+          </div>
+          <div class="debt-card-price-tag text-warning" style="font-size:12px; font-weight:700;">รอยืนยันบัญชี</div>
+        </div>
+      `;
+    });
+  }
+
+  if (paid.length > 0) {
+    html += `<h5 style="color:var(--color-text-dim); margin:20px 0 12px 0; font-size:13.5px;">🟢 เคสศพที่อนุมัติเงินแล้ว (${paid.length} เคส):</h5>`;
+    paid.forEach(inv => {
+      html += `
+        <div class="debt-invoice-selection-card" style="border-color:rgba(16, 185, 129, 0.1); cursor:default; background:rgba(16, 185, 129, 0.01);">
+          <div class="debt-card-details">
+            <h5 style="color:var(--color-text-muted)">อนุมัติแล้ว: ${inv.deathCaseName}</h5>
+            <p>ยอดชำระสำเร็จ: ฿${inv.totalOwed.toLocaleString()} // สมาชิกในโรงเรียนได้รับการล้างสถานะ</p>
+          </div>
+          <div class="debt-card-price-tag text-success" style="font-size:12px; font-weight:700;">ชำระเรียบร้อย</div>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = html;
+}
+
+window.toggleDebtCardSelection = function(card, deathCaseId) {
+  const checkbox = card.querySelector(".debt-invoice-checkbox");
+  checkbox.checked = !checkbox.checked;
+  
+  if (checkbox.checked) {
+    card.classList.add("selected");
+  } else {
+    card.classList.remove("selected");
+  }
+  
+  recalculateSelectedDebtSum();
+};
+
+window.recalculateSelectedDebtSum = function() {
+  const checkboxes = document.querySelectorAll(".debt-invoice-checkbox");
+  let total = 0;
+  let selectedCount = 0;
+
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      total += parseFloat(cb.getAttribute("data-owed"));
+      selectedCount++;
+    }
+  });
+
+  const sumTxt = document.getElementById("school-selected-debt-sum-txt");
+  const uploadBtn = document.getElementById("btn-trigger-upload-slip");
+
+  if (sumTxt) sumTxt.textContent = "฿" + total.toLocaleString(undefined, {minimumFractionDigits: 2});
+  if (uploadBtn) {
+    uploadBtn.disabled = selectedCount === 0;
+  }
+};
+
+window.openUploadSlipModal = function() {
+  const checkboxes = document.querySelectorAll(".debt-invoice-checkbox");
+  const activeSchool = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+  
+  let selectedDeathIds = [];
+  let debtsHtml = "";
+  let totalOwed = 0;
+
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      const deathId = cb.getAttribute("data-death-id");
+      const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathId && inv.schoolId === appState.activeSchoolId);
+      
+      selectedDeathIds.push(deathId);
+      totalOwed += parseFloat(cb.getAttribute("data-owed"));
+
+      debtsHtml += `
+        <div class="slip-debt-line">
+          <span>เคสทำบุญศพ: ${invoice.deathCaseName}</span>
+          <strong class="text-currency">฿${invoice.totalOwed.toLocaleString()}</strong>
+        </div>
+      `;
+    }
+  });
+
+  document.getElementById("slip-school-id").value = appState.activeSchoolId;
+  document.getElementById("slip-death-ids").value = selectedDeathIds.join(",");
+  document.getElementById("slip-preview-school-name").textContent = activeSchool.name;
+  document.getElementById("slip-preview-debts-list").innerHTML = debtsHtml;
+  document.getElementById("slip-preview-total-amount").textContent = "฿" + totalOwed.toLocaleString(undefined, {minimumFractionDigits: 2});
+  document.getElementById("slip-transfer-amount").value = totalOwed;
+
+  document.getElementById("slip-image-file").value = "";
+  document.getElementById("block-slip-preview").style.display = "none";
+  document.getElementById("img-slip-preview-tag").src = "";
+  document.getElementById("slip-notes").value = "";
+  
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById("slip-transfer-date").value = now.toISOString().slice(0, 16);
+
+  document.getElementById("modal-upload-slip").classList.add("active");
+};
+
+document.getElementById("slip-image-file").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    document.getElementById("img-slip-preview-tag").src = evt.target.result;
+    document.getElementById("block-slip-preview").style.display = "flex";
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById("form-upload-slip").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const schoolId = document.getElementById("slip-school-id").value;
+  const deathIds = document.getElementById("slip-death-ids").value.split(",");
+  const transferDate = document.getElementById("slip-transfer-date").value;
+  const transferAmount = parseFloat(document.getElementById("slip-transfer-amount").value);
+  const notes = document.getElementById("slip-notes").value.trim();
+  const imageUri = document.getElementById("img-slip-preview-tag").src;
+
+  if (!imageUri) {
+    alert("กรุณาเลือกหรืออัปโหลดรูปภาพสลิปหลักฐานเพื่อยืนยัน");
+    return;
+  }
+
+  deathIds.forEach(deathId => {
+    const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathId && inv.schoolId === schoolId);
+    if (invoice) {
+      invoice.status = "pending";
+      invoice.slipData = {
+        transferDate,
+        transferAmount,
+        imageUri,
+        notes
+      };
+    }
+  });
+
+  saveStateToLocalStorage();
+  document.getElementById("modal-upload-slip").classList.remove("active");
+  alert("ส่งหลักฐานสลิปสำเร็จ!\nคำขอการอนุมัติสิทธิ์ได้รับการส่งไปยังระบบตรวจสอบของจังหวัดน่านแล้ว");
+  calculateStats();
+});
+
+// ==================== 10. MEMBER DETAIL PROFILE & BENEFICIARY & LIGHTBOX ====================
+window.openProfileViewer = function(memberId) {
+  const member = appState.members.find(m => m.id === memberId);
+  if (!member) return;
+
+  const sch = SCHOOLS.find(s => s.id === member.schoolId);
+
+  document.getElementById("view-profile-name").textContent = `${member.title || ''}${member.firstname} ${member.lastname}`;
+  document.getElementById("view-profile-id").textContent = `รหัสสมาชิก: ${member.id}`;
+  document.getElementById("view-profile-position").textContent = member.position;
+  document.getElementById("view-profile-school").textContent = sch ? sch.name : 'ไม่ระบุ';
+
+  const balance = parseFloat(member.prepayBalance);
+  document.getElementById("view-profile-balance").textContent = "฿" + balance.toLocaleString(undefined, {minimumFractionDigits: 2});
+  
+  const statusEl = document.getElementById("view-profile-status");
+  if (member.status === "deceased") {
+    statusEl.textContent = "เสียชีวิตแล้ว";
+    statusEl.className = "balance-status text-danger";
+  } else if (member.status === "transferred") {
+    statusEl.textContent = "ย้ายสังกัดเสร็จสิ้น";
+    statusEl.className = "balance-status text-warning";
+  } else if (balance >= 0) {
+    statusEl.textContent = "สถานะการเงินปกติ";
+    statusEl.className = "balance-status text-success";
+  } else {
+    statusEl.textContent = "ยอดเงินค้างชำระ (กรุณาเติมเงิน)";
+    statusEl.className = "balance-status text-danger";
+  }
+
+  document.getElementById("view-profile-citizen").textContent = member.citizenId;
+  document.getElementById("view-profile-phone").textContent = member.phone;
+  document.getElementById("view-profile-gender").textContent = member.gender;
+  document.getElementById("view-profile-address").textContent = member.address;
+
+  // เรนเดอร์ผู้รับผลประโยชน์
+  const bName = document.getElementById("view-profile-beneficiary-name");
+  const bPhone = document.getElementById("view-profile-beneficiary-phone");
+  const bRelation = document.getElementById("view-profile-beneficiary-relation");
+
+  if (member.beneficiary && member.beneficiary.name) {
+    bName.textContent = (member.beneficiary.title || '') + member.beneficiary.name;
+    bPhone.textContent = member.beneficiary.phone;
+    bRelation.textContent = member.beneficiary.relation;
+  } else {
+    bName.textContent = "ไม่มีการระบุ";
+    bPhone.textContent = "-";
+    bRelation.textContent = "-";
+  }
+
+  // เรนเดอร์ปุ่มเอกสารแนบประกอบการสมัคร
+  const docsBlock = document.getElementById("view-profile-docs-block");
+  let docsHtml = "";
+  
+  if (member.documents) {
+    const docApp = member.documents.application;
+    const docCit = member.documents.citizen;
+    const docHouse = member.documents.household;
+    const docBeneficiaryId = member.documents.beneficiaryId;
+
+    docsHtml += `
+      <button class="btn-doc-link ${docApp ? '' : 'empty-doc'}" onclick="viewDocumentLightbox(appState.members.find(m => m.id === '${member.id}').documents.application, 'ใบสมัคร: ${member.firstname}')">
+        📄 ใบสมัคร สสมน. ${docApp ? '✅' : '(ไม่ได้แนบ)'}
+      </button>
+      <button class="btn-doc-link ${docCit ? '' : 'empty-doc'}" onclick="viewDocumentLightbox(appState.members.find(m => m.id === '${member.id}').documents.citizen, 'บัตรประชาชน: ${member.firstname}')">
+        📄 บัตรประชาชน ${docCit ? '✅' : '(ไม่ได้แนบ)'}
+      </button>
+      <button class="btn-doc-link ${docHouse ? '' : 'empty-doc'}" onclick="viewDocumentLightbox(appState.members.find(m => m.id === '${member.id}').documents.household, 'ทะเบียนบ้าน: ${member.firstname}')">
+        📄 ทะเบียนบ้าน ${docHouse ? '✅' : '(ไม่ได้แนบ)'}
+      </button>
+      <button class="btn-doc-link ${docBeneficiaryId ? '' : 'empty-doc'}" onclick="viewDocumentLightbox(appState.members.find(m => m.id === '${member.id}').documents.beneficiaryId, 'บัตร ปชช. ผู้รับผลประโยชน์: ${member.firstname}')">
+        📄 บัตร ปชช. ผู้รับผลประโยชน์ ${docBeneficiaryId ? '✅' : '(ไม่ได้แนบ)'}
+      </button>
+    `;
+  } else {
+    docsHtml = `<span style="font-size:12px; color:var(--color-text-dim);">ไม่มีการอัปโหลดเอกสารประกอบขณะลงทะเบียน</span>`;
+  }
+  docsBlock.innerHTML = docsHtml;
+
+  document.getElementById("topup-member-row-index").value = memberId;
+  document.getElementById("topup-amount").value = 100;
+
+  const topupSection = document.getElementById("block-topup-section");
+  if (member.status !== "active") {
+    topupSection.style.display = "none";
+  } else {
+    topupSection.style.display = "block";
+  }
+
+  renderLedgerBook(member.ledger);
+  document.getElementById("modal-profile-viewer").classList.add("active");
+};
+
+function renderLedgerBook(ledger = []) {
+  const tbody = document.getElementById("tbl-body-profile-ledger");
+  if (!tbody) return;
+
+  if (ledger.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center">ไม่พบบันทึกการฝากหักเงินสะสมในระบบ</td></tr>`;
+    return;
+  }
+
+  const reversedLedger = [...ledger].reverse();
+  let html = "";
+  reversedLedger.forEach(item => {
+    const amt = parseFloat(item.amount);
+    const balanceAfter = parseFloat(item.balanceAfter);
+    const typeClass = item.type === "deposit" ? "text-success font-weight-bold" : "text-danger font-weight-bold";
+
+    html += `
+      <tr>
+        <td class="text-currency" style="font-size:11.5px; color:var(--color-text-dim);">${item.date}</td>
+        <td style="font-size:12px; font-weight:500;">${item.description}</td>
+        <td class="text-right text-currency ${typeClass}">
+          ${amt >= 0 ? '+' + amt.toLocaleString() : amt.toLocaleString()}
+        </td>
+        <td class="text-right text-currency font-weight-bold">
+          ฿${balanceAfter.toLocaleString(undefined, {minimumFractionDigits: 2})}
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+document.getElementById("form-profile-topup").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const memberId = document.getElementById("topup-member-row-index").value;
+  const topupAmount = parseFloat(document.getElementById("topup-amount").value);
+
+  const member = appState.members.find(m => m.id === memberId);
+  if (!member) return;
+
+  const currentBal = parseFloat(member.prepayBalance);
+  const nextBal = currentBal + topupAmount;
+  
+  member.prepayBalance = nextBal;
+  member.ledger.push({
+    date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+    type: "deposit",
+    amount: topupAmount,
+    description: "โอนเติมเงินสะสมล่วงหน้าเข้าระบบ สสมน.",
+    balanceAfter: nextBal
+  });
+
+  saveStateToLocalStorage();
+  alert(`เติมเงินสำเร็จ!\nคงเหลือปัจจุบัน ฿${nextBal.toLocaleString(undefined, {minimumFractionDigits: 2})}`);
+  
+  openProfileViewer(memberId);
+  calculateStats();
+});
+
+// ==================== 11. EXCEL TEMPLATE EXPORT & IMPORT (CSV SYSTEM) ====================
+
+// 11.1 ดาวน์โหลด Excel Template (.csv แบบ UTF-8 BOM เปิดใน Excel ภาษาไทยได้ทันที)
+document.getElementById("btn-download-excel-template").addEventListener("click", function() {
+  const headers = "คำนำหน้าชื่อสมาชิก,ชื่อจริง,นามสกุล,เลขประจำตัวประชาชน,ตำแหน่ง,เบอร์โทรศัพท์,เพศ,รหัสโรงเรียน,ที่อยู่ตามทะเบียนบ้าน,เงินสะสมล่วงหน้า,คำนำหน้าชื่อผู้รับผลประโยชน์,ชื่อผู้รับผลประโยชน์,เบอร์โทรผู้รับผลประโยชน์,ความสัมพันธ์";
+  const exampleRow = 'นาย,สมศักดิ์,รักขุนเขา,1559900123456,ครู,0891234567,ชาย,01,"123 ม.2 ต.ในเวียง อ.เมืองน่าน จ.น่าน",150,นาง,อารี รักขุนเขา,0897654321,คู่สมรส';
+  const csvContent = "\uFEFF" + headers + "\n" + exampleRow; // \uFEFF คือ UTF-8 BOM แก้สระไทยเพี้ยนใน Excel
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const downloadAnchor = document.createElement('a');
+  
+  downloadAnchor.setAttribute("href", url);
+  downloadAnchor.setAttribute("download", "ฟอร์มลงทะเบียนสมาชิก_สสมน_น่าน_Template.csv");
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+});
+
+// 11.2 นำเข้าสมาชิกจาก Excel (CSV)
+document.getElementById("btn-import-excel-trigger").addEventListener("click", function() {
+  document.getElementById("import-excel-file").click();
+});
+
+document.getElementById("import-excel-file").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const fileName = file.name.toLowerCase();
+  if (fileName.endsWith(".xlsx")) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = evt.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (rows.length === 0) {
+          alert("ขออภัย! ไม่พบข้อมูลแถวในแผ่นงานสเปรดชีต Excel นี้");
+          return;
+        }
+
+        let successCount = 0;
+        let errors = [];
+
+        rows.forEach((row, idx) => {
+          const title = row["คำนำหน้า"] || row["คำนำหน้าชื่อสมาชิก"] || row["title"] || "นาย";
+          let first = (row["ชื่อจริง"] || row["ชื่อ"] || row["firstName"] || "").toString().trim();
+          let last = (row["นามสกุล"] || row["lastName"] || "").toString().trim();
+          const citizen = String(row["เลขประจำตัวประชาชน"] || row["เลขบัตร"] || row["citizenId"] || "").trim();
+          const position = row["ตำแหน่ง"] || row["position"] || "ครู";
+          const phone = String(row["เบอร์โทรศัพท์"] || row["เบอร์โทร"] || row["phone"] || "080-000-0000").trim();
+          const prepay = parseFloat(row["ยอดเงินฝากสะสมสำรอง"] || row["เงินสะสมล่วงหน้า"] || row["เงินฝาก"] || row["prepayBalance"] || 150);
+
+          const benTitle = row["คำนำหน้าทายาท"] || row["คำนำหน้าชื่อผู้รับผลประโยชน์"] || "นาย";
+          let benFirst = row["ชื่อจริงทายาท"] || row["ชื่อทายาท"] || row["ชื่อผู้รับผลประโยชน์"] || "-";
+          let benLast = row["นามสกุลทายาท"] || "";
+          const relation = row["ความสัมพันธ์"] || "อื่น ๆ";
+          const benPhone = String(row["เบอร์โทรทายาท"] || row["เบอร์โทรผู้รับผลประโยชน์"] || "080-000-0000").trim();
+          const statusText = row["สถานะบัญชี"] || row["สถานะ"] || "ปกติ (Active)";
+
+          // Dual-Compatibility: Name recovery if blank
+          if ((!first || !last) && citizen) {
+            const existingMember = appState.members.find(m => m.citizenId === citizen);
+            if (existingMember) {
+              first = first || existingMember.firstname || existingMember.firstName;
+              last = last || existingMember.lastname || existingMember.lastName;
+            }
+          }
+
+          if (!first || !last) {
+            errors.push(`แถวที่ ${idx + 2}: ชื่อหรือนามสกุลสมาชิกต้องไม่เป็นค่าว่าง`);
+            return;
+          }
+
+          if (!citizen || citizen.length !== 13) {
+            errors.push(`แถวที่ ${idx + 2}: บัตรประชาชน [${citizen}] ต้องเป็นตัวเลข 13 หลักเท่านั้น`);
+            return;
+          }
+
+          const isDup = appState.members.find(m => m.citizenId === citizen && m.status === "active");
+          if (isDup) {
+            errors.push(`แถวที่ ${idx + 2}: ข้ามการสมัคร! สมาชิกบัตรประชาชน [${citizen}] ได้ลงทะเบียนใช้งานอยู่แล้ว`);
+            return;
+          }
+
+          let targetSchoolId = appState.activeSchoolId;
+          if (appState.activeRole === "province") {
+            targetSchoolId = String(row["รหัสโรงเรียน"] || row["schoolId"] || "33").padStart(2, "0");
+          }
+
+          let mStatus = "active";
+          if (statusText.includes("เสียชีวิต")) mStatus = "deceased";
+          else if (statusText.includes("โอนย้าย")) mStatus = "transferred";
+
+          const generatedId = generateMemberId(targetSchoolId, position);
+          
+          const ledger = [
+            INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่ (ผ่านไฟล์ Excel XLSX)"),
+            INITIAL_LEDGER_ENTRY(prepay, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน. (ผ่านไฟล์ Excel XLSX)")
+          ];
+
+          const newMember = {
+            id: generatedId,
+            title: title,
+            firstname: first,
+            lastname: last,
+            citizenId: citizen,
+            schoolId: targetSchoolId,
+            position: position,
+            phone: phone,
+            prepayBalance: prepay,
+            status: mStatus,
+            beneficiaryTitle: benTitle,
+            beneficiaryFirstName: benFirst,
+            beneficiaryLastName: benLast,
+            beneficiaryRelation: relation,
+            beneficiaryPhone: benPhone,
+            documents: {
+              application: null,
+              citizen: null,
+              household: null,
+              beneficiaryId: null
+            },
+            ledger: ledger
+          };
+
+          appState.members.push(newMember);
+          successCount++;
+        });
+
+        saveStateToLocalStorage();
+        calculateStats();
+        
+        document.getElementById("lbl-import-total-success").textContent = `จำนวนสมาชิกใหม่ที่ได้รับการรันรหัสและบันทึกเข้าระบบสำเร็จ: ${successCount} ราย`;
+        const errorsBlock = document.getElementById("import-summary-errors-block");
+        const errorsUl = document.getElementById("import-errors-list");
+
+        if (errors.length > 0) {
+          errorsBlock.style.display = "block";
+          let errHtml = "";
+          errors.forEach(err => {
+            errHtml += `<li style="margin-bottom:4px;">❌ ${err}</li>`;
+          });
+          errorsUl.innerHTML = errHtml;
+        } else {
+          errorsBlock.style.display = "none";
+        }
+
+        document.getElementById("modal-import-summary").classList.add("active");
+      } catch (err) {
+        alert("ขออภัย! ไม่สามารถนำเข้าข้อมูลจากไฟล์ XLSX นี้ได้: " + err.message);
+      }
+    };
+    reader.readAsBinaryString(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      parseExcelCSVContent(evt.target.result);
+    };
+    reader.readAsText(file, "UTF-8"); // เปิดอ่านภาษาไทย
+  }
+});
+
+// ตรรกะวิเคราะห์และนำเข้า CSV แถวสมาชิก
+function parseExcelCSVContent(csvText) {
+  const lines = csvText.split(/\r\n|\n/);
+  if (lines.length <= 1) {
+    alert("ไฟล์ว่างหรือไม่มีข้อมูลแถวสมาชิก");
+    return;
+  }
+
+  const headers = lines[0].replace(/^\uFEFF/, "").split(",").map(h => h.trim());
+  
+  const getColIndex = (namesList, defaultIdx) => {
+    for (let name of namesList) {
+      const idx = headers.indexOf(name);
+      if (idx !== -1) return idx;
+    }
+    return defaultIdx;
+  };
+
+  const idxTitle = getColIndex(["คำนำหน้าชื่อสมาชิก", "คำนำหน้า", "title"], 0);
+  const idxFirstName = getColIndex(["ชื่อจริง", "ชื่อ", "firstName"], 1);
+  const idxLastName = getColIndex(["นามสกุล", "lastName"], 2);
+  const idxCitizen = getColIndex(["เลขประจำตัวประชาชน", "เลขบัตร", "citizenId"], 3);
+  const idxPosition = getColIndex(["ตำแหน่ง", "position"], 4);
+  const idxPhone = getColIndex(["เบอร์โทรศัพท์", "เบอร์โทร", "phone"], 5);
+  const idxGender = getColIndex(["เพศ", "gender"], 6);
+  const idxSchoolId = getColIndex(["รหัสโรงเรียน", "schoolId"], 7);
+  const idxAddress = getColIndex(["ที่อยู่ตามทะเบียนบ้าน", "ที่อยู่", "address"], 8);
+  const idxPrepay = getColIndex(["เงินสะสมล่วงหน้า", "ยอดเงินฝากสะสมสำรอง", "prepayBalance"], 9);
+  const idxStatus = getColIndex(["สถานะบัญชี", "สถานะ", "status"], -1);
+
+  const idxBTitle = getColIndex(["คำนำหน้าชื่อผู้รับผลประโยชน์", "คำนำหน้าทายาท", "beneficiaryTitle"], 10);
+  const idxBName = getColIndex(["ชื่อผู้รับผลประโยชน์", "ชื่อจริงทายาท", "ชื่อทายาท", "beneficiaryFirstName"], 11);
+  const idxBPhone = getColIndex(["เบอร์โทรผู้รับผลประโยชน์", "เบอร์โทรทายาท", "beneficiaryPhone"], 12);
+  const idxBRelation = getColIndex(["ความสัมพันธ์", "beneficiaryRelation"], 13);
+
+  let successCount = 0;
+  let errors = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const columns = [];
+    let insideQuote = false;
+    let currentColumn = "";
+
+    for (let charIndex = 0; charIndex < line.length; charIndex++) {
+      const char = line[charIndex];
+      if (char === '"') {
+        insideQuote = !insideQuote;
+      } else if (char === ',' && !insideQuote) {
+        columns.push(currentColumn.trim());
+        currentColumn = "";
+      } else {
+        currentColumn += char;
+      }
+    }
+    columns.push(currentColumn.trim());
+
+    if (columns.length < 8) {
+      errors.push(`แถวที่ ${i + 1}: ข้อมูลไม่ครบถ้วนหลักการลงทะเบียน`);
+      continue;
+    }
+
+    const memberTitle = columns[idxTitle] || "นาย";
+    let firstname = columns[idxFirstName] || "";
+    let lastname = columns[idxLastName] || "";
+    const citizenId = columns[idxCitizen] ? columns[idxCitizen].replace(/['"]/g, "") : "";
+    const position = columns[idxPosition] || "ครู";
+    const phone = columns[idxPhone] ? columns[idxPhone].replace(/['"]/g, "") : "";
+    const gender = columns[idxGender] || "ชาย";
+    const schoolId = String(columns[idxSchoolId] || "33").padStart(2, "0").replace(/['"]/g, "");
+    const address = columns[idxAddress] ? columns[idxAddress].replace(/['"]/g, "") : "";
+    const prepayBalance = parseFloat(columns[idxPrepay]) || 150;
+    const statusText = idxStatus !== -1 ? columns[idxStatus] : "ปกติ (Active)";
+    
+    const bTitle = columns[idxBTitle] || "นาง";
+    const bName = columns[idxBName] || "ไม่ระบุ";
+    const bPhone = columns[idxBPhone] ? columns[idxBPhone].replace(/['"]/g, "") : "-";
+    const bRelation = columns[idxBRelation] || "อื่น ๆ";
+
+    // Dual-Compatibility: Name recovery if blank
+    if ((!firstname || !lastname) && citizenId) {
+      const existingMember = appState.members.find(m => m.citizenId === citizenId);
+      if (existingMember) {
+        firstname = firstname || existingMember.firstname || existingMember.firstName;
+        lastname = lastname || existingMember.lastname || existingMember.lastName;
+      }
+    }
+
+    if (!firstname || !lastname) {
+      errors.push(`แถวที่ ${i + 1}: ชื่อหรือนามสกุลสมาชิกต้องไม่เป็นค่าว่าง`);
+      continue;
+    }
+
+    if (!citizenId || citizenId.length !== 13 || !/^\d+$/.test(citizenId)) {
+      errors.push(`แถวที่ ${i + 1}: บัตรประชาชน [${citizenId}] ต้องเป็นตัวเลข 13 หลักเท่านั้น`);
+      continue;
+    }
+
+    const isDup = appState.members.find(m => m.citizenId === citizenId && m.status === "active");
+    if (isDup) {
+      errors.push(`แถวที่ ${i + 1}: ข้ามการสมัคร! สมาชิกบัตรประชาชน [${citizenId}] ได้ลงทะเบียนใช้งานอยู่แล้ว`);
+      continue;
+    }
+
+    const targetSchoolId = appState.activeRole === "province" ? schoolId : appState.activeSchoolId;
+
+    let mStatus = "active";
+    if (statusText.includes("เสียชีวิต")) mStatus = "deceased";
+    else if (statusText.includes("โอนย้าย")) mStatus = "transferred";
+
+    const generatedId = generateMemberId(targetSchoolId, position);
+    
+    const ledger = [
+      INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่ (ผ่านไฟล์ Excel CSV)"),
+      INITIAL_LEDGER_ENTRY(prepayBalance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน. (ผ่านไฟล์ Excel CSV)")
+    ];
+
+    const newMember = {
+      id: generatedId,
+      title: memberTitle,
+      firstname,
+      lastname,
+      citizenId,
+      phone,
+      gender,
+      position,
+      schoolId: targetSchoolId,
+      prepayBalance: prepayBalance,
+      applicationFeePaid: true,
+      status: mStatus,
+      address: address || "ไม่ระบุที่อยู่ชัดเจน",
+      beneficiaryTitle: bTitle,
+      beneficiaryFirstName: bName,
+      beneficiaryLastName: "",
+      beneficiaryRelation: bRelation,
+      beneficiaryPhone: bPhone,
+      documents: {
+        application: null,
+        citizen: null,
+        household: null,
+        beneficiaryId: null
+      },
+      ledger: ledger
+    };
+
+    appState.members.push(newMember);
+    successCount++;
+  }
+
+  saveStateToLocalStorage();
+  document.getElementById("import-excel-file").value = "";
+  
+  document.getElementById("lbl-import-total-success").textContent = `จำนวนสมาชิกใหม่ที่ได้รับการรันรหัสและบันทึกเข้าระบบสำเร็จ: ${successCount} ราย`;
+  const errorsBlock = document.getElementById("import-summary-errors-block");
+  const errorsUl = document.getElementById("import-errors-list");
+
+  if (errors.length > 0) {
+    errorsBlock.style.display = "block";
+    let errHtml = "";
+    errors.forEach(err => {
+      errHtml += `<li style="margin-bottom:4px;">❌ ${err}</li>`;
+    });
+    errorsUl.innerHTML = errHtml;
+  } else {
+    errorsBlock.style.display = "none";
+  }
+
+  document.getElementById("modal-import-summary").classList.add("active");
+  calculateStats();
+}
+
+// ==================== 12. DATA EXPORT & IMPORT (JSON BACKUP) ====================
+document.getElementById("btn-export-data").addEventListener("click", function() {
+  const data = {
+    members: appState.members,
+    deathCases: appState.deathCases,
+    schoolInvoices: appState.schoolInvoices,
+    transferLogs: appState.transferLogs,
+    exportedAt: new Date().toISOString()
+  };
+
+  const jsonString = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+  const downloadAnchor = document.createElement('a');
+  
+  downloadAnchor.setAttribute("href", jsonString);
+  downloadAnchor.setAttribute("download", `สสมน_น่าน_ฐานข้อมูล_${new Date().toISOString().slice(0, 10)}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+});
+
+document.getElementById("btn-import-trigger").addEventListener("click", function() {
+  document.getElementById("import-database-file").click();
+});
+
+document.getElementById("import-database-file").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      const data = JSON.parse(evt.target.result);
+      if (data.members && data.deathCases && data.schoolInvoices) {
+        appState.members = data.members;
+        appState.deathCases = data.deathCases;
+        appState.schoolInvoices = data.schoolInvoices;
+        appState.transferLogs = data.transferLogs || [];
+        
+        saveStateToLocalStorage();
+        alert("นำเข้าฐานข้อมูลสำรองสำเร็จ! ระบบได้รับการอัปเดตใหม่ทั้งหมดแล้ว");
+        calculateStats();
+      } else {
+        alert("ขออภัย! โครงสร้างไฟล์ข้อมูลสำรอง JSON ไม่ถูกต้องเหมาะสม");
+      }
+    } catch(err) {
+      alert("ขออภัย! ไม่สามารถถอดรหัสอ่านไฟล์ข้อมูลสำรอง JSON ได้");
+    }
+  };
+  reader.readAsText(file);
+});
+
+// ==================== 13. LOGIN ENTRY GATE & AUTH CONTROLLER ====================
+// ตัวแปรเก็บสิทธิ์ที่เลือกหน้า Login
+let selectedLoginRole = "province";
+
+document.getElementById("btn-login-role-province").addEventListener("click", function() {
+  this.classList.add("active");
+  document.getElementById("btn-login-role-school").classList.remove("active");
+  document.getElementById("login-school-wrapper").style.display = "none";
+  selectedLoginRole = "province";
+});
+
+document.getElementById("btn-login-role-school").addEventListener("click", function() {
+  this.classList.add("active");
+  document.getElementById("btn-login-role-province").classList.remove("active");
+  document.getElementById("login-school-wrapper").style.display = "block";
+  selectedLoginRole = "school";
+});
+
+// ตรวจสอบสิทธิ์เข้าระบบและล็อกอิน
+document.getElementById("form-login").addEventListener("submit", function(e) {
+  e.preventDefault();
+  
+  const password = document.getElementById("login-password").value;
+  const schoolId = document.getElementById("login-select-school").value;
+  
+  if (selectedLoginRole === "province") {
+    if (password === "province1234" || password === "province123") {
+      appState.activeRole = "province";
+      appState.activeSchoolId = "33"; // ส่วนกลางคือ 33 หรือโรงเรียนอ้างอิง
+      loginSuccess();
+    } else {
+      alert("❌ รหัสผ่านแอดมินจังหวัดไม่ถูกต้อง กรุณาป้อน province1234");
+      document.getElementById("login-password").focus();
+    }
+  } else {
+    const correctPwd = appState.schoolPasswords[schoolId] || "school1234";
+    if (password === correctPwd || password === "school123") {
+      appState.activeRole = "school";
+      appState.activeSchoolId = schoolId;
+      loginSuccess();
+    } else {
+      alert("❌ รหัสผ่านแอดมินโรงเรียนไม่ถูกต้อง กรุณาตรวจสอบรหัสสังกัดหรือพิมพ์ school1234");
+      document.getElementById("login-password").focus();
+    }
+  }
+});
+
+function loginSuccess(isRestore = false) {
+  // สลับซ่อนหน้าจอด่านหน้า
+  document.getElementById("login-container").style.display = "none";
+  document.getElementById("main-app-container").style.display = "flex";
+  
+  // บันทึกสถานะเซสชันใน sessionStorage เพื่อป้องกันการล็อกอินใหม่ทุกแท็บ
+  sessionStorage.setItem("สสมน_NAN_LOGGED_IN", "true");
+  sessionStorage.setItem("สสมน_NAN_LOGGED_IN_ROLE", appState.activeRole);
+  sessionStorage.setItem("สสมน_NAN_LOGGED_IN_SCHOOL_ID", appState.activeSchoolId);
+
+  // อัปเดตข้อมูลโปรไฟล์ผู้ใช้แถบ Sidebar
+  const school = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+  const roleNameEl = document.getElementById("sidebar-admin-role-name");
+  const scopeNameEl = document.getElementById("sidebar-admin-scope-name");
+  
+  if (appState.activeRole === "province") {
+    if (roleNameEl) roleNameEl.textContent = "แอดมินจังหวัด";
+    if (scopeNameEl) scopeNameEl.textContent = "จังหวัดน่าน (ทั้งหมด)";
+  } else {
+    if (roleNameEl) roleNameEl.textContent = "แอดมินโรงเรียน";
+    if (scopeNameEl) scopeNameEl.textContent = school ? school.name : "ไม่ระบุสังกัด";
+  }
+  
+  calculateStats();
+  if (window.onRoleSwitched) window.onRoleSwitched();
+  if (!isRestore) {
+    switchTab("dashboard");
+  }
+}
+
+// ออกจากระบบ
+document.getElementById("btn-action-logout").addEventListener("click", function() {
+  if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+    sessionStorage.removeItem("สสมน_NAN_LOGGED_IN");
+    sessionStorage.removeItem("สสมน_NAN_LOGGED_IN_ROLE");
+    sessionStorage.removeItem("สสมน_NAN_LOGGED_IN_SCHOOL_ID");
+    document.getElementById("login-password").value = "";
+    document.getElementById("main-app-container").style.display = "none";
+    document.getElementById("login-container").style.display = "flex";
+  }
+});
+
+function switchTab(tabId) {
+  appState.activeTab = tabId;
+  
+  // สลับการแสดง Panel
+  document.querySelectorAll(".view-panel").forEach(panel => {
+    panel.classList.remove("active");
+  });
+  
+  const activePanel = document.getElementById(`view-panel-${tabId}`);
+  if (activePanel) {
+    activePanel.classList.add("active");
+  }
+
+  // อัปเดตสถานะปุ่มเมนู Sidebar
+  document.querySelectorAll(".sidebar-menu .menu-item").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  const activeBtn = document.getElementById(`btn-nav-${tabId}`);
+  if (activeBtn) {
+    activeBtn.classList.add("active");
+  }
+
+  // ตั้งค่าข้อมูลตามวิวมุมมอง
+  if (tabId === "schools") {
+    if (appState.activeRole === "school") {
+      document.getElementById("block-school-profile-editor").style.display = "block";
+      document.getElementById("block-province-schools-directory").style.display = "none";
+      initSchoolProfileForm();
+    } else {
+      document.getElementById("block-school-profile-editor").style.display = "none";
+      document.getElementById("block-province-schools-directory").style.display = "block";
+      renderSchoolsDirectory();
+    }
+  }
+}
+
+document.getElementById("btn-nav-dashboard").addEventListener("click", () => switchTab("dashboard"));
+document.getElementById("btn-nav-members").addEventListener("click", () => switchTab("members"));
+document.getElementById("btn-nav-cremation").addEventListener("click", () => switchTab("cremation"));
+
+document.getElementById("btn-action-primary").addEventListener("click", function() {
+  if (appState.activeRole === "province") {
+    switchTab("cremation");
+    document.getElementById("block-province-death-creation").scrollIntoView({ behavior: 'smooth' });
+  } else {
+    openAddMemberModal();
+  }
+});
+
+function openAddMemberModal() {
+  document.getElementById("form-member").reset();
+  document.getElementById("member-action-type").value = "create";
+  document.getElementById("modal-member-title").textContent = "สมัครลงทะเบียนสมาชิก สสมน.น่าน ใหม่";
+  document.getElementById("btn-save-member").textContent = "บันทึกและออกรหัสสมาชิก";
+  document.getElementById("block-custom-member-id").style.display = "none";
+  document.getElementById("block-financial-inputs").style.display = "flex";
+  
+  document.getElementById("block-member-title-other").style.display = "none";
+  document.getElementById("block-beneficiary-title-other").style.display = "none";
+
+  const schoolSelect = document.getElementById("member-school");
+  schoolSelect.value = appState.activeSchoolId;
+  schoolSelect.disabled = appState.activeRole === "school";
+
+  document.getElementById("member-prepay-balance").value = 150;
+  document.getElementById("member-address").value = "";
+
+  document.getElementById("modal-member").classList.add("active");
+}
+
+document.getElementById("btn-clear-directory-filters").addEventListener("click", function() {
+  document.getElementById("member-search-input").value = "";
+  document.getElementById("filter-member-position").value = "all";
+  if (appState.activeRole === "province") {
+    document.getElementById("filter-member-school").value = "all";
+  }
+  document.getElementById("filter-member-status").value = "active";
+  calculateStats();
+});
+
+document.getElementById("member-search-input").addEventListener("input", renderMembersDirectory);
+document.getElementById("filter-member-position").addEventListener("change", renderMembersDirectory);
+document.getElementById("filter-member-status").addEventListener("change", renderMembersDirectory);
+if (document.getElementById("filter-member-school")) {
+  document.getElementById("filter-member-school").addEventListener("change", renderMembersDirectory);
+}
+document.getElementById("filter-ranking-order").addEventListener("change", renderSchoolRankingsTable);
+
+document.getElementById("btn-gen-demo-data").addEventListener("click", generateDemoData);
+
+const closeButtons = document.querySelectorAll(".btn-close-modal, .btn-cancel-modal, .btn-cancel");
+closeButtons.forEach(btn => {
+  btn.addEventListener("click", function() {
+    const activeModal = document.querySelector(".modal.active");
+    if (activeModal) activeModal.classList.remove("active");
+  });
+});
+
+const modalsList = document.querySelectorAll(".modal");
+modalsList.forEach(m => {
+  m.addEventListener("click", function(e) {
+    if (e.target === m) {
+      m.classList.remove("active");
+    }
+  });
+});
+
+// ==================== 14. DEMO DATA GENERATOR SYSTEM ====================
+function generateDemoData() {
+  if (!confirm("คุณต้องการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?\n*(การดำเนินการนี้จะเคลียร์และลบข้อมูลที่กำลังคีย์อยู่ทิ้งทั้งหมดก่อนเริ่มเขียนใหม่)")) {
+    return;
+  }
+
+  appState.members = [];
+  appState.deathCases = [];
+  appState.schoolInvoices = [];
+  appState.transferLogs = [];
+  appState.schoolProfiles = { ...DEFAULT_SCHOOL_PROFILES };
+  ensureSchoolProfilesStats();
+
+  const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  const names = [
+    { fn: "สมชาย", ln: "ดีใจแสนน่าน", pos: "ผอ.", sch: "01", balance: 150, gender: "ชาย" },
+    { fn: "วิลัยลักษณ์", ln: "แก้วหลวง", pos: "ครู", sch: "01", balance: 250, gender: "หญิง" },
+    { fn: "พัชรินทร์", ln: "ท่าวังผา", pos: "ครู", sch: "01", balance: 130, gender: "หญิง" },
+    { fn: "นพดล", ln: "ศรัทธาศิลา", pos: "ครู", sch: "01", balance: 150, gender: "ชาย" },
+    { fn: "ประเสริฐ", ln: "แงงงาม", pos: "ครู", sch: "02", balance: 150, gender: "ชาย" },
+    { fn: "ศิริพร", ln: "ปัววิทยา", pos: "ผอ.", sch: "02", balance: 350, gender: "หญิง" },
+    { fn: "เกรียงไกร", ln: "เมืองแสน", pos: "รอง ผอ.", sch: "02", balance: 150, gender: "ชาย" },
+    { fn: "ขวัญใจ", ln: "บ่อเกลือภูเขา", pos: "ครู", sch: "03", balance: 150, gender: "หญิง" },
+    { fn: "อุดม", ln: "ขุนขุนเขา", pos: "ครู", sch: "04", balance: 150, gender: "ชาย" },
+    { fn: "วรรณวิภา", ln: "นันทบุรี", pos: "ครู", sch: "06", balance: 50, gender: "หญิง" },
+    { fn: "อนุสรณ์", ln: "พระธาตุ", pos: "ครู", sch: "08", balance: 150, gender: "ชาย" },
+    { fn: "ชญานิศ", ln: "ศิลาทอง", pos: "ครู", sch: "12", balance: 150, gender: "หญิง" },
+    { fn: "ยุทธนา", ln: "หนองบัว", pos: "ครู", sch: "15", balance: 150, gender: "ชาย" },
+    { fn: "โสภิณ", ln: "ปัญญานุกูล", pos: "ครู", sch: "31", balance: 150, gender: "หญิง" },
+    { fn: "สมจิตร", ln: "แสนบำนาญ", pos: "ข้าราชการบำนาญ", sch: "33", balance: 150, gender: "ชาย" },
+    { fn: "ประคอง", ln: "ใจกล้าบำนาญ", pos: "ข้าราชการบำนาญ", sch: "33", balance: 250, gender: "หญิง" },
+    { fn: "จิรเดช", ln: "มีคุณ", pos: "ครู", sch: "01", balance: 150, gender: "ชาย" },
+    { fn: "ธัญญารัตน์", ln: "สตรีศรี", pos: "ครู", sch: "01", balance: 150, gender: "หญิง" },
+    { fn: "กรกฎ", ln: "ศรีสวัสดิ์", pos: "ครู", sch: "02", balance: 150, gender: "ชาย" },
+    { fn: "ปาริชาติ", ln: "สะแสนน่าน", pos: "ครู", sch: "02", balance: 150, gender: "หญิง" }
+  ];
+
+  names.forEach((p, index) => {
+    const generatedId = generateMemberId(p.sch);
+    const idCard = "1559900" + String(100000 + index);
+    const phone = "089" + String(1000000 + index);
+
+    const ledger = [
+      INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่"),
+      INITIAL_LEDGER_ENTRY(p.balance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน.")
+    ];
+
+    // จำลองแนบเอกสารใบสมัครเริ่มต้น (SVG Base64 แบบจำลอง)
+    const docApp = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%230f172a'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2310b981' font-size='16'>ใบสมัครของ ${p.fn} ${p.ln}</text></svg>";
+
+    let title = p.gender === "ชาย" ? "นาย" : "นางสาว";
+    if (index === 5) title = "นาง";
+
+    const m = {
+      id: generatedId,
+      title: title,
+      firstname: p.fn,
+      lastname: p.ln,
+      citizenId: idCard,
+      phone: phone,
+      gender: p.gender,
+      position: p.pos,
+      schoolId: p.sch,
+      prepayBalance: p.balance,
+      applicationFeePaid: true,
+      status: "active",
+      address: `บ้านเลขที่ ${10 + index} หมู่ 1 ต.ในเวียง อ.เมืองน่าน จ.น่าน`,
+      beneficiary: {
+        title: "นาง",
+        name: `หวานใจ ${p.ln}`,
+        phone: "0898765432",
+        relation: "คู่สมรส"
+      },
+      documents: {
+        application: docApp,
+        citizen: docApp,
+        household: docApp,
+        beneficiaryId: docApp
+      },
+      ledger: ledger
+    };
+
+    appState.members.push(m);
+  });
+
+  // 2. จำลองประวัติย้ายสังกัด
+  const transferUser1 = appState.members[0]; 
+  const oldId = transferUser1.id;
+  const newId = generateMemberId("02");
+  
+  transferUser1.status = "transferred";
+  transferUser1.ledger.push({
+    date: dateStr,
+    type: "charge",
+    amount: 0,
+    description: `โอนปิดรหัสเพื่อย้ายสังกัดไปยัง โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน (รหัสสมาชิกใหม่คือ ${newId})`,
+    balanceAfter: parseFloat(transferUser1.prepayBalance)
+  });
+
+  const newActiveRec = {
+    ...transferUser1,
+    id: newId,
+    schoolId: "02",
+    status: "active",
+    ledger: [
+      ...transferUser1.ledger,
+      {
+        date: dateStr,
+        type: "deposit",
+        amount: 0,
+        description: `โอนย้ายฐานเงินสะสมล่วงหน้าติดตัวมาจากสังกัด โรงเรียนสตรีศรีน่าน (รหัสสมาชิกเก่า: ${oldId})`,
+        balanceAfter: parseFloat(transferUser1.prepayBalance)
+      }
+    ]
+  };
+  appState.members.push(newActiveRec);
+
+  appState.transferLogs.push({
+    date: dateStr,
+    memberName: `${transferUser1.firstname} ${transferUser1.lastname}`,
+    oldSchool: "โรงเรียนสตรีศรีน่าน",
+    newSchool: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
+    oldId: oldId,
+    newId: newId,
+    reason: "ย้ายตามผลสอบเลื่อนขั้นรับตำแหน่ง ผู้อำนวยการโรงเรียนใหม่"
+  });
+
+  // 3. จำลองเคสเสียชีวิต อนุมัติแล้ว (นายประเสริฐ แงงงาม)
+  const deadPerson = appState.members[4]; 
+  deadPerson.status = "deceased";
+  deadPerson.ledger.push({
+    date: dateStr,
+    type: "charge",
+    amount: 0,
+    description: `เสียชีวิตอย่างสงบเมื่อวันที่ 2026-05-15 ปิดยอดเงินสะสมล่วงหน้าถาวร`,
+    balanceAfter: parseFloat(deadPerson.prepayBalance)
+  });
+
+  const deathCaseId = "DEATH_DEMO_001";
+  const mockDoc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%23450a0a'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ef4444' font-size='16'>ใบมรณบัตร: นายประเสริฐ แงงงาม</text></svg>";
+  
+  const calcInfo = getDeathCalculationInfo("2026-05-15", deadPerson);
+  const deathCase = {
+    id: deathCaseId,
+    memberId: deadPerson.id,
+    name: `${deadPerson.title || ''}${deadPerson.firstname} ${deadPerson.lastname}`,
+    schoolName: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
+    schoolId: "02",
+    reportedDate: "2026-05-15",
+    chargeAmount: 20,
+    cause: "กล้ามเนื้อหัวใจขาดเลือดเฉียบพลัน",
+    status: "approved",
+    documents: {
+      certificate: mockDoc,
+      citizen: mockDoc,
+      household: mockDoc
+    },
+    beneficiaryName: calcInfo.beneficiaryName,
+    referenceDateText: calcInfo.refDateText,
+    referenceMemberCount: calcInfo.activeMembersCount,
+    grossPayout: calcInfo.grossPayout,
+    operatingFee: calcInfo.operatingFee,
+    netPayout: calcInfo.netPayout
+  };
+  appState.deathCases.push(deathCase);
+
+  // หักเงินทุกคน 20 บาท
+  const activeList = appState.members.filter(m => m.status === "active");
+  activeList.forEach(m => {
+    const curBal = parseFloat(m.prepayBalance);
+    m.prepayBalance = curBal - 20;
+    m.ledger.push({
+      date: dateStr,
+      type: "charge",
+      amount: -20,
+      description: `หักเงินสงเคราะห์รายศพกรณีการเสียชีวิตของ นายประเสริฐ แงงงาม (${deadPerson.id})`,
+      balanceAfter: curBal - 20
+    });
+  });
+
+  // สร้าง Invoices 33 โรงเรียน
+  SCHOOLS.forEach(sch => {
+    const schoolActiveCount = activeList.filter(m => m.schoolId === sch.id).length;
+    const totalOwed = schoolActiveCount * 20;
+
+    let status = "unpaid";
+    let slipData = null;
+
+    if (totalOwed === 0) {
+      status = "paid";
+    } else if (sch.id === "02") {
+      status = "paid";
+      slipData = {
+        transferDate: dateStr,
+        transferAmount: totalOwed,
+        imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2310b981' font-size='16'>สลิปโอนเงินสำเร็จ [ศรีสวัสดิ์ฯ]</text></svg>",
+        notes: "โอนผ่านระบบ Mobile Banking ธนาคารกรุงไทยของกองทุนโรงเรียน"
+      };
+    } else if (sch.id === "01") {
+      status = "pending";
+      slipData = {
+        transferDate: dateStr,
+        transferAmount: totalOwed,
+        imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23fbbf24' font-size='16'>สลิปหลักฐานโอนเงินภาพรวม [สตรีศรีน่าน]</text></svg>",
+        notes: "รอการตรวจสอบสิทธิ์และรับยอดโอนเงินทำบุญจังหวัด"
+      };
+    }
+
+    const invoice = {
+      deathCaseId: deathCaseId,
+      deathCaseName: `${deadPerson.firstname} ${deadPerson.lastname}`,
+      schoolId: sch.id,
+      schoolName: sch.name,
+      activeCount: schoolActiveCount,
+      deductionAmount: 20,
+      totalOwed: totalOwed,
+      status: status,
+      slipData: slipData
+    };
+    appState.schoolInvoices.push(invoice);
+  });
+
+  // 4. จำลองเคสแจ้งตาย "รอยืนยัน" (Pending Approval) ของแอดมินโรงเรียน
+  const pendingDeadPerson = appState.members[7]; // นางสาวขวัญใจ ปัววิทยา
+  const calcInfoPending = getDeathCalculationInfo("2026-06-01", pendingDeadPerson);
+  const pendingDeathCase = {
+    id: "DEATH_PEND_DEMO_001",
+    memberId: pendingDeadPerson.id,
+    name: `${pendingDeadPerson.title || ''}${pendingDeadPerson.firstname} ${pendingDeadPerson.lastname}`,
+    schoolName: "โรงเรียนปัว",
+    schoolId: "03",
+    reportedDate: "2026-06-01",
+    chargeAmount: 20,
+    cause: "โรคมะเร็งตับระยะสุดท้าย",
+    status: "pending_approval",
+    documents: {
+      certificate: mockDoc,
+      citizen: mockDoc,
+      household: mockDoc
+    },
+    beneficiaryName: calcInfoPending.beneficiaryName,
+    referenceDateText: calcInfoPending.refDateText,
+    referenceMemberCount: calcInfoPending.activeMembersCount,
+    grossPayout: calcInfoPending.grossPayout,
+    operatingFee: calcInfoPending.operatingFee,
+    netPayout: calcInfoPending.netPayout
+  };
+  appState.deathCases.unshift(pendingDeathCase);
+
+  saveStateToLocalStorage();
+  alert("นำเข้าฐานข้อมูล สมาชิกเอกสารแนบ และเคสคดีแจ้งศพจำลองเข้าระบบสำเร็จ!");
+  calculateStats();
+}
+
+// ==================== 15. GLOBALS IN-WINDOW BINDINGS ====================
+// ==================== 15. GLOBALS IN-WINDOW BINDINGS ====================
+window.openProfileViewer = openProfileViewer;
+window.openTransferSchoolModal = openTransferSchoolModal;
+window.viewDocumentLightbox = viewDocumentLightbox;
+window.approvePendingDeath = approvePendingDeath;
+window.rejectPendingDeath = rejectPendingDeath;
+
+// ==================== 16. SCHOOL DIRECTORY & CERTIFICATION SYSTEM ====================
+
+// ฟังก์ชันสร้างความมั่นใจว่าข้อมูลพื้นฐานโรงเรียนมีสถิติครบถ้วน (Repair / Dynamic mock data generator)
+function ensureSchoolProfilesStats() {
+  SCHOOLS.forEach(sch => {
+    if (!appState.schoolProfiles[sch.id]) {
+      appState.schoolProfiles[sch.id] = {
+        address: "-", moo: "-", tumbon: "-", amphoe: "เมืองน่าน", phone: "-", fax: "-", director: "-", directorPhone: "-", coordinator: "-", coordinatorPhone: "-"
+      };
+    }
+    const profile = appState.schoolProfiles[sch.id];
+    
+    if (profile.directorCount === undefined) profile.directorCount = sch.totalPersonnel.director;
+    if (profile.deputyCount === undefined) profile.deputyCount = sch.totalPersonnel.deputy;
+    if (profile.teacherCount === undefined) profile.teacherCount = sch.totalPersonnel.teacher;
+    if (profile.otherCount === undefined) profile.otherCount = sch.totalPersonnel.other;
+
+    const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + profile.otherCount;
+
+    if (profile.pensionersCount === undefined) profile.pensionersCount = Math.round(totalPersonnel * 0.15);
+    if (profile.activeMembersCount === undefined) profile.activeMembersCount = Math.round(totalPersonnel * 0.80);
+    if (profile.retiredTransferredMembersCount === undefined) profile.retiredTransferredMembersCount = Math.round(totalPersonnel * 0.20);
+    if (profile.studentsJune === undefined) profile.studentsJune = totalPersonnel * 10;
+    if (profile.studentsNovember === undefined) profile.studentsNovember = Math.round(totalPersonnel * 10.2);
+  });
+}
+
+// ฟังก์ชันคำนวณและแสดงผลรวมครู/บุคลากร และสมาชิก สสมน. แบบ Real-time (Global Scope)
+function updateSchoolProfileTotals() {
+  const director = parseInt(document.getElementById("school-profile-director-count")?.value) || 0;
+  const deputy = parseInt(document.getElementById("school-profile-deputy-count")?.value) || 0;
+  const teacher = parseInt(document.getElementById("school-profile-teacher-count")?.value) || 0;
+  const other = parseInt(document.getElementById("school-profile-other-count")?.value) || 0;
+  
+  const pensioners = parseInt(document.getElementById("school-profile-pensioners-count")?.value) || 0;
+  const active = parseInt(document.getElementById("school-profile-active-members-count")?.value) || 0;
+  const retired = parseInt(document.getElementById("school-profile-retired-transferred-members-count")?.value) || 0;
+
+  const totalP = director + deputy + teacher + other;
+  const totalM = active + retired;
+
+  const lblTotalP = document.getElementById("lbl-profile-total-personnel");
+  if (lblTotalP) {
+    lblTotalP.textContent = `${totalP.toLocaleString()} คน`;
+  }
+  const lblTotalM = document.getElementById("lbl-profile-total-members");
+  if (lblTotalM) {
+    lblTotalM.textContent = `${totalM.toLocaleString()} คน`;
+  }
+}
+
+// โหลดข้อมูลโรงเรียนเข้าฟอร์มตั้งค่าโปรไฟล์ (สำหรับแอดมินโรงเรียน)
+function initSchoolProfileForm() {
+  const schoolId = appState.activeSchoolId;
+  const profile = appState.schoolProfiles[schoolId];
+  if (!profile) return;
+
+  const lblName = document.getElementById("lbl-profile-school-name");
+  if (lblName) {
+    const sch = SCHOOLS.find(s => s.id === schoolId);
+    lblName.textContent = sch ? `${schoolId} - ${sch.name}` : `รหัสสังกัด ${schoolId}`;
+  }
+
+  // เติมข้อมูลในฟิลด์
+  if (document.getElementById("school-profile-address")) document.getElementById("school-profile-address").value = profile.address || "";
+  if (document.getElementById("school-profile-moo")) document.getElementById("school-profile-moo").value = profile.moo || "";
+  if (document.getElementById("school-profile-tumbon")) document.getElementById("school-profile-tumbon").value = profile.tumbon || "";
+  if (document.getElementById("school-profile-amphoe")) document.getElementById("school-profile-amphoe").value = profile.amphoe || "เมืองน่าน";
+  if (document.getElementById("school-profile-phone")) document.getElementById("school-profile-phone").value = profile.phone || "";
+  if (document.getElementById("school-profile-fax")) document.getElementById("school-profile-fax").value = profile.fax || "";
+  if (document.getElementById("school-profile-director")) document.getElementById("school-profile-director").value = profile.director || "";
+  if (document.getElementById("school-profile-director-phone")) document.getElementById("school-profile-director-phone").value = profile.directorPhone || "";
+  if (document.getElementById("school-profile-coordinator")) document.getElementById("school-profile-coordinator").value = profile.coordinator || "";
+  if (document.getElementById("school-profile-coordinator-phone")) document.getElementById("school-profile-coordinator-phone").value = profile.coordinatorPhone || "";
+
+  // ข้อมูลสถิติกำลังคนและนักเรียน
+  const schObj = SCHOOLS.find(s => s.id === schoolId);
+  const defaultPersonnel = schObj ? schObj.totalPersonnel : { director: 0, deputy: 0, teacher: 0, other: 0 };
+  
+  if (document.getElementById("school-profile-director-count")) {
+    document.getElementById("school-profile-director-count").value = profile.directorCount !== undefined ? profile.directorCount : defaultPersonnel.director;
+  }
+  if (document.getElementById("school-profile-deputy-count")) {
+    document.getElementById("school-profile-deputy-count").value = profile.deputyCount !== undefined ? profile.deputyCount : defaultPersonnel.deputy;
+  }
+  if (document.getElementById("school-profile-teacher-count")) {
+    document.getElementById("school-profile-teacher-count").value = profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher;
+  }
+  if (document.getElementById("school-profile-other-count")) {
+    document.getElementById("school-profile-other-count").value = profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other;
+  }
+
+  // คำนวณค่าเริ่มต้นย้อนกลับหากไม่มีในประวัติตามสัดส่วนกำลังคน
+  const currentTotalP = (profile.directorCount !== undefined ? profile.directorCount : defaultPersonnel.director) +
+                       (profile.deputyCount !== undefined ? profile.deputyCount : defaultPersonnel.deputy) +
+                       (profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher) +
+                       (profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other);
+
+  if (document.getElementById("school-profile-pensioners-count")) {
+    document.getElementById("school-profile-pensioners-count").value = profile.pensionersCount !== undefined ? profile.pensionersCount : Math.round(currentTotalP * 0.15);
+  }
+  if (document.getElementById("school-profile-active-members-count")) {
+    document.getElementById("school-profile-active-members-count").value = profile.activeMembersCount !== undefined ? profile.activeMembersCount : Math.round(currentTotalP * 0.80);
+  }
+  if (document.getElementById("school-profile-retired-transferred-members-count")) {
+    document.getElementById("school-profile-retired-transferred-members-count").value = profile.retiredTransferredMembersCount !== undefined ? profile.retiredTransferredMembersCount : Math.round(currentTotalP * 0.20);
+  }
+
+  if (document.getElementById("school-profile-students-june")) {
+    document.getElementById("school-profile-students-june").value = profile.studentsJune !== undefined ? profile.studentsJune : 0;
+  }
+  if (document.getElementById("school-profile-students-november")) {
+    document.getElementById("school-profile-students-november").value = profile.studentsNovember !== undefined ? profile.studentsNovember : 0;
+  }
+
+  // Password fields
+  const pwd = appState.schoolPasswords[schoolId] || "school1234";
+  if (document.getElementById("school-profile-password")) document.getElementById("school-profile-password").value = pwd;
+  if (document.getElementById("school-profile-password-confirm")) document.getElementById("school-profile-password-confirm").value = pwd;
+
+  // คำนวณยอดรวมทันทีที่ดึงข้อมูล
+  updateSchoolProfileTotals();
+}
+
+// ผูกฟอร์มบันทึกข้อมูลโรงเรียน
+const schoolProfileForm = document.getElementById("form-school-profile");
+if (schoolProfileForm) {
+  schoolProfileForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const schoolId = appState.activeSchoolId;
+
+    const pwd = document.getElementById("school-profile-password").value;
+    const pwdConfirm = document.getElementById("school-profile-password-confirm").value;
+
+    if (pwd !== pwdConfirm) {
+      alert("❌ รหัสผ่านใหม่และรหัสผ่านยืนยันไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง!");
+      return;
+    }
+    
+    appState.schoolProfiles[schoolId] = {
+      address: document.getElementById("school-profile-address").value.trim(),
+      moo: document.getElementById("school-profile-moo").value.trim(),
+      tumbon: document.getElementById("school-profile-tumbon").value.trim(),
+      amphoe: document.getElementById("school-profile-amphoe").value,
+      phone: document.getElementById("school-profile-phone").value.trim(),
+      fax: document.getElementById("school-profile-fax").value.trim(),
+      director: document.getElementById("school-profile-director").value.trim(),
+      directorPhone: document.getElementById("school-profile-director-phone").value.trim(),
+      coordinator: document.getElementById("school-profile-coordinator").value.trim(),
+      coordinatorPhone: document.getElementById("school-profile-coordinator-phone").value.trim(),
+      
+      // บันทึกกำลังคนและนักเรียน
+      directorCount: parseInt(document.getElementById("school-profile-director-count").value) || 0,
+      deputyCount: parseInt(document.getElementById("school-profile-deputy-count").value) || 0,
+      teacherCount: parseInt(document.getElementById("school-profile-teacher-count").value) || 0,
+      otherCount: parseInt(document.getElementById("school-profile-other-count").value) || 0,
+      pensionersCount: parseInt(document.getElementById("school-profile-pensioners-count").value) || 0,
+      activeMembersCount: parseInt(document.getElementById("school-profile-active-members-count").value) || 0,
+      retiredTransferredMembersCount: parseInt(document.getElementById("school-profile-retired-transferred-members-count").value) || 0,
+      studentsJune: parseInt(document.getElementById("school-profile-students-june").value) || 0,
+      studentsNovember: parseInt(document.getElementById("school-profile-students-november").value) || 0
+    };
+
+    appState.schoolPasswords[schoolId] = pwd;
+
+    saveStateToLocalStorage();
+    alert("🟢 บันทึกการปรับปรุงข้อมูลพื้นฐานและรหัสผ่านของโรงเรียนสำเร็จ!\nข้อมูล ผอ. และผู้ประสานงาน สสมน. ได้รับการอัปเดตลงทำเนียบภาพรวมจังหวัดเรียบร้อย");
+    renderSchoolsDirectory();
+  });
+
+  // ผูกปุ่มคำนวณยอดรวมแบบ Real-time เมื่อมีการป้อนตัวเลข
+  const inputsToTrack = [
+    "school-profile-director-count",
+    "school-profile-deputy-count",
+    "school-profile-teacher-count",
+    "school-profile-other-count",
+    "school-profile-pensioners-count",
+    "school-profile-active-members-count",
+    "school-profile-retired-transferred-members-count"
+  ];
+  inputsToTrack.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", updateSchoolProfileTotals);
+    }
+  });
+}
+
+// เรนเดอร์ตารางทำเนียบผู้ประสานงานของจังหวัด (33 สังกัด) พร้อมระบบค้นหาและ Live Filter อำเภอ
+function renderSchoolsDirectory() {
+  const tbody = document.getElementById("tbl-body-schools-directory");
+  if (!tbody) return;
+
+  const searchQuery = document.getElementById("search-schools-directory").value.toLowerCase().trim();
+  const filterAmphoe = document.getElementById("filter-schools-amphoe").value;
+
+  let html = "";
+  SCHOOLS.forEach(sch => {
+    const profile = appState.schoolProfiles[sch.id] || {
+      address: "-", moo: "-", tumbon: "-", amphoe: "เมืองน่าน", phone: "-", fax: "-", director: "-", directorPhone: "-", coordinator: "-", coordinatorPhone: "-"
+    };
+
+    const schName = sch.name.toLowerCase();
+    const director = (profile.director || "").toLowerCase();
+    const coordinator = (profile.coordinator || "").toLowerCase();
+    const amphoe = profile.amphoe;
+
+    // เงื่อนไข Filter ค้นหา
+    const matchSearch = schName.includes(searchQuery) || 
+                        director.includes(searchQuery) || 
+                        coordinator.includes(searchQuery) ||
+                        (profile.coordinatorPhone || "").includes(searchQuery);
+
+    const matchAmphoe = !filterAmphoe || amphoe === filterAmphoe;
+
+    if (matchSearch && matchAmphoe) {
+      // ที่ตั้งย่อ
+      const addressStr = `เลขที่ ${profile.address || '-'} ม.${profile.moo || '-'} ต.${profile.tumbon || '-'} อ.${profile.amphoe || '-'}`;
+      
+      const personnel = getSchoolPersonnel(sch.id);
+      const totalP = personnel.director + personnel.deputy + personnel.teacher + personnel.other;
+      const juneStudents = profile.studentsJune !== undefined ? profile.studentsJune.toLocaleString() : "0";
+      const novStudents = profile.studentsNovember !== undefined ? profile.studentsNovember.toLocaleString() : "0";
+
+      // ดึงสถิติบำนาญและสมาชิก สสมน. (คำนวณค่าเริ่มต้นย้อนกลับหากไม่มีในประวัติตามสัดส่วน)
+      const defaultPensioners = Math.round(totalP * 0.15);
+      const defaultActive = Math.round(totalP * 0.80);
+      const defaultRetired = Math.round(totalP * 0.20);
+
+      const pensioners = profile.pensionersCount !== undefined ? profile.pensionersCount : defaultPensioners;
+      const activeMembers = profile.activeMembersCount !== undefined ? profile.activeMembersCount : defaultActive;
+      const retiredTransferredMembers = profile.retiredTransferredMembersCount !== undefined ? profile.retiredTransferredMembersCount : defaultRetired;
+      const totalM = activeMembers + retiredTransferredMembers;
+
+      html += `
+        <tr>
+          <td class="text-center" style="font-family: var(--font-number); font-weight: 600; color: var(--color-accent-amber);">${sch.id}</td>
+          <td>
+            <div style="font-weight: 600; color: white;">${sch.name}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">เบอร์แฟกซ์: ${profile.fax || '-'}</div>
+            <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
+              <span style="font-weight: 500;">👥 บุคลากร: ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | บุคลากรทางการศึกษา ${personnel.other} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
+              <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
+              <span style="color: #60a5fa; font-weight: 500;">💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
+            </div>
+          </td>
+          <td><span class="badge badge-success-outline" style="font-size:11px;">อ.${profile.amphoe}</span></td>
+          <td>
+            <div style="font-size: 12.5px; color: white; line-height: 1.45;">${addressStr}</div>
+            <div style="font-size: 12px; color: var(--color-accent-gold); font-family: var(--font-number); margin-top: 3px; font-weight: 600;">📞 โทร: ${profile.phone}</div>
+          </td>
+          <td>
+            <div style="font-weight: 500; color: rgba(255,255,255,0.85);">${profile.director}</div>
+            <div style="font-size: 11px; color: var(--color-text-dim); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ ผอ.: ${profile.directorPhone || '-'}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: white;">${profile.coordinator}</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ: ${profile.coordinatorPhone}</div>
+          </td>
+          <td class="text-center">
+            <a href="tel:${profile.coordinatorPhone}" class="btn btn-secondary btn-mini" style="padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;">
+              📞 โทรผู้ประสานงาน
+            </a>
+          </td>
+        </tr>
+      `;
+    }
+  });
+
+  if (!html) {
+    html = `<tr><td colspan="7" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลสังกัดที่ตรงตามเงื่อนไขการค้นหา</td></tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+// ผูก Live Search & Filter อำเภอ
+const searchDirInput = document.getElementById("search-schools-directory");
+if (searchDirInput) searchDirInput.addEventListener("input", renderSchoolsDirectory);
+
+const filterAmphoeSelect = document.getElementById("filter-schools-amphoe");
+if (filterAmphoeSelect) filterAmphoeSelect.addEventListener("change", renderSchoolsDirectory);
+
+
+// ==================== 17. BI-ANNUAL DATA CERTIFICATION LOGIC ====================
+
+// ดึงรอบครึ่งปีปัจจุบันของระบบ
+function getBiAnnualWindowInfo() {
+  const now = new Date();
+  const year = now.getFullYear() + 543; // ปี พ.ศ.
+  const month = now.getMonth(); // 0 = ม.ค. ถึง 11 = ธ.ค.
+  
+  let roundNumber = 1;
+  let deadlineStr = "";
+  
+  if (appState.simulatedReviewWindow) {
+    // โหมดจำลองเวลาเพื่อทดสอบ (ข้ามสมมุติเป็น 30 มิ.ย.)
+    return {
+      round: 1,
+      year: year,
+      title: `ครั้งที่ 1 ประจำปี พ.ศ. ${year}`,
+      deadlineText: `30 มิถุนายน ${year}`,
+      isActive: true
+    };
+  }
+  
+  // โหมดคำนวณตามปฏิทินจริง
+  // รอบที่ 1: ตรวจสอบและรับรองความถูกต้องช่วงเดือน มิถุนายน (วันที่ 20 - 30 มิ.ย.)
+  // รอบที่ 2: ตรวจสอบและรับรองความถูกต้องช่วงเดือน ธันวาคม (วันที่ 20 - 30 ธ.ค.)
+  let isActive = false;
+  if (month === 5) { // มิถุนายน
+    roundNumber = 1;
+    deadlineStr = `30 มิถุนายน ${year}`;
+    isActive = true; // เปิดแบนเนอร์แจ้งเตือน
+  } else if (month === 11) { // ธันวาคม
+    roundNumber = 2;
+    deadlineStr = `30 ธันวาคม ${year}`;
+    isActive = true; // เปิดแบนเนอร์แจ้งเตือน
+  } else {
+    // นอกเวลาตรวจสอบปกติ (ปิดแบนเนอร์ แต่เพื่อทดสอบมีปุ่มจำลองวันให้คลิกได้)
+    roundNumber = month < 6 ? 1 : 2;
+    deadlineStr = roundNumber === 1 ? `30 มิถุนายน ${year}` : `30 ธันวาคม ${year}`;
+    isActive = false;
+  }
+  
+  return {
+    round: roundNumber,
+    year: year,
+    title: `ครั้งที่ ${roundNumber} ประจำปี พ.ศ. ${year}`,
+    deadlineText: deadlineStr,
+    isActive: isActive
+  };
+}
+
+// ตรวจสอบและปรับปรุงแบนเนอร์แจ้งเตือนบนแดชบอร์ด
+function checkBiAnnualCertificationStatus() {
+  const alertBanner = document.getElementById("panel-certification-alert");
+  if (!alertBanner) return;
+
+  const info = getBiAnnualWindowInfo();
+  const key = `${info.year}_R${info.round}`;
+
+  // แสดงผลในแบนเนอร์
+  const lblMessage = document.getElementById("lbl-cert-alert-message");
+  if (lblMessage) {
+    lblMessage.innerHTML = `ตรวจพบกำหนดรอบรับรองความถูกต้องข้อมูลสมาชิก <strong>ครั้งที่ ${info.round} ประจำปี พ.ศ. ${info.year}</strong> (ภายใน ${info.deadlineText}) <br>กรุณาตรวจสอบรายชื่อข้อมูลสมาชิก สสมน. ในสังกัดทั้งหมดให้เป็นปัจจุบัน แล้วคลิกกดยืนยันรับรองความถูกต้องด้านขวา`;
+  }
+
+  // หากเป็นสิทธิ์แอดมินโรงเรียน
+  if (appState.activeRole === "school") {
+    alertBanner.style.display = info.isActive ? "flex" : "none";
+    
+    // ตรวจสอบว่าเคยรับรองไปหรือยัง
+    const certRecord = appState.certifications[key] && appState.certifications[key][appState.activeSchoolId];
+    const btnCertify = document.getElementById("btn-certify-school-data");
+    
+    if (btnCertify) {
+      if (certRecord) {
+        btnCertify.innerHTML = `🟢 ได้รับการรับรองแล้ว`;
+        btnCertify.disabled = true;
+        btnCertify.style.background = "var(--color-accent-teal)";
+        btnCertify.style.borderColor = "var(--color-accent-teal)";
+        btnCertify.style.cursor = "default";
+      } else {
+        btnCertify.innerHTML = `✍️ กดยืนยันรับรองข้อมูล`;
+        btnCertify.disabled = false;
+        btnCertify.style.background = "var(--color-accent-rose)";
+        btnCertify.style.borderColor = "var(--color-accent-rose)";
+        btnCertify.style.cursor = "pointer";
+      }
+    }
+  } 
+  // หากเป็นสิทธิ์แอดมินจังหวัด
+  else if (appState.activeRole === "province") {
+    alertBanner.style.display = info.isActive ? "flex" : "none";
+    
+    const btnCertify = document.getElementById("btn-certify-school-data");
+    if (btnCertify) {
+      // แอดมินจังหวัดไม่มีสิทธิ์กดรับรองแทนโรงเรียน
+      btnCertify.style.display = "none";
+    }
+
+    // แสดงตารางสรุปสถานะของทุกโรงเรียน
+    const certBlock = document.getElementById("block-province-school-certifications");
+    if (certBlock) {
+      certBlock.style.display = "block";
+      renderSchoolCertifications();
+    }
+  }
+}
+
+// แอดมินโรงเรียนกดยืนยันรับรองความถูกต้องข้อมูลสมาชิก
+window.certifySchoolData = function() {
+  const info = getBiAnnualWindowInfo();
+  const key = `${info.year}_R${info.round}`;
+  const schoolId = appState.activeSchoolId;
+  const school = SCHOOLS.find(s => s.id === schoolId);
+  const profile = appState.schoolProfiles[schoolId] || {};
+
+  if (!confirm(`คุณต้องการยืนยันและรับรองว่า "รายชื่อข้อมูลสมาชิก สสมน. ในสังกัดของ ${school ? school.name : ''}" ณ ปัจจุบันถูกต้องสมบูรณ์ ตรงตามทะเบียนประวัติบุคลากรเรียบร้อยแล้วใช่หรือไม่?\n*(การรับรองความถูกต้องนี้จะบันทึกประวัติไว้เป็นหลักฐาน)`)) {
+    return;
+  }
+
+  if (!appState.certifications[key]) {
+    appState.certifications[key] = {};
+  }
+
+  const currentDateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  appState.certifications[key][schoolId] = {
+    certified: true,
+    certifiedBy: profile.coordinator || "เจ้าหน้าที่ประสานงาน สสมน.",
+    certifiedDate: currentDateStr
+  };
+
+  saveStateToLocalStorage();
+  alert(`🟢 การกดยืนยันและรับรองข้อมูลสมาชิกเสร็จสมบูรณ์!\nระบบส่วนกลางจังหวัดน่านได้รับการบันทึกข้อมูลประวัติผู้รับรองของสถานศึกษาท่านเรียบร้อยแล้วเมื่อ ${currentDateStr}`);
+  checkBiAnnualCertificationStatus();
+};
+
+// สลับสิทธิ์จำลองวันตรวจสอบเพื่อทดสอบระบบการทำงาน
+window.toggleSimulateReviewDate = function() {
+  appState.simulatedReviewWindow = !appState.simulatedReviewWindow;
+  const btn = document.getElementById("btn-cert-simulate");
+  if (btn) {
+    btn.innerHTML = appState.simulatedReviewWindow ? "🧪 ปิดวันจำลอง" : "🧪 จำลองวันรับรอง";
+  }
+  
+  checkBiAnnualCertificationStatus();
+  alert(`🧪 สลับเข้าสู่โหมด ${appState.simulatedReviewWindow ? "จำลองช่วงเวลากำหนดตรวจสอบครึ่งปี (30 มิถุนายน)" : "เวลาตามจริงปฏิทินระบบ"} เรียบร้อยแล้ว!\nสังเกตแถบแบนเนอร์แจ้งเตือนตรวจสอบข้อมูลที่ส่วนบนแดชบอร์ดหลักได้ทันที`);
+};
+
+// เรนเดอร์ตารางภาพรวมจังหวัดตรวจสอบสถานะรับรองของ 33 สังกัด
+function renderSchoolCertifications() {
+  const tbody = document.getElementById("tbl-body-school-certifications");
+  if (!tbody) return;
+
+  const info = getBiAnnualWindowInfo();
+  const key = `${info.year}_R${info.round}`;
+  const roundCerts = appState.certifications[key] || {};
+
+  let html = "";
+  SCHOOLS.forEach(sch => {
+    const certRecord = roundCerts[sch.id];
+    let statusCol1 = `<span class="badge badge-success">🟢 รับรองแล้ว</span>`;
+    let statusCol2 = `<span class="badge badge-danger">🔴 ค้างการรับรอง</span>`;
+    
+    // จำลองประวัติรับรองรอบที่ผ่านมาเพื่อให้ดูสมบูรณ์
+    const lastKey = `${info.year}_R1`; // รอบ 1
+    const secondKey = `${info.year}_R2`; // รอบ 2
+    
+    const isRound1Paid = sch.id === "01" || sch.id === "02" || sch.id === "03" || sch.id === "04" || (appState.certifications[lastKey] && appState.certifications[lastKey][sch.id]);
+    const isRound2Paid = sch.id === "02" || (appState.certifications[secondKey] && appState.certifications[secondKey][sch.id]);
+
+    const showRound1 = isRound1Paid ? `🟢 รับรองแล้ว` : `🔴 ค้างการรับรอง`;
+    const showRound2 = isRound2Paid ? `🟢 รับรองแล้ว` : `🔴 ค้างการรับรอง`;
+    
+    let certBy = "-";
+    let certDate = "-";
+    let badgeClassRound1 = isRound1Paid ? "badge-success-outline" : "badge-danger-outline";
+    let badgeClassRound2 = isRound2Paid ? "badge-success-outline" : "badge-danger-outline";
+
+    // หากเป็นรอบปัจจุบัน
+    if (info.round === 1) {
+      const currentCert = roundCerts[sch.id];
+      if (currentCert) {
+        certBy = currentCert.certifiedBy;
+        certDate = currentCert.certifiedDate;
+      }
+    } else {
+      const currentCert = roundCerts[sch.id];
+      if (currentCert) {
+        certBy = currentCert.certifiedBy;
+        certDate = currentCert.certifiedDate;
+      }
+    }
+
+    html += `
+      <tr>
+        <td class="text-center" style="font-family: var(--font-number); font-weight: 600; color: var(--color-accent-gold);">${sch.id}</td>
+        <td style="font-weight: 600; color: white;">${sch.name}</td>
+        <td class="text-center"><span class="badge ${badgeClassRound1}" style="font-size:11px;">${showRound1}</span></td>
+        <td class="text-center"><span class="badge ${badgeClassRound2}" style="font-size:11px;">${showRound2}</span></td>
+        <td style="font-weight: 500;">${certRecord ? certRecord.certifiedBy : '-'}</td>
+        <td style="font-family: var(--font-number); font-size:12.5px; color: var(--color-text-muted);">${certRecord ? certRecord.certifiedDate : '-'}</td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+
+// ==================== 18. SIMULATED DOWNLOADS CENTRE ====================
+window.downloadSimulateFile = function(fileName) {
+  alert(`📥 เริ่มการดาวน์โหลดไฟล์ประกอบประวัติ สสมน.:\n[${fileName}]\n\n*ระบบได้จัดเตรียมไฟล์เทมเพลต PDF ความละเอียดสูงให้เรียบร้อยแล้ว ขอบคุณครับ`);
+  
+  // จำลองดาวน์โหลดไฟล์จริงลงเครื่องโดยยิง Blob สั้นๆ
+  const dummyContent = "%PDF-1.5 จำลองข้อมูลเอกสารระเบียบข้อบังคับกองทุน สสมน. จังหวัดน่าน";
+  const blob = new Blob([dummyContent], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+
+// ==================== 19. SYSTEM TAB NAVIGATION CONTROLLER ====================
+// Tab switcher logic is handled in the unified global switchTab function.
+
+// ดักจับการกดปุ่มเมนู Sidebar
+document.getElementById("btn-nav-dashboard").addEventListener("click", () => switchTab("dashboard"));
+document.getElementById("btn-nav-members").addEventListener("click", () => switchTab("members"));
+document.getElementById("btn-nav-cremation").addEventListener("click", () => switchTab("cremation"));
+document.getElementById("btn-nav-schools").addEventListener("click", () => switchTab("schools"));
+document.getElementById("btn-nav-documents").addEventListener("click", () => switchTab("documents"));
+
+
+// ==================== 20. ROLE SWITCHING UI LABELS CONTROLLER ====================
+
+// ปรับปรุงฟังก์ชัน role สลับข้อมูลให้เพิ่มการตั้งค่าชื่อเมนูโรงเรียนแบบไดนามิก
+const originalOnRoleSwitched = window.onRoleSwitched || function() {
+  const roleLabel = document.getElementById("sidebar-admin-role-name");
+  const scopeLabel = document.getElementById("sidebar-admin-scope-name");
+  const schoolsMenuLabel = document.getElementById("nav-schools-label");
+  const certBlockProvince = document.getElementById("block-province-school-certifications");
+  const profileFormBlock = document.getElementById("block-school-profile-editor");
+  const directoryBlock = document.getElementById("block-province-schools-directory");
+  const liquidityAnalyserBlock = document.getElementById("block-province-liquidity-analyser");
+
+  if (appState.activeRole === "province") {
+    if (roleLabel) roleLabel.textContent = "แอดมินจังหวัด";
+    if (scopeLabel) scopeLabel.textContent = "จังหวัดน่าน (ทั้งหมด)";
+    if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
+    
+    if (certBlockProvince) certBlockProvince.style.display = "block";
+    if (profileFormBlock) profileFormBlock.style.display = "none";
+    if (directoryBlock) directoryBlock.style.display = "block";
+    if (liquidityAnalyserBlock) liquidityAnalyserBlock.style.display = "block";
+    
+    // ซ่อน/แสดงองค์ประกอบอื่นๆ ตามขอบเขตสิทธิ์
+    document.getElementById("provincial-school-filter-wrapper").style.display = "block";
+    document.getElementById("block-province-death-creation").style.display = "block";
+    document.getElementById("block-school-death-creation").style.display = "none";
+    document.getElementById("block-province-verify-deaths").style.display = "block";
+    document.getElementById("block-school-payments-actions").style.display = "none";
+    document.getElementById("block-province-payment-matrix").style.display = "block";
+    document.getElementById("block-province-payment-arrears-checker").style.display = "block";
+  } else {
+    const sch = SCHOOLS.find(s => s.id === appState.activeSchoolId);
+    const schName = sch ? sch.name : "สถานศึกษาในสังกัด";
+    
+    if (roleLabel) roleLabel.textContent = "แอดมินโรงเรียน";
+    if (scopeLabel) scopeLabel.textContent = schName;
+    if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
+    
+    if (certBlockProvince) certBlockProvince.style.display = "none";
+    if (profileFormBlock) profileFormBlock.style.display = "block";
+    if (directoryBlock) directoryBlock.style.display = "none";
+    if (liquidityAnalyserBlock) liquidityAnalyserBlock.style.display = "none";
+
+    document.getElementById("provincial-school-filter-wrapper").style.display = "none";
+    document.getElementById("block-province-death-creation").style.display = "none";
+    document.getElementById("block-school-death-creation").style.display = "block";
+    document.getElementById("block-province-verify-deaths").style.display = "none";
+    document.getElementById("block-school-payments-actions").style.display = "block";
+    document.getElementById("block-province-payment-matrix").style.display = "none";
+    document.getElementById("block-province-payment-arrears-checker").style.display = "none";
+  }
+
+  // ปรับปรุงการแสดงผลวิดเจ็ตและปุ่มระดับจังหวัด
+  const isProvince = appState.activeRole === "province";
+  const btnAddAnn = document.getElementById("btn-add-announcement-trigger");
+  if (btnAddAnn) btnAddAnn.style.display = isProvince ? "block" : "none";
+
+  const btnUpdateBank = document.getElementById("btn-update-bank-balance");
+  if (btnUpdateBank) btnUpdateBank.style.display = isProvince ? "block" : "none";
+
+  const thPayoutAction = document.getElementById("th-payout-action");
+  if (thPayoutAction) thPayoutAction.style.display = isProvince ? "table-cell" : "none";
+
+  renderCremationPayoutsTable();
+  renderLiquidityAnalyzer();
+
+  // อัปเดตแบนเนอร์ตรวจสอบและรับรองข้อมูล สสมน. เสมอเมื่อเปลี่ยนบทบาท
+  checkBiAnnualCertificationStatus();
+};
+
+window.onRoleSwitched = originalOnRoleSwitched;
+
+
+// ==================== 21. SYSTEM INITIALIZATION RUN ====================
+window.addEventListener("DOMContentLoaded", function() {
+  loadStateFromLocalStorage();
+  ensureSchoolProfilesStats();
+  populateSchoolsDropdowns();
+  calculateStats();
+  
+  // เรียกประมวลผลข้อมูลโรงเรียนและการตรวจสอบครึ่งปี
+  initSchoolProfileForm();
+  checkBiAnnualCertificationStatus();
+  renderSchoolsDirectory();
+  renderDocumentsGrid();
+  renderAnnouncementsBoard();
+  renderCremationPayoutsTable();
+  renderLiquidityAnalyzer();
+
+  // ตรวจสอบเซสชันความปลอดภัยในการจำค่าล็อกอิน
+  const isLoggedIn = sessionStorage.getItem("สสมน_NAN_LOGGED_IN") === "true";
+  if (isLoggedIn) {
+    appState.activeRole = sessionStorage.getItem("สสมน_NAN_LOGGED_IN_ROLE") || "province";
+    appState.activeSchoolId = sessionStorage.getItem("สสมน_NAN_LOGGED_IN_SCHOOL_ID") || "01";
+    loginSuccess(true);
+  } else {
+    document.getElementById("login-container").style.display = "flex";
+    document.getElementById("main-app-container").style.display = "none";
+  }
+
+  // ดักจับและผูกการสลับบทบาท
+  const originalLoginSuccess = window.onLoginSuccess;
+  window.onLoginSuccess = function() {
+    if (originalLoginSuccess) originalLoginSuccess();
+    if (window.onRoleSwitched) window.onRoleSwitched();
+    initSchoolProfileForm();
+    checkBiAnnualCertificationStatus();
+    renderSchoolsDirectory();
+    renderDocumentsGrid();
+    renderAnnouncementsBoard();
+    renderCremationPayoutsTable();
+    renderLiquidityAnalyzer();
+  };
+
+  // ยิงซิงค์ดึงข้อมูลจาก Cloudflare Database เบื้องหลัง (Stale-While-Revalidate)
+  loadStateFromCloudflare();
+});
+
+// ==================== 22. DYNAMIC DOWNLOAD DOCUMENTS ENGINE (ROUND 4) ====================
+const DEFAULT_DOCUMENTS = [
+  {
+    id: "DOC_001",
+    title: "1. ใบสมัครสมาชิกกองทุน สสมน. (สมัครใหม่)",
+    desc: "แบบคำขอสมัครขึ้นทะเบียนเป็นสมาชิกฌาปนกิจสงเคราะห์ครู สสมน. จังหวัดน่าน สำหรับบุคลากรบรรจุใหม่หรือผู้ยื่นสมัครครั้งแรก",
+    category: "เอกสารการสมัครสมาชิก",
+    format: "PDF",
+    size: "1.2 MB",
+    year: 2569,
+    link: "ใบสมัครสมาชิก_สสมน_น่าน.pdf"
+  },
+  {
+    id: "DOC_002",
+    title: "2. แบบฟอร์มเปลี่ยนแปลงผู้รับผลประโยชน์ / ที่อยู่",
+    desc: "แบบฟอร์มเพื่อขอยื่นแก้ไขประวัติส่วนตัวในระบบสมุดจดทะเบียน หรือแจ้งเปลี่ยนแปลงรายละเอียดระบุสิทธิ์ผู้รับผลประโยชน์หน้าฌาปนกิจศพ",
+    category: "เอกสารการสมัครสมาชิก",
+    format: "PDF",
+    size: "890 KB",
+    year: 2569,
+    link: "ฟอร์มเปลี่ยนผู้รับผลประโยชน์_สสมน.pdf"
+  },
+  {
+    id: "DOC_003",
+    title: "3. ข้อบังคับกองทุนฌาปนกิจสงเคราะห์ สสมน. จังหวัดน่าน 2569",
+    desc: "ข้อบังคับฉบับเต็มอย่างเป็นทางการของกองทุนฯ ระบุกฎเกณฑ์ความปลอดภัย สิทธิ์และหน้าที่ความเป็นสมาชิกฌาปนกิจครูอย่างสมบูรณ์",
+    category: "ระเบียบข้อบังคับของ สสมน.",
+    format: "PDF",
+    size: "2.4 MB",
+    year: 2569,
+    link: "ข้อบังคับกองทุนสสมน_จังหวัดน่าน_2569.pdf"
+  },
+  {
+    id: "DOC_004",
+    title: "4. ระเบียบปฏิบัติเกี่ยวกับการชำระเงินและเงินสงเคราะห์ศพ",
+    desc: "คู่มือขอบเขตรายละเอียดสำหรับแอดมินโรงเรียน ในการโอนเงินสะสมและส่งสลิปเพื่อระงับคดีศพให้เป็นไปตามวันเวลากำหนดในระเบียบส่วนกลาง",
+    category: "ระเบียบข้อบังคับของ สสมน.",
+    format: "PDF",
+    size: "1.5 MB",
+    year: 2569,
+    link: "ระเบียบการเงินและส่งสลิปสงเคราะห์สสมน.pdf"
+  },
+  {
+    id: "DOC_005",
+    title: "5. แบบฟอร์มขอรับเงินสงเคราะห์ครอบครัว (กรณีสมาชิกเสียชีวิต)",
+    desc: "แบบคำขอรับเงินค่าสงเคราะห์ศพ สสมน.น่าน สำหรับผู้รับผลประโยชน์เพื่อยื่นขอเบิกจ่ายพร้อมใบมรณบัตรและเอกสารทายาทตามระเบียบ",
+    category: "เอกสารการรับเงินสงเคราะห์ศพสำหรับผู้รับผลประโยชน์",
+    format: "PDF",
+    size: "1.1 MB",
+    year: 2569,
+    link: "ฟอร์มขอรับเงินสงเคราะห์ศพ_สสมน.pdf"
+  }
+];
+
+function renderDocumentsGrid() {
+  const container = document.getElementById("documents-list-container");
+  if (!container) return;
+
+  const trigger = document.getElementById("province-add-doc-trigger-wrapper");
+  if (trigger) {
+    trigger.style.display = appState.activeRole === "province" ? "block" : "none";
+  }
+
+  if (!appState.documents || appState.documents.length === 0) {
+    container.innerHTML = `<div class="empty-cases-message" style="grid-column: 1/-1;">ไม่มีเอกสารสำหรับการดาวน์โหลดในรอบปัจจุบัน</div>`;
+    return;
+  }
+
+  let html = "";
+  appState.documents.forEach((doc, idx) => {
+    let strokeColor = "var(--color-accent-gold)";
+    let badgeBg = "rgba(251, 191, 36, 0.1)";
+    let badgeText = "var(--color-accent-gold)";
+    let svgPath = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>`;
+
+    if (doc.category === "เอกสารการสมัครสมาชิก") {
+      strokeColor = "var(--color-accent-gold)";
+      badgeBg = "rgba(251, 191, 36, 0.1)";
+      badgeText = "var(--color-accent-gold)";
+      svgPath = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>`;
+    } else if (doc.category === "เอกสารการรับเงินสงเคราะห์ศพสำหรับผู้รับผลประโยชน์") {
+      strokeColor = "var(--color-accent-amber)";
+      badgeBg = "rgba(245, 158, 11, 0.1)";
+      badgeText = "var(--color-accent-amber)";
+      svgPath = `<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>`;
+    } else if (doc.category === "ระเบียบข้อบังคับของ สสมน.") {
+      strokeColor = "var(--color-accent-teal)";
+      badgeBg = "rgba(20, 184, 166, 0.1)";
+      badgeText = "var(--color-accent-teal)";
+      svgPath = `<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>`;
+    } else {
+      strokeColor = "rgba(255,255,255,0.6)";
+      badgeBg = "rgba(255, 255, 255, 0.08)";
+      badgeText = "rgba(255,255,255,0.7)";
+      svgPath = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <circle cx="12" cy="13" r="3"></circle>`;
+    }
+
+    html += `
+      <div class="document-card glass animate-scale" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px; border-radius: var(--radius-lg); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); transition: all var(--transition-normal);">
+        <div>
+          <div class="doc-icon-wrapper" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="${strokeColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              ${svgPath}
+            </svg>
+            <span class="doc-badge-format" style="background: ${badgeBg}; color: ${badgeText}; padding: 2px 8px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; font-family: var(--font-number);">${doc.format}</span>
+          </div>
+          <div class="doc-info">
+            <h4 style="color: white; margin-bottom: 8px; font-size: 15px;">${doc.title}</h4>
+            <p style="font-size: 12.5px; color: var(--color-text-muted); line-height: 1.5; margin-bottom: 16px;">${doc.desc}</p>
+            <div class="doc-meta-footer" style="display: flex; gap: 16px; font-size: 11px; color: rgba(255,255,255,0.4); font-family: var(--font-number); margin-bottom: 20px;">
+              <span>ขนาดไฟล์: ${doc.size}</span>
+              <span>ปีที่ปรับปรุง: ${doc.year}</span>
+            </div>
+          </div>
+        </div>
+        <div class="doc-action-btn" style="display: flex; flex-direction: column; gap: 8px;">
+          <button onclick="downloadSimulateFile('${doc.link}')" class="btn btn-primary btn-mini btn-full-width">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            <span>ดาวน์โหลดเอกสาร</span>
+          </button>
+          ${appState.activeRole === "province" ? `
+          <button onclick="deleteDocument('${doc.id}')" class="btn btn-danger btn-mini btn-full-width" style="background: rgba(244, 63, 94, 0.1); border-color: var(--color-accent-rose); color: var(--color-accent-rose);" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            <span>ลบเอกสาร</span>
+          </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+window.deleteDocument = function(docId) {
+  const doc = appState.documents.find(d => d.id === docId);
+  if (doc) {
+    if (confirm(`คุณแน่ใจหรือไม่ที่จะลบเอกสาร "${doc.title}" ออกจากคลังดาวน์โหลดระบบ?`)) {
+      appState.documents = appState.documents.filter(d => d.id !== docId);
+      appState.transferLogs.push({
+        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        type: "system",
+        amount: 0,
+        description: `ลบเอกสารออกจากคลังดาวน์โหลดระบบ: "${doc.title}" (${doc.link})`
+      });
+      saveStateToLocalStorage();
+      renderDocumentsGrid();
+      alert("ลบเอกสารเรียบร้อยแล้ว!");
+    }
+  }
+};
+
+window.openAddDocumentModal = function() {
+  const modal = document.getElementById("modal-add-document");
+  if (modal) modal.classList.add("active");
+};
+
+window.closeAddDocumentModal = function() {
+  const modal = document.getElementById("modal-add-document");
+  if (modal) {
+    modal.classList.remove("active");
+    document.getElementById("form-add-document").reset();
+  }
+};
+
+const formAddDoc = document.getElementById("form-add-document");
+if (formAddDoc) {
+  formAddDoc.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const title = document.getElementById("doc-upload-title").value.trim();
+    const desc = document.getElementById("doc-upload-desc").value.trim();
+    const category = document.getElementById("doc-upload-category").value;
+    const format = document.getElementById("doc-upload-format").value;
+    const size = document.getElementById("doc-upload-size").value.trim();
+    const year = parseInt(document.getElementById("doc-upload-year").value);
+    const link = document.getElementById("doc-upload-link").value.trim() || `${title.replace(/\s+/g, '_')}.${format.toLowerCase()}`;
+
+    const newDoc = {
+      id: "DOC_" + new Date().getTime(),
+      title,
+      desc,
+      category,
+      format,
+      size,
+      year,
+      link
+    };
+
+    appState.documents.push(newDoc);
+    saveStateToLocalStorage();
+    
+    closeAddDocumentModal();
+    renderDocumentsGrid();
+    alert("🟢 เพิ่มเอกสารสำหรับศูนย์ดาวน์โหลดสำเร็จ!\nโรงเรียนทุกสังกัดสามารถเข้ามาดาวน์โหลดแบบฟอร์มใบนี้ได้ทันที");
+  });
+}
+
+// ==================== 23. GLOBAL CONDOLENCE BULLETIN ANNOUNCEMENTS BOARD (ROUND 4) ====================
+function renderAnnouncementsBoard() {
+  const container = document.getElementById("system-announcements-list-container");
+  if (!container) return;
+
+  const approvedDeaths = appState.deathCases.filter(d => d.status === "approved");
+  const list = [];
+  
+  approvedDeaths.forEach(death => {
+    const member = appState.members.find(m => m.id === death.memberId) || {};
+    const netPayout = death.netPayout || (member ? getDeathCalculationInfo(death.reportedDate, member).netPayout : 0);
+    const beneficiaryName = death.beneficiaryName || (member.beneficiary ? (member.beneficiary.title || "") + member.beneficiary.name : "ไม่ระบุ");
+    const thDateStr = formatDateThai(death.reportedDate);
+
+    list.push({
+      type: "death",
+      date: death.reportedDate || "",
+      html: `
+        <div class="condolence-announce-card animate-scale" style="margin-bottom: 8px;">
+          <div class="announce-left-meta">
+            <span style="font-size: 16px; margin-top: 2px;">🕯️</span>
+            <div class="announce-condolence-text">
+              ขอแสดงความเสียใจอย่างสุดซึ้งต่อการจากไปของ 
+              <strong>${death.name}</strong> (รหัสสมาชิก สสมน. <span class="announce-gold-highlight">${death.memberId}</span>) 
+              สังกัด <strong>${death.schoolName}</strong> ซึ่งถึงแก่กรรมเมื่อวันที่ ${thDateStr}
+              <div style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.45;">
+                ขณะนี้ระบบส่วนกลางจังหวัดน่านได้ประมวลยอดเงินสงเคราะห์สุทธิเสร็จสมบูรณ์เรียบร้อยเป็นเงินจำนวน 
+                <strong style="color:var(--color-accent-emerald); font-weight:700;">฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong> 
+                มอบให้แก่ผู้รับผลประโยชน์ <strong style="color:white;">${beneficiaryName}</strong> 
+                ขอแจ้งแอดมินทุกโรงเรียนเพื่อตรวจสอบประวัติสมาชิกในสังกัดและโอนชำระเงินทำบุญส่วนต่างตามกำหนดต่อไป
+              </div>
+            </div>
+          </div>
+          <div class="announce-right-date">
+            แจ้งข่าว<br>
+            สสมน.น่าน
+          </div>
+        </div>
+      `
+    });
+  });
+
+  const customAnnouncements = appState.announcements || [];
+  customAnnouncements.forEach(ann => {
+    let badgeColor = "var(--color-accent-gold)";
+    let badgeBg = "rgba(251, 191, 36, 0.1)";
+    let icon = "📢";
+    if (ann.type === "ข่าวด่วน") {
+      badgeColor = "var(--color-accent-rose)";
+      badgeBg = "rgba(244, 63, 94, 0.1)";
+      icon = "🚨";
+    } else if (ann.type === "ข่าวการเสียชีวิต/ฌาปนกิจศพ") {
+      badgeColor = "var(--color-accent-amber)";
+      badgeBg = "rgba(245, 158, 11, 0.1)";
+      icon = "🕯️";
+    }
+
+    const thDateStr = formatDateThai(ann.date);
+
+    list.push({
+      type: "custom",
+      date: ann.date || "",
+      html: `
+        <div class="condolence-announce-card animate-scale" style="margin-bottom: 8px; border-color: rgba(255,255,255,0.06); background: rgba(255,255,255,0.025);">
+          <div class="announce-left-meta" style="flex-grow: 1;">
+            <span style="font-size: 16px; margin-top: 2px;">${icon}</span>
+            <div class="announce-condolence-text" style="width: 100%;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <strong style="color: white; font-size: 14px;">${ann.title}</strong>
+                <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 10px; padding: 1px 6px; border-radius: 4px;">${ann.type}</span>
+              </div>
+              <p style="font-size: 12.5px; color: var(--color-text-muted); margin-top: 6px; line-height: 1.45; white-space: pre-wrap;">${ann.content}</p>
+              ${appState.activeRole === "province" ? `
+                <div style="margin-top: 8px; text-align: right;">
+                  <button onclick="deleteAnnouncement('${ann.id}')" class="btn btn-danger btn-mini" style="padding: 2px 8px; font-size: 10.5px; background: rgba(244, 63, 94, 0.1); border-color: var(--color-accent-rose); color: var(--color-accent-rose);" type="button">ลบประกาศ</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="announce-right-date" style="font-size: 10px; text-align: center; color: var(--color-text-dim); min-width: 80px;">
+            ลงวันที่<br>
+            ${thDateStr}
+          </div>
+        </div>
+      `
+    });
+  });
+
+  list.sort((a, b) => b.date.localeCompare(a.date));
+
+  const displayList = list.slice(0, 5);
+
+  if (displayList.length === 0) {
+    container.innerHTML = `<div style="font-size: 12.5px; color: var(--color-text-dim); text-align: center; padding: 15px 0;">ไม่มีประกาศแจ้งเตือนการฌาปนกิจศพหรือข่าวสารใหม่รอบปัจจุบัน</div>`;
+    return;
+  }
+
+  container.innerHTML = displayList.map(item => item.html).join("");
+}
+
+// Helper date formatter
+function formatDateThai(dateStr) {
+  if (!dateStr) return "-";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// Delete custom announcement
+window.deleteAnnouncement = function(annId) {
+  if (!confirm("คุณต้องการลบประกาศข่าวสารนี้ใช่หรือไม่?")) {
+    return;
+  }
+  appState.announcements = appState.announcements.filter(a => a.id !== annId);
+  saveStateToLocalStorage();
+  renderAnnouncementsBoard();
+  alert("ลบประกาศเรียบร้อยแล้ว!");
+};
+
+// ==================== 24. LIQUIDITY ANALYZER & CREMATION PAYOUTS ====================
+
+function renderLiquidityAnalyzer() {
+  const lblBankBalance = document.getElementById("lbl-central-bank-balance");
+  const lblUpdateDate = document.getElementById("lbl-central-bank-update-date");
+  const lblTotalUnpaid = document.getElementById("lbl-total-unpaid-payouts");
+  const lblTotalUnpaidCases = document.getElementById("lbl-total-unpaid-payouts-cases");
+  const lblStatusBadge = document.getElementById("lbl-liquidity-status-badge");
+
+  if (!lblBankBalance) return;
+
+  const bankBalance = appState.centralBankBalance || 0;
+  const unpaidCases = appState.deathCases.filter(d => d.status !== "pending_approval" && d.payoutStatus !== "paid");
+  
+  let totalUnpaidSum = 0;
+  unpaidCases.forEach(c => {
+    totalUnpaidSum += (c.netPayout || 0);
+  });
+
+  lblBankBalance.textContent = `฿${bankBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  lblUpdateDate.textContent = `อัปเดตล่าสุด: ${formatDateThai(appState.centralBankUpdateDate)}`;
+  lblTotalUnpaid.textContent = `฿${totalUnpaidSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  lblTotalUnpaidCases.textContent = `ค้างชำระ: ${unpaidCases.length} เคส`;
+
+  // หักค่าดำเนินการสะสมร้อยละ 5 (ใช้ค่าที่บันทึกไว้ หรือคำนวณจากทุกคดีที่ได้รับการอนุมัติแล้ว)
+  const approvedCases = appState.deathCases.filter(d => d.status !== "pending_approval");
+  let calculatedFeesSum = 0;
+  approvedCases.forEach(c => {
+    calculatedFeesSum += (c.operatingFee || 0);
+  });
+
+  const totalFeesSum = (appState.centralOperatingFee !== undefined && appState.centralOperatingFee !== null && appState.centralOperatingFee > 0)
+    ? appState.centralOperatingFee
+    : calculatedFeesSum;
+
+  const lblTotalFeesDeducted = document.getElementById("lbl-total-fees-deducted");
+  if (lblTotalFeesDeducted) {
+    lblTotalFeesDeducted.textContent = `฿${totalFeesSum.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  }
+  const lblTotalFeesCases = document.getElementById("lbl-total-fees-cases");
+  if (lblTotalFeesCases) {
+    lblTotalFeesCases.textContent = `อนุมัติจ่ายแล้ว: ${approvedCases.filter(c => c.payoutStatus === 'paid').length} / ${approvedCases.length} เคส`;
+  }
+
+  if (bankBalance >= totalUnpaidSum) {
+    lblStatusBadge.innerHTML = `<span class="badge badge-success-outline" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); color: var(--color-accent-emerald); font-size: 13px; padding: 4px 12px; border-radius: 4px;">🟢 เพียงพอ</span>`;
+  } else {
+    const deficit = totalUnpaidSum - bankBalance;
+    lblStatusBadge.innerHTML = `<span class="badge badge-danger-outline" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.2); color: var(--color-accent-rose); font-size: 13px; padding: 4px 12px; border-radius: 4px;">🔴 ไม่เพียงพอ (ขาดอีก ฿${deficit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>`;
+  }
+}
+
+function renderCremationPayoutsTable() {
+  const tbody = document.getElementById("tbl-body-cremation-payouts");
+  if (!tbody) return;
+
+  const approvedDeaths = appState.deathCases.filter(d => d.status !== "pending_approval");
+
+  if (approvedDeaths.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="${appState.activeRole === 'province' ? 8 : 7}" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่มีข้อมูลการจ่ายเงินสงเคราะห์ศพในรอบปัจจุบัน</td></tr>`;
+    return;
+  }
+
+  const isProvince = appState.activeRole === 'province';
+  let html = "";
+  
+  approvedDeaths.forEach(death => {
+    const member = appState.members.find(m => m.id === death.memberId) || {};
+    const netPayout = death.netPayout || 0;
+    
+    html += `
+      <tr>
+        <td class="text-center">
+          <span style="font-family: var(--font-number); font-size: 11.5px; color: var(--color-accent-gold); font-weight: 600;">${death.id}</span>
+        </td>
+        <td>
+          <div style="font-weight: 600; color: white;">${death.name}</div>
+          <div style="font-size: 11px; color: var(--color-text-muted); margin-top: 2px;">สังกัด: ${death.schoolName}</div>
+        </td>
+        <td>
+          <div style="font-family: var(--font-number); font-size: 12.5px;">${formatDateThai(death.reportedDate)}</div>
+        </td>
+        <td>
+          <div style="font-weight: 600; color: white;">${death.beneficiaryName || 'ไม่ระบุ'}</div>
+          <div style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 2px;">
+            ความสัมพันธ์: ${member.beneficiary ? member.beneficiary.relation : 'ไม่ระบุ'} 
+            ${member.beneficiary && member.beneficiary.phone ? ' | 📞 ' + member.beneficiary.phone : ''}
+          </div>
+        </td>
+        <td class="text-center">
+          <div style="font-size: 12.5px; color: white; font-weight: 500;">${death.referenceDateText || '-'}</div>
+          <div style="font-size: 11.5px; color: var(--color-text-muted); font-family: var(--font-number); margin-top: 2px;">(${ (death.referenceMemberCount || 0).toLocaleString() } คน)</div>
+        </td>
+        <td class="text-right" style="font-family: var(--font-number); font-weight: 700; color: var(--color-accent-emerald); font-size: 14.5px;">
+          ฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        </td>
+        <td class="text-center">
+          ${death.payoutStatus === 'paid' ? `
+            <span class="badge badge-success-outline" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); color: var(--color-accent-emerald); font-size: 11px;">🟢 จ่ายเงินแล้ว</span>
+            <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 4px;">เมื่อ: ${formatDateThai(death.payoutDate)}</div>
+          ` : `
+            <span class="badge badge-danger-outline" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.15); color: var(--color-accent-rose); font-size: 11px;">🔴 รอดำเนินการ</span>
+          `}
+        </td>
+        <td class="text-center" style="display: ${isProvince ? 'table-cell' : 'none'};">
+          ${death.payoutStatus === 'paid' ? `
+            <button class="btn btn-secondary btn-mini" style="background: rgba(244, 63, 94, 0.1); border-color: var(--color-accent-rose); color: var(--color-accent-rose); padding: 4px 10px; font-size: 11.5px;" onclick="cancelPayoutStatus('${death.id}')">
+              ยกเลิกยอดจ่าย
+            </button>
+          ` : `
+            <button class="btn btn-success btn-mini" style="padding: 4px 10px; font-size: 11.5px;" onclick="openConfirmPayoutModal('${death.id}')">
+              บันทึกโอนเงิน
+            </button>
+          `}
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+}
+
+window.cancelPayoutStatus = function(caseId) {
+  if (!confirm("คุณต้องการยกเลิกบันทึกการโอนเงินสงเคราะห์ศพนี้ใช่หรือไม่?\n*(ยอดจะถูกเปลี่ยนกลับเป็น รอดำเนินการ และดึงยอดธนาคารคืน)")) {
+    return;
+  }
+  const death = appState.deathCases.find(d => d.id === caseId);
+  if (death) {
+    const netPayout = death.netPayout || 0;
+    appState.centralBankBalance += netPayout; // add back to bank balance
+    
+    death.payoutStatus = undefined;
+    death.payoutDate = undefined;
+    death.payoutNotes = undefined;
+    death.payoutSlip = undefined;
+    
+    appState.transferLogs.push({
+      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      type: "system",
+      amount: netPayout,
+      description: `ยกเลิกรายการจ่ายเงินทายาทของสมาชิกเสียชีวิต (ยอดเงินโอนคืนบัญชีกองทุนกลาง): ${death.name} (${death.id})`
+    });
+
+    saveStateToLocalStorage();
+    renderCremationPayoutsTable();
+    renderLiquidityAnalyzer();
+    if (window.renderTransferLogsTimeline) {
+      window.renderTransferLogsTimeline();
+    }
+    alert("🟢 ยกเลิกบันทึกการโอนเงินสงเคราะห์ศพเรียบร้อยแล้ว");
+  }
+};
+
+// Modal Control Functions
+window.openAddAnnouncementModal = function() {
+  const modal = document.getElementById("modal-add-announcement");
+  if (modal) {
+    modal.classList.add("active");
+    document.getElementById("announce-date").value = new Date().toISOString().substring(0, 10);
+  }
+};
+
+window.closeAddAnnouncementModal = function() {
+  const modal = document.getElementById("modal-add-announcement");
+  if (modal) {
+    modal.classList.remove("active");
+    document.getElementById("form-add-announcement").reset();
+  }
+};
+
+window.openUpdateBankBalanceModal = function() {
+  const modal = document.getElementById("modal-update-bank-balance");
+  if (modal) {
+    modal.classList.add("active");
+    document.getElementById("bank-balance-amount").value = appState.centralBankBalance || 0;
+    
+    // คำนวณยอด 5% อัตโนมัติเป็นค่าเริ่มต้นหากไม่เคยกดเซ็ตมาก่อน
+    const approvedCases = appState.deathCases.filter(d => d.status !== "pending_approval");
+    let calculatedFeesSum = 0;
+    approvedCases.forEach(c => {
+      calculatedFeesSum += (c.operatingFee || 0);
+    });
+    
+    const currentFee = (appState.centralOperatingFee !== undefined && appState.centralOperatingFee !== null && appState.centralOperatingFee > 0)
+      ? appState.centralOperatingFee
+      : calculatedFeesSum;
+      
+    document.getElementById("bank-operating-fee").value = currentFee || 0;
+    document.getElementById("bank-balance-date").value = new Date().toISOString().substring(0, 10);
+  }
+};
+
+window.closeUpdateBankBalanceModal = function() {
+  const modal = document.getElementById("modal-update-bank-balance");
+  if (modal) {
+    modal.classList.remove("active");
+    document.getElementById("form-update-bank-balance").reset();
+  }
+};
+
+window.openConfirmPayoutModal = function(caseId) {
+  const modal = document.getElementById("modal-confirm-payout");
+  if (!modal) return;
+  
+  const death = appState.deathCases.find(d => d.id === caseId);
+  if (!death) return;
+
+  modal.classList.add("active");
+  document.getElementById("payout-case-id").value = caseId;
+  document.getElementById("payout-deceased-name").textContent = death.name;
+  document.getElementById("payout-beneficiary-name").textContent = death.beneficiaryName || "-";
+  
+  const netPayout = death.netPayout || 0;
+  document.getElementById("payout-net-amount").textContent = `฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  document.getElementById("payout-date").value = new Date().toISOString().substring(0, 10);
+  document.getElementById("payout-notes").value = `โอนเงินผ่านบัญชีกองทุนกลาง ธนาคารกรุงไทย สำหรับเคสผู้เสียชีวิต ${death.name}`;
+  document.getElementById("payout-slip-uri").value = "";
+  document.getElementById("lbl-payout-slip-filename").textContent = "ยังไม่ได้อัปโหลดหลักฐาน";
+  document.getElementById("payout-slip-file").value = "";
+};
+
+window.closeConfirmPayoutModal = function() {
+  const modal = document.getElementById("modal-confirm-payout");
+  if (modal) {
+    modal.classList.remove("active");
+    document.getElementById("form-confirm-payout").reset();
+  }
+};
+
+window.handlePayoutSlipUpload = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const label = document.getElementById("lbl-payout-slip-filename");
+  if (label) label.textContent = file.name;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const hiddenInput = document.getElementById("payout-slip-uri");
+    if (hiddenInput) hiddenInput.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// Event Listeners for Forms
+const formAddAnnouncement = document.getElementById("form-add-announcement");
+if (formAddAnnouncement) {
+  formAddAnnouncement.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const title = document.getElementById("announce-title").value.trim();
+    const content = document.getElementById("announce-content").value.trim();
+    const type = document.getElementById("announce-type").value;
+    const date = document.getElementById("announce-date").value;
+
+    const newAnn = {
+      id: "ANN_" + new Date().getTime(),
+      title,
+      content,
+      type,
+      date,
+      createdDate: new Date().toISOString().replace('T', ' ').substring(0, 16)
+    };
+
+    if (!appState.announcements) appState.announcements = [];
+    appState.announcements.push(newAnn);
+    saveStateToLocalStorage();
+    
+    closeAddAnnouncementModal();
+    renderAnnouncementsBoard();
+    alert("🟢 ลงประกาศข่าวสารประชาสัมพันธ์ส่วนกลางสำเร็จ!");
+  });
+}
+
+const formUpdateBankBalance = document.getElementById("form-update-bank-balance");
+if (formUpdateBankBalance) {
+  formUpdateBankBalance.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const amount = parseFloat(document.getElementById("bank-balance-amount").value);
+    const fee = parseFloat(document.getElementById("bank-operating-fee").value) || 0;
+    const date = document.getElementById("bank-balance-date").value;
+    
+    appState.centralBankBalance = amount;
+    appState.centralOperatingFee = fee;
+    appState.centralBankUpdateDate = date;
+    
+    saveStateToLocalStorage();
+    closeUpdateBankBalanceModal();
+    renderLiquidityAnalyzer();
+    alert(`🟢 อัปเดตข้อมูลสภาพคล่องบัญชีธนาคารส่วนกลางเรียบร้อยแล้ว ณ วันที่ ${formatDateThai(date)}\n- ยอดเงินคงเหลือ: ฿${amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}\n- ยอดหักค่าดำเนินการสะสมร้อยละ 5: ฿${fee.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+  });
+}
+
+const formConfirmPayout = document.getElementById("form-confirm-payout");
+if (formConfirmPayout) {
+  formConfirmPayout.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const caseId = document.getElementById("payout-case-id").value;
+    const date = document.getElementById("payout-date").value;
+    const notes = document.getElementById("payout-notes").value.trim();
+    const slipUri = document.getElementById("payout-slip-uri").value;
+
+    if (!slipUri) {
+      alert("⚠️ กรุณาแนบรูปสลิปการโอนเงิน/หลักฐานการจ่าย");
+      return;
+    }
+
+    const death = appState.deathCases.find(d => d.id === caseId);
+    if (death) {
+      death.payoutStatus = "paid";
+      death.payoutDate = date;
+      death.payoutNotes = notes;
+      death.payoutSlip = slipUri;
+
+      // Deduct from centralBankBalance
+      const netPayout = death.netPayout || 0;
+      appState.centralBankBalance -= netPayout;
+
+      // Add to transferLogs
+      appState.transferLogs.push({
+        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        type: "system",
+        amount: -netPayout,
+        description: `โอนเงินสงเคราะห์ศพผู้เสียชีวิตสำเร็จ: ${death.name} (${death.id}) ผู้รับประโยชน์: ${death.beneficiaryName} ยอดสุทธิ ฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+      });
+
+      saveStateToLocalStorage();
+      closeConfirmPayoutModal();
+      renderCremationPayoutsTable();
+      renderLiquidityAnalyzer();
+      renderAnnouncementsBoard();
+      if (window.renderTransferLogsTimeline) {
+        window.renderTransferLogsTimeline();
+      }
+      alert(`🟢 ยืนยันการจ่ายเงินสำเร็จ!\nบันทึกรายการโอนเงินและแนบหลักฐานสลิปสำหรับ ${death.name} เรียบร้อยแล้ว`);
+    }
+  });
+}
+

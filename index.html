@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สสมน.น่าน // ระบบบริหารจัดการสมาชิกและกองทุนฌาปนกิจสงเคราะห์</title>
+  <meta name="description" content="ระบบสารสนเทศจัดเก็บข้อมูลสมาชิก สสมน. จังหวัดน่าน ติดตามยอดเงินสะสมล่วงหน้า จัดทำหลักฐานการเงิน และควบคุมยอดการค้างจ่ายสงเคราะห์ศพรายโรงเรียน">
+  <meta name="author" content="สสมน.น่าน">
+  
+  <!-- Fonts: Sarabun (for Thai) & Outfit (for numbers and headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  
+  <!-- SheetJS (XLSX) library -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==================== LOGIN ENTRY GATE ==================== -->
+  <div id="login-container" class="login-wrapper">
+    <div class="login-card glass animate-scale">
+      <div class="login-brand">
+        <div class="logo-icon logo-large">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 22h20L12 2z" fill="url(#login-brand-grad)" opacity="0.9"/>
+            <path d="M12 6L5 20h14L12 6z" fill="#047857"/>
+            <circle cx="12" cy="14" r="3" fill="#fbbf24"/>
+            <defs>
+              <linearGradient id="login-brand-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#b45309"/>
+                <stop offset="1" stop-color="#d97706"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h2>สสมน. จังหวัดน่าน</h2>
+        <p>ระบบสารสนเทศสมาชิกและกองทุนฌาปนกิจสงเคราะห์ครู</p>
+      </div>
+      
+      <form id="form-login" class="standard-form">
+        <!-- Role selector toggle on login -->
+        <div class="role-selector-header" style="margin-top: 10px;">
+          <span class="role-selector-label">เลือกสิทธิ์เข้าใช้งานระบบ:</span>
+        </div>
+        <div class="role-toggle-group" style="margin-bottom: 16px;">
+          <button type="button" id="btn-login-role-province" class="btn-role active">
+            แอดมินจังหวัด
+          </button>
+          <button type="button" id="btn-login-role-school" class="btn-role">
+            แอดมินโรงเรียน
+          </button>
+        </div>
+
+        <!-- School select for school admin login -->
+        <div class="form-group" id="login-school-wrapper" style="display: none;">
+          <label for="login-select-school">เลือกสังกัดสถานศึกษา / หน่วยงาน: <span class="required">*</span></label>
+          <select id="login-select-school" class="form-control">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">รหัสผ่านเข้าระบบ (Password): <span class="required">*</span></label>
+          <input type="password" id="login-password" required placeholder="ป้อนรหัสผ่านเฉพาะกลุ่มแอดมิน" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full-width btn-icon-text" style="margin-top: 10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>ตรวจสอบสิทธิ์และเข้าใช้งาน</span>
+        </button>
+      </form>
+
+      <!-- Testing credential help box -->
+      <div class="login-help-box glass">
+        <h5>🔑 รหัสผ่านเริ่มต้นสำหรับทดสอบระบบ:</h5>
+        <ul>
+          <li><strong>แอดมินจังหวัด</strong>: <code class="credential-code">province1234</code></li>
+          <li><strong>แอดมินโรงเรียน</strong>: <code class="credential-code">school1234</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN ROOT APP CONTAINER ==================== -->
+  <div class="app-container" id="main-app-container" style="display: none;">
+    
+    <!-- Sidebar Navigation & Role Controller -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 22h20L12 2z" fill="url(#brand-grad)" opacity="0.9"/>
+            <path d="M12 6L5 20h14L12 6z" fill="#047857"/>
+            <circle cx="12" cy="14" r="3" fill="#fbbf24"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#b45309"/>
+                <stop offset="1" stop-color="#d97706"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">สสมน. น่าน</span>
+          <span class="brand-subtitle">ฌาปนกิจสงเคราะห์ครู</span>
+        </div>
+      </div>
+
+      <!-- Current Logged In Admin Profile Box -->
+      <div class="role-selector-card glass">
+        <div class="role-selector-header">
+          <span class="role-selector-label" style="color: var(--color-accent-gold);">ผู้เข้าใช้งานระบบ:</span>
+        </div>
+        <div class="logged-profile-info">
+          <div class="avatar-profile" style="width: 32px; height: 32px; flex-shrink: 0; background: rgba(251, 191, 36, 0.05);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="logged-admin-details">
+            <span class="logged-admin-name" id="sidebar-admin-role-name">แอดมินจังหวัด</span>
+            <span class="logged-admin-scope" id="sidebar-admin-scope-name">จังหวัดน่าน</span>
+          </div>
+        </div>
+        
+        <button id="btn-action-logout" class="btn btn-secondary btn-full-width btn-mini" style="margin-top: 14px; border-color: rgba(244, 63, 94, 0.2); color: var(--color-accent-rose);">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+          </svg>
+          <span>ออกจากระบบ</span>
+        </button>
+      </div>
+      
+      <!-- Navigation Menu -->
+      <nav class="sidebar-menu">
+        <button id="btn-nav-dashboard" class="menu-item active" aria-label="ดูภาพรวมแดชบอร์ด">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9" rx="1" />
+            <rect x="14" y="3" width="7" height="5" rx="1" />
+            <rect x="14" y="12" width="7" height="9" rx="1" />
+            <rect x="3" y="16" width="7" height="5" rx="1" />
+          </svg>
+          <span>ภาพรวมแดชบอร์ด</span>
+        </button>
+        
+        <button id="btn-nav-members" class="menu-item" aria-label="จัดการข้อมูลสมาชิก">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>รายชื่อสมาชิก สสมน.</span>
+        </button>
+        
+        <button id="btn-nav-cremation" class="menu-item" aria-label="ติดตามเงินสงเคราะห์รายศพ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span id="nav-cremation-label">ติดตามค่าสงเคราะห์รายศพ</span>
+          <span class="badge-notify-count" id="badge-pending-slips" style="display: none;">0</span>
+        </button>
+        
+        <button id="btn-nav-schools" class="menu-item" aria-label="ดูข้อมูลพื้นฐานของโรงเรียนและผู้ประสานงาน">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18M3 7v1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1m0 1a3 3 0 0 0 6 0v-1M4 4h16M2 21V7h20v14" />
+          </svg>
+          <span id="nav-schools-label">ข้อมูลพื้นฐานของโรงเรียน</span>
+        </button>
+
+        <button id="btn-nav-documents" class="menu-item" aria-label="ดาวน์โหลดเอกสารและข้อบังคับ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>ศูนย์ดาวน์โหลดเอกสาร</span>
+        </button>
+      </nav>
+      
+      <!-- Sidebar Footer Info -->
+      <div class="sidebar-footer">
+        <button id="btn-gen-demo-data" class="btn btn-secondary btn-demo-action" title="สร้างข้อมูลจำลองประวัติทางการเงิน สมาชิก และการย้ายโรงเรียนเพื่อให้ง่ายต่อการประเมินและสาธิตงาน">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+          <span>นำเข้าข้อมูลทดสอบระบบ</span>
+        </button>
+        <div class="footer-system-status">
+          <span class="status-dot"></span>
+          <span>เซิร์ฟเวอร์จำลอง: พร้อมใช้งาน</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+      
+      <!-- Top Header Bar -->
+      <header class="top-bar">
+        <div class="header-left">
+          <h1 id="page-title">ระบบแดชบอร์ดภาพรวมจังหวัด</h1>
+          <p class="subtitle" id="page-subtitle">แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน</p>
+        </div>
+        
+        <div class="header-right">
+          <!-- Backup controls -->
+          <div class="backup-actions">
+            <button id="btn-export-data" class="btn btn-icon-text btn-secondary" title="สำรองไฟล์ฐานข้อมูลสมาชิกทั้งหมดในเครื่องออกมาเป็น JSON">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>ส่งออกฐานข้อมูล</span>
+            </button>
+            <button id="btn-import-trigger" class="btn btn-icon-text btn-secondary" title="อัปโหลดไฟล์ JSON ข้อมูลสำรองเพื่อนำเข้าระบบ">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>นำเข้าฐานข้อมูล</span>
+            </button>
+            <input type="file" id="import-database-file" accept=".json" style="display: none;">
+          </div>
+          
+          <button id="btn-action-primary" class="btn btn-primary btn-icon-text">
+            <!-- Dynamically populated button, e.g. "เพิ่มสมาชิกใหม่" or "แจ้งสมาชิกถึงแก่กรรม" -->
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span id="text-action-primary">เพิ่มสมาชิกใหม่</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW 1: DASHBOARD VIEW (Province / School) -->
+      <section id="view-panel-dashboard" class="view-panel active">
+        
+        <!-- Bi-Annual Member Verification Alert Panel -->
+        <div id="panel-certification-alert" class="certification-alert-banner glass animate-scale" style="display: none; margin-bottom: 24px; padding: 16px; border-radius: var(--radius-lg); background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.2); justify-content: space-between; align-items: center; gap: 16px;">
+          <div class="cert-alert-content" style="display: flex; gap: 14px; align-items: flex-start;">
+            <div class="cert-alert-icon" style="background: rgba(244, 63, 94, 0.1); padding: 8px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-rose)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div class="cert-alert-text">
+              <h4 style="color: var(--color-accent-rose); margin: 0 0 4px 0; font-size: 14.5px; font-weight: 700;">⚠️ กำหนดรอบรับรองความถูกต้องของข้อมูลสมาชิกครึ่งปี สสมน.</h4>
+              <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0; line-height: 1.45;" id="lbl-cert-alert-message">กรุณาตรวจสอบรายชื่อสมาชิก สสมน. ในสังกัดให้ถูกต้องตรงตามปัจจุบัน แล้วกดยืนยันการรับรองข้อมูล</p>
+            </div>
+          </div>
+          <div class="cert-alert-actions" style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
+            <button id="btn-cert-simulate" onclick="toggleSimulateReviewDate()" class="btn btn-secondary btn-mini" style="font-size: 11px; padding: 6px 12px; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); color: white; cursor: pointer; border-radius: var(--radius-sm);" title="จำลองสลับวันที่ทดสอบระบบรับรอง (30 มิ.ย. / 30 ธ.ค.)">
+              🧪 จำลองวันรับรอง
+            </button>
+            <button id="btn-certify-school-data" onclick="certifySchoolData()" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2); cursor: pointer; border-radius: var(--radius-sm);">
+              ✍️ กดยืนยันรับรองข้อมูล
+            </button>
+          </div>
+        </div>
+
+        <!-- System Condolences & Payout Announcements Bulletin Board (Round 4) -->
+        <div id="block-system-announcements" class="widget-card glass animate-scale" style="margin-bottom: 24px; display: block; border-left: 4px solid var(--color-accent-gold) !important; background: rgba(251, 191, 36, 0.02) !important;">
+          <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 16px;">🕯️</span>
+              <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: white;">กระดานประกาศด่วนฌาปนกิจและสงเคราะห์ สสมน. ส่วนกลาง จังหวัดน่าน</h3>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button id="btn-add-announcement-trigger" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;" onclick="openAddAnnouncementModal()">
+                📢 เขียนประกาศใหม่
+              </button>
+              <span class="badge" style="background: rgba(251, 191, 36, 0.1); color: var(--color-accent-gold); font-size: 10.5px; padding: 2px 8px; font-weight: 600; border-radius: 4px;">ประชาสัมพันธ์</span>
+            </div>
+          </div>
+          <div class="widget-body" id="system-announcements-list-container" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Rendered dynamically from app.js -->
+            <div style="font-size: 12.5px; color: var(--color-text-dim); text-align: center; padding: 10px 0;">ไม่มีประกาศแจ้งเตือนการฌาปนกิจศพใหม่รอบปัจจุบัน</div>
+          </div>
+        </div>
+
+        <!-- Central Fund Liquidity Analyser Widget -->
+        <div id="block-province-liquidity-analyser" class="widget-card glass full-width-widget animate-scale" style="display: none; padding: 20px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06); margin-bottom: 24px;">
+          <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 16px;">🏦</span>
+              <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: white;">ระบบตรวจสอบและวิเคราะห์สภาพคล่องกองทุนส่วนกลาง สสมน.น่าน (บันทึกอัปเดตทุกวันที่ 5 ของเดือน)</h3>
+            </div>
+            <button id="btn-update-bank-balance" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;" onclick="openUpdateBankBalanceModal()">
+              ✍️ ปรับปรุงยอดเงินบัญชี
+            </button>
+          </div>
+          <div class="widget-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินคงเหลือในบัญชีธนาคารส่วนกลาง</div>
+              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: white; margin-top: 4px;" id="lbl-central-bank-balance">฿250,000.00</div>
+              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-central-bank-update-date">อัปเดตล่าสุด: -</div>
+            </div>
+            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินสงเคราะห์ค้างจ่ายทายาทสะสม</div>
+              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: var(--color-accent-amber); margin-top: 4px;" id="lbl-total-unpaid-payouts">฿0.00</div>
+              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-unpaid-payouts-cases">ค้างชำระ: 0 เคส</div>
+            </div>
+            <!-- หักค่าดำเนินการสะสมร้อยละ 5 -->
+            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดหักค่าดำเนินการสะสม (ร้อยละ 5)</div>
+              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: var(--color-accent-gold); margin-top: 4px;" id="lbl-total-fees-deducted">฿0.00</div>
+              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-fees-cases">จากกรณีมรณกรรมทั้งหมด</div>
+            </div>
+            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px; display: flex; flex-direction: column; justify-content: center;">
+              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; margin-bottom: 4px;">การประเมินสภาพคล่องการเบิกจ่าย</div>
+              <div style="font-size: 13.5px; font-weight: 700;" id="lbl-liquidity-status-badge">กำลังประมวลผล...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards Grid -->
+        <div class="kpi-grid">
+          
+          <!-- KPI 1: Active Member Count -->
+          <div class="kpi-card glass">
+            <div class="kpi-icon icon-primary">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-title">สมาชิกสามัญปัจจุบัน</span>
+              <span class="kpi-number" id="stat-active-members">0</span>
+              <span class="kpi-trend" id="stat-active-members-subtitle">จากบุคลากรทั้งหมด 0 คน</span>
+            </div>
+          </div>
+          
+          <!-- KPI 2: Total Membership Ratio -->
+          <div class="kpi-card glass">
+            <div class="kpi-icon icon-success">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-title">ร้อยละการเข้าร่วม สสมน.</span>
+              <span class="kpi-number" id="stat-membership-ratio">0%</span>
+              <span class="kpi-trend" id="stat-membership-ratio-subtitle">ไม่เป็นสมาชิก 0 คน</span>
+            </div>
+          </div>
+          
+          <!-- KPI 3: Prepayment Funds Total / Balances -->
+          <div class="kpi-card glass">
+            <div class="kpi-icon icon-warning">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="16"></line>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-title" id="lbl-funds-title">ยอดกองทุนสะสมล่วงหน้า</span>
+              <span class="kpi-number text-currency" id="stat-funds-total">฿0.00</span>
+              <span class="kpi-trend" id="stat-funds-subtitle">ชำระแรกเข้า (50 บาท) ครบถ้วน</span>
+            </div>
+          </div>
+          
+          <!-- KPI 4: Pending Actions / Arrears Warning -->
+          <div class="kpi-card glass warning-alert-card" id="kpi-alerts-panel">
+            <div class="kpi-icon icon-danger">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div class="kpi-data">
+              <span class="kpi-title" id="lbl-arrears-title">คดีเสียชีวิต & ค้างจ่าย</span>
+              <span class="kpi-number" id="stat-alerts-count">0</span>
+              <span class="kpi-trend text-danger" id="stat-alerts-subtitle">ค้างชำระเงินส่งเคราะห์ศพ</span>
+            </div>
+          </div>
+          
+        </div>
+
+        <!-- Beautiful Membership Status Graphic Widget -->
+        <div class="widget-card glass full-width-widget" style="padding: 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%); margin-bottom: 8px;">
+          <div class="widget-header" style="border-bottom: none; padding-bottom: 0;">
+            <h3 id="membership-graphics-title" style="font-size: 17px; color: var(--color-accent-gold); display: flex; align-items: center; gap: 8px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+              <span>สรุปสถานะการสมัครสมาชิก สสมน. (Nan Province Membership Status Visualizer)</span>
+            </h3>
+            <p id="membership-graphics-subtitle">กราฟิกเปรียบเทียบสัดส่วนยอดการเป็นสมาชิกและผู้ประสงค์ไม่เป็นสมาชิก สสมน. ทั้งจังหวัดน่าน</p>
+          </div>
+          
+          <div class="widget-body" style="margin-top: 16px;">
+            <div class="membership-graphic-container" style="display: flex; gap: 32px; align-items: center; justify-content: space-around; flex-wrap: wrap;">
+              
+              <!-- Circular Progress Rings or Large Stats -->
+              <div class="membership-donut-wrapper" style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center;">
+                <svg width="140" height="140" viewBox="0 0 140 140" style="transform: rotate(-90deg);">
+                  <!-- Background Circle -->
+                  <circle cx="70" cy="70" r="58" fill="transparent" stroke="rgba(255, 255, 255, 0.05)" stroke-width="12"></circle>
+                  <!-- Active Members Circle -->
+                  <circle id="visual-members-ring" cx="70" cy="70" r="58" fill="transparent" stroke="url(#grad-members)" stroke-width="12" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
+                  <defs>
+                    <linearGradient id="grad-members" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#10b981" />
+                      <stop offset="100%" stop-color="#059669" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                  <span id="visual-members-percent" style="font-family: var(--font-number); font-size: 26px; font-weight: 800; color: var(--color-accent-emerald); line-height: 1;">0%</span>
+                  <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase;">เป็นสมาชิก สสมน.</span>
+                </div>
+              </div>
+
+              <!-- Bar breakdown and statistics details -->
+              <div class="membership-details-bars" style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 16px;">
+                <!-- Members Bar -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                    <span style="font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent-emerald); display: inline-block;"></span>
+                      เป็นสมาชิก สสมน. (Members)
+                    </span>
+                    <span style="font-family: var(--font-number); font-weight: 700; color: var(--color-accent-emerald);"><span id="visual-members-count">0</span> คน</span>
+                  </div>
+                  <div class="progress-bar-container" style="height: 14px; background: rgba(0,0,0,0.4); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); margin: 0;">
+                    <div id="visual-members-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-pine); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);"></div>
+                  </div>
+                </div>
+
+                <!-- Non-members Bar -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                    <span style="font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent-amber); display: inline-block;"></span>
+                      ยังไม่สมัครสิทธิ์ สสมน. (Non-members)
+                    </span>
+                    <span style="font-family: var(--font-number); font-weight: 700; color: var(--color-accent-gold);"><span id="visual-nonmembers-count">0</span> คน</span>
+                  </div>
+                  <div class="progress-bar-container" style="height: 14px; background: rgba(0,0,0,0.4); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); margin: 0;">
+                    <div id="visual-nonmembers-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-teak); box-shadow: 0 0 10px rgba(217, 119, 6, 0.4);"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Graphic summary cards -->
+              <div class="membership-summary-brief" style="display: flex; gap: 16px;">
+                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
+                  <span style="font-size: 10px; color: var(--color-text-muted); font-weight: 600;">บุคลากรทั้งหมด</span>
+                  <span id="visual-total-count" style="font-family: var(--font-number); font-size: 22px; font-weight: 800; color: white; margin-top: 4px;">0</span>
+                </div>
+                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
+                  <span style="font-size: 10px; color: var(--color-text-muted); font-weight: 600;">ความมั่นคงสมาชิกรวม</span>
+                  <span id="visual-status-indicator" style="font-size: 12px; font-weight: 700; color: var(--color-accent-emerald); margin-top: 8px; text-align: center;">พร้อมใช้งาน</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Widgets Layout -->
+        <div class="dashboard-grid">
+          
+          <!-- Left Widget: Membership Breakdown by Positions -->
+          <div class="widget-card glass">
+            <div class="widget-header">
+              <h3>สถิติตามตำแหน่งงาน (Membership Breakdown by Position)</h3>
+              <p>เปรียบเทียบสัดส่วน ข้าราชการครู และบุคลากรทางการศึกษา แยกตามตำแหน่งงาน</p>
+            </div>
+            <div class="widget-body">
+              <div class="position-statistics-container" id="widget-position-stats">
+                <!-- Will be populated dynamically by app.js -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Right Widget: Directory / List / Rankings -->
+          <div class="widget-card glass scrollable-card" id="widget-provincial-schools-rankings">
+            <div class="widget-header header-with-filter">
+              <div>
+                <h3>สถานะสมาชิกรายสังกัด (School Membership Stats)</h3>
+                <p>รายงานสถิติเปรียบเทียบกำลังพลทั้งหมดกับสมาชิก 33 สังกัด</p>
+              </div>
+              <div class="widget-actions">
+                <select id="filter-ranking-order" class="filter-select-mini">
+                  <option value="ratio-desc">อัตราสมาชิก สูง -> ต่ำ</option>
+                  <option value="ratio-asc">อัตราสมาชิก ต่ำ -> สูง</option>
+                  <option value="total-personnel">จำนวนบุคลากรสูงสุด</option>
+                  <option value="non-members">จำนวนคนไม่เป็นสมาชิก</option>
+                </select>
+              </div>
+            </div>
+            <div class="widget-body">
+              <div class="school-rankings-table-wrapper">
+                <table class="premium-data-table ranking-table">
+                  <thead>
+                    <tr>
+                      <th class="text-center">รหัส</th>
+                      <th>สังกัดสถานศึกษา / หน่วยงาน</th>
+                      <th class="text-center">บุคลากร</th>
+                      <th class="text-center">สมาชิก สสมน.</th>
+                      <th class="text-center">ไม่เป็นสมาชิก</th>
+                      <th>สัดส่วนการเข้าร่วม</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-school-rankings">
+                    <!-- Will be populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- School Transfer and History Widget (Active in Province Admin) -->
+          <div class="widget-card glass full-width-widget scrollable-card">
+            <div class="widget-header">
+              <h3>ประวัติการแจ้งย้ายสังกัดล่าสุด (Recent Member Transfers)</h3>
+              <p>บันทึกประวัติการย้ายโรงเรียนภายในจังหวัดน่าน ย้ายฐานข้อมูล และประวัติหมายเลขสมาชิกเดิม-รหัสใหม่</p>
+            </div>
+            <div class="widget-body">
+              <div class="transfer-logs-timeline" id="widget-transfer-logs">
+                <div class="timeline-empty">ไม่พบประวัติการทำเรื่องย้ายสังกัดในระบบ</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payout to Beneficiaries Widget (Cremation Payouts to Beneficiaries) -->
+          <div class="widget-card glass full-width-widget scrollable-card" style="margin-top: 24px;">
+            <div class="widget-header header-with-filter">
+              <div>
+                <h3>ประวัติการจ่ายเงินค่าสงเคราะห์ศพให้ผู้รับผลประโยชน์ (Cremation Payouts to Beneficiaries) 💰</h3>
+                <p>รายงานข้อมูลการจ่ายเงินสงเคราะห์ศพให้กับทายาทหรือผู้รับผลประโยชน์ (หักค่าดำเนินการ 5% แล้ว)</p>
+              </div>
+            </div>
+            <div class="widget-body">
+              <div class="school-rankings-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                <table class="premium-data-table">
+                  <thead>
+                    <tr>
+                      <th class="text-center" style="width: 100px;">รหัสเคส</th>
+                      <th>ชื่อสมาชิกผู้เสียชีวิต</th>
+                      <th>วันที่เสียชีวิต</th>
+                      <th>ผู้รับผลประโยชน์ (ทายาท)</th>
+                      <th class="text-center">รอบสมาชิกอ้างอิง</th>
+                      <th class="text-right" style="width: 140px;">ยอดเงินสงเคราะห์สุทธิ</th>
+                      <th class="text-center" style="width: 140px;">สถานะการจ่ายเงิน</th>
+                      <th class="text-center" id="th-payout-action" style="width: 130px; display: none;">การดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-cremation-payouts">
+                    <!-- Will be populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Province Admin Oversight: School Certification Status Matrix -->
+          <div id="block-province-school-certifications" class="widget-card glass full-width-widget scrollable-card" style="display: none; margin-top: 28px;">
+            <div class="widget-header header-with-filter">
+              <div>
+                <h3>สถานะการรับรองความถูกต้องข้อมูลสมาชิก 33 สังกัด (Bi-Annual Certification Matrix) 🟢🔴</h3>
+                <p>ติดตามประวัติการกดยืนยันความถูกต้องของข้อมูลสมาชิกในแต่ละรอบครึ่งปี (รอบที่ 1: 30 มิ.ย. / รอบที่ 2: 30 ธ.ค.)</p>
+              </div>
+              <div class="widget-actions">
+                <span class="matrix-legend" style="display: flex; gap: 12px; font-size: 12px; color: var(--color-text-muted);">
+                  <span class="legend-item" style="display: flex; align-items: center; gap: 4px;"><span class="legend-dot status-dot-green" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-teal);"></span> ได้รับการรับรองแล้ว</span>
+                  <span class="legend-item" style="display: flex; align-items: center; gap: 4px;"><span class="legend-dot status-dot-red" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-rose);"></span> ค้างการรับรอง</span>
+                </span>
+              </div>
+            </div>
+            <div class="widget-body no-padding">
+              <div class="table-responsive">
+                <table class="standard-table" style="font-size: 13px;">
+                  <thead>
+                    <tr>
+                      <th class="text-center" style="width: 60px;">รหัส</th>
+                      <th>สังกัดสถานศึกษา / หน่วยงาน</th>
+                      <th class="text-center">รอบครึ่งปีที่ 1 (30 มิถุนายน)</th>
+                      <th class="text-center">รอบครึ่งปีที่ 2 (30 ธันวาคม)</th>
+                      <th>ผู้ทำการรับรองข้อมูล</th>
+                      <th>วันเวลาที่กดยืนยัน</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-school-certifications">
+                    <!-- Populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- VIEW 2: MEMBERS DIRECTORY VIEW -->
+      <section id="view-panel-members" class="view-panel">
+        
+        <!-- Search, Filters, and Table Tools -->
+        <div class="directory-toolbar glass">
+          <div class="toolbar-left">
+            <div class="search-box">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="member-search-input" placeholder="ค้นหาโดย ชื่อ, นามสกุล, หมายเลขสมาชิก หรือเลขประจำตัวประชาชน..." aria-label="ค้นหาสมาชิก">
+            </div>
+          </div>
+          
+          <div class="toolbar-right">
+            <!-- Position Filter -->
+            <div class="filter-wrapper">
+              <label for="filter-member-position" class="sr-only">ตำแหน่ง:</label>
+              <select id="filter-member-position" class="filter-select">
+                <option value="all">ทุกตำแหน่งงาน</option>
+                <option value="ผอ.">ผู้อำนวยการ (ผอ.)</option>
+                <option value="รอง ผอ.">รองผู้อำนวยการ (รอง ผอ.)</option>
+                <option value="ครู">ข้าราชการครู</option>
+                <option value="ข้าราชการบำนาญ">ข้าราชการบำนาญ</option>
+                <option value="บุคลากรอื่น ๆ">บุคลากรอื่น ๆ</option>
+              </select>
+            </div>
+            
+            <!-- School Filter (Only active in Province Admin Mode) -->
+            <div class="filter-wrapper" id="provincial-school-filter-wrapper">
+              <label for="filter-member-school" class="sr-only">สังกัด:</label>
+              <select id="filter-member-school" class="filter-select">
+                <option value="all">ทุกโรงเรียน/หน่วยงาน</option>
+                <!-- Will be populated dynamically by app.js -->
+              </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="filter-wrapper">
+              <label for="filter-member-status" class="sr-only">สถานะสมาชิก:</label>
+              <select id="filter-member-status" class="filter-select">
+                <option value="active">ใช้งานอยู่ (Active)</option>
+                <option value="transferred">ย้ายสังกัดแล้ว (Archived)</option>
+                <option value="deceased">เสียชีวิตแล้ว (Deceased)</option>
+                <option value="arrears">ติดค้างชำระ / ยอดเงินลบ</option>
+                <option value="all">ทั้งหมด</option>
+              </select>
+            </div>
+            
+            <!-- Clear Filters -->
+            <button id="btn-clear-directory-filters" class="btn-clear-filters" style="display: none;">
+              ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+
+        <!-- Members Table Card -->
+        <div class="widget-card glass full-width-widget scrollable-card flex-grow-widget">
+          <div class="widget-header table-summary-header">
+            <div>
+              <h3>รายชื่อสมาชิกในระบบ (<span id="count-directory-results">0</span> คน)</h3>
+              <p id="txt-directory-scope">ตารางข้อมูลสมาชิกพร้อมยอดเงินสำรองและประวัติทางการเงินทั้งหมด</p>
+            </div>
+            <div class="widget-actions">
+              <!-- Excel Template and Import Buttons -->
+              <div class="excel-actions">
+                <button id="btn-download-excel-template" class="btn btn-icon-text btn-secondary btn-mini" title="ดาวน์โหลดฟอร์มต้นแบบ Excel (.csv) เพื่อนำไปกรอกข้อมูลพร้อมกันหลายคน">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>ดาวน์โหลดฟอร์ม Excel (CSV)</span>
+                </button>
+                <button id="btn-import-excel-trigger" class="btn btn-icon-text btn-success btn-mini" title="นำเข้าข้อมูลสมาชิกหลายคนพร้อมกันผ่านไฟล์ Excel (.csv)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <path d="M12 8v8M8 12h8"></path>
+                  </svg>
+                  <span>นำเข้าข้อมูลจาก Excel (CSV)</span>
+                </button>
+                <input type="file" id="import-excel-file" accept=".csv,.xlsx" style="display: none;">
+              </div>
+            </div>
+          </div>
+          <div class="widget-body no-padding">
+            <div class="main-table-wrapper">
+              <table class="premium-data-table" id="tbl-members-directory">
+                <thead>
+                  <tr>
+                    <th>หมายเลขสมาชิก</th>
+                    <th>ชื่อ - นามสกุล</th>
+                    <th>ตำแหน่ง</th>
+                    <th>เลขประจำตัวประชาชน</th>
+                    <th>สังกัดโรงเรียน/หน่วยงาน</th>
+                    <th>เบอร์โทรศัพท์</th>
+                    <th class="text-right">เงินสะสมล่วงหน้า</th>
+                    <th class="text-center">ค่าแรกเข้า (50฿)</th>
+                    <th class="text-center">สถานะ</th>
+                    <th class="text-center">การดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-body-members">
+                  <!-- Will be populated dynamically by app.js -->
+                </tbody>
+              </table>
+            </div>
+            <div class="table-empty-state" id="tbl-members-empty" style="display: none;">
+              <div class="empty-state-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+              <h4>ไม่พบรายชื่อสมาชิก</h4>
+              <p>กรุณาปรับปรุงคำค้นหาหรือตัวกรอง หรือกดปุ่ม "เพิ่มสมาชิกใหม่" ด้านบนเพื่อเพิ่มข้อมูลเข้าระบบ</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: CREMATION & PAYMENTS TRACKING -->
+      <section id="view-panel-cremation" class="view-panel">
+        
+        <!-- Split Layout for cremation tracking -->
+        <div class="cremation-split-layout">
+          
+          <!-- Left side: Deaths list and actions -->
+          <div class="cremation-left-panel">
+            
+            <!-- Province Admin Form to report deaths -->
+            <div class="widget-card glass" id="block-province-death-creation" style="display: block;">
+              <div class="widget-header">
+                <h3>รายงานการเสียชีวิตของสมาชิก (Create Cremation Death Case)</h3>
+                <p>เมื่อมีสมาชิกถึงแก่กรรม ให้ทำการกรอกใบแจ้งเพื่อเปลี่ยนสถานะผู้เสียชีวิต และหักเงินค่าสงเคราะห์ศพจากสมาชิกทุกคนในจังหวัดรายละ 20 บาทอัตโนมัติ</p>
+              </div>
+              <div class="widget-body">
+                <form id="form-report-death" class="standard-form">
+                  <div class="form-group">
+                    <label for="death-member-id">เลือกสมาชิกที่ถึงแก่กรรม: <span class="required">*</span></label>
+                    <select id="death-member-id" required class="form-control select2-mock">
+                      <option value="" disabled selected>-- เลือกสมาชิกที่เสียชีวิต (เฉพาะสัญชาติใช้งานอยู่) --</option>
+                      <!-- Populated dynamically by app.js -->
+                    </select>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="form-group col-6">
+                      <label for="death-reported-date">วันที่ถึงแก่กรรม: <span class="required">*</span></label>
+                      <input type="date" id="death-reported-date" required class="form-control">
+                    </div>
+                    <div class="form-group col-6">
+                      <label for="death-deduction-amount">ค่าสงเคราะห์ต่อคน (บาท): <span class="required">*</span></label>
+                      <input type="number" id="death-deduction-amount" value="20" min="1" max="100" required class="form-control">
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="death-cause">สาเหตุการเสียชีวิต / หมายเหตุเพิ่มเติม:</label>
+                    <textarea id="death-cause" rows="2" placeholder="เช่น จากไปอย่างสงบเนื่องจากชราภาพ, อุบัติเหตุทางรถยนต์ ฯลฯ" class="form-control"></textarea>
+                  </div>
+
+                  <!-- Death supporting documents -->
+                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(251, 191, 36, 0.02); border-color:rgba(251, 191, 36, 0.12); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <h5 style="color:var(--color-accent-gold); font-size:12px; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต (ระบบส่วนกลาง):</h5>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-cert-province" style="font-size:11px;">1. ไฟล์ใบมรณบัตร:</label>
+                      <input type="file" id="death-doc-cert-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-id-province" style="font-size:11px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย:</label>
+                      <input type="file" id="death-doc-id-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-house-province" style="font-size:11px;">3. สำเนาทะเบียนบ้านผู้ตาย:</label>
+                      <input type="file" id="death-doc-house-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-primary btn-full-width">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="12" y1="8" x2="12" y2="16"></line>
+                      <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    <span>แจ้งถึงแก่กรรมและเรียกเก็บเงินจังหวัด</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- School Admin Form to report deaths (Needs Province approval) -->
+            <div class="widget-card glass" id="block-school-death-creation" style="display: none;">
+              <div class="widget-header">
+                <h3>แจ้งสมาชิกถึงแก่กรรมระดับโรงเรียน (Report Death & Upload Documents)</h3>
+                <p>ทำการยื่นเรื่องแจ้งสมาชิกในสังกัดเสียชีวิต พร้อมส่งหลักฐานใบมรณบัตร สำเนาบัตรประชาชน และสำเนาทะเบียนบ้าน เพื่อรอแอดมินจังหวัดอนุมัติคดีศพและระบบเรียกเก็บเงิน</p>
+              </div>
+              <div class="widget-body">
+                <form id="form-school-report-death" class="standard-form">
+                  <div class="form-group">
+                    <label for="school-death-member-id">เลือกสมาชิกที่ถึงแก่กรรม: <span class="required">*</span></label>
+                    <select id="school-death-member-id" required class="form-control">
+                      <!-- Populated dynamically with school's active members by app.js -->
+                    </select>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="form-group col-6">
+                      <label for="school-death-reported-date">วันที่ถึงแก่กรรม: <span class="required">*</span></label>
+                      <input type="date" id="school-death-reported-date" required class="form-control">
+                    </div>
+                    <div class="form-group col-6">
+                      <label>ค่าธรรมเนียมสงเคราะห์ศพ:</label>
+                      <input type="text" value="คนละ 20 บาท (ระบบกำหนด)" readonly class="form-control readonly-input">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="school-death-cause">สาเหตุการเสียชีวิต / หมายเหตุ:</label>
+                    <textarea id="school-death-cause" rows="2" placeholder="กรอกข้อมูลชี้แจงเพิ่มเติม..." class="form-control"></textarea>
+                  </div>
+
+                  <!-- File Attachments for Death Verification -->
+                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(251, 191, 36, 0.03); border-color:rgba(251, 191, 36, 0.15); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <h5 style="color:var(--color-accent-gold); font-size:12.5px; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต: <span class="required">*</span></h5>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-cert" style="font-size:11px;">1. ไฟล์ใบมรณบัตร: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-cert" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-id" style="font-size:11px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-id" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                    <div class="form-group" style="gap:4px;">
+                      <label for="death-doc-house" style="font-size:11px;">3. สำเนาทะเบียนบ้านผู้ตาย: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-house" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-danger btn-full-width">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="12" y1="8" x2="12" y2="16"></line>
+                      <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
+                    <span>ส่งข้อมูลการเสียชีวิตรอยืนยันการเงิน</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- List of Death Cases (Both Roles see this) -->
+            <div class="widget-card glass scrollable-card flex-grow-widget">
+              <div class="widget-header">
+                <h3>รายการสมาชิกผู้เสียชีวิตทั้งหมด (Nan Cremation Cases)</h3>
+                <p>บันทึกประวัติเคสผู้ถึงแก่กรรมประจำกองทุนฌาปนกิจ สสมน. จังหวัดน่าน</p>
+              </div>
+              <div class="widget-body no-padding">
+                <div class="death-cases-list-wrapper" id="death-cases-items-list">
+                  <!-- Will be populated dynamically -->
+                  <div class="empty-cases-message">ยังไม่มีรายงานสมาชิกถึงแก่กรรมในระบบ</div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+
+          <!-- Right side: Payment Status & Slips -->
+          <div class="cremation-right-panel scrollable-panel">
+            
+            <!-- Province Admin: Verification panel for reported deaths by schools -->
+            <div class="widget-card glass" id="block-province-verify-deaths" style="display: block;">
+              <div class="widget-header">
+                <h3>ตรวจสอบและอนุมัติการแจ้งเสียชีวิตจากโรงเรียน (<span id="count-pending-deaths">0</span> เคส)</h3>
+                <p>ตรวจสอบความถูกต้องของ ใบมรณบัตร บัตรประชาชน และทะเบียนบ้าน เพื่อกดอนุมัติคดีเสียชีวิตและเริ่มตัดยอดเงินทั้งจังหวัด</p>
+              </div>
+              <div class="widget-body no-padding">
+                <div class="death-cases-list-wrapper" id="school-pending-deaths-list">
+                  <!-- Generated dynamically in app.js -->
+                  <div class="empty-cases-message">ไม่มีรายงานแจ้งเสียชีวิตค้างการตรวจสอบอนุมัติ</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- School Admin Payment View (Unpaid invoices list & Slip upload form) -->
+            <div class="widget-card glass" id="block-school-payments-actions" style="display: none;">
+              <div class="widget-header">
+                <h3>การส่งเงินค่าสงเคราะห์รายศพระดับโรงเรียน (School Slip Settlement)</h3>
+                <p>เลือกเคสคดีศพที่โรงเรียนของคุณค้างจ่าย เพื่ออัปโหลดส่งสลิปหลักฐานการโอนเงินภาพรวมของทั้งโรงเรียน</p>
+              </div>
+              <div class="widget-body">
+                <div id="school-invoice-select-container">
+                  <!-- Generated dynamically in app.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Province Admin oversight matrix: Payment Matrix Grid -->
+            <div class="widget-card glass" id="block-province-payment-matrix" style="display: block;">
+              <div class="widget-header header-with-filter">
+                <div>
+                  <h3>ตารางสรุปการชำระเงินรายศพ 33 สังกัด (Nan Province Payment Matrix)</h3>
+                  <p>แดชบอร์ดเมทริกซ์สรุปภาพรวมการส่งยอดของทุกโรงเรียนแยกตามเคสศพ คลิกในช่องเพื่อตรวจสอบสลิปของโรงเรียน</p>
+                </div>
+                <div class="widget-actions">
+                  <div class="matrix-legend">
+                    <span class="legend-item"><span class="legend-dot status-dot-red"></span> ค้างจ่าย</span>
+                    <span class="legend-item"><span class="legend-dot status-dot-yellow"></span> รอตรวจสลิป</span>
+                    <span class="legend-item"><span class="legend-dot status-dot-green"></span> ชำระแล้ว</span>
+                  </div>
+                </div>
+              </div>
+              <div class="widget-body no-padding">
+                <div class="matrix-table-outer">
+                  <div class="matrix-scroll-wrapper">
+                    <table class="matrix-table" id="tbl-payment-matrix">
+                      <thead>
+                        <tr id="matrix-header-row">
+                          <th>รายชื่อเคสศพผู้เสียชีวิต</th>
+                          <!-- Populate schools headers 01 to 33 dynamically -->
+                        </tr>
+                      </thead>
+                      <tbody id="matrix-body-rows">
+                        <!-- Populate rows dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="matrix-empty-state" id="matrix-empty-view">
+                  ยังไม่มีการแจ้งความถึงแก่กรรมของสมาชิก จึงไม่มีข้อมูลสรุปเมทริกซ์ชำระเงิน
+                </div>
+              </div>
+            </div>
+
+            <!-- Province Admin Checklist of Unpaid Schools per Death Case -->
+            <div class="widget-card glass" id="block-province-payment-arrears-checker" style="display: block;">
+              <div class="widget-header header-with-filter">
+                <div>
+                  <h3>ตัวคัดกรองติดตามยอดค้างชำระ (Arrears Oversight Tool)</h3>
+                  <p>เลือกเคสการเสียชีวิตเพื่อตรวจสอบรายชื่อโรงเรียนและจำนวนเงินที่ยังติดค้างชำระทันที</p>
+                </div>
+                <div class="widget-actions">
+                  <select id="select-arrears-death-case" class="filter-select">
+                    <option value="" disabled selected>-- เลือกเคสการเสียชีวิต --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="widget-body">
+                <div id="arrears-checker-results">
+                  <div class="no-data-msg">กรุณาเลือกเคสการเสียชีวิตเพื่อเรียกรายงานโรงเรียนที่ค้างชำระ</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- VIEW 4: SCHOOL DIRECTORY & SETTINGS -->
+      <section id="view-panel-schools" class="view-panel">
+        
+        <!-- School Admin View: Edit Profile -->
+        <div id="block-school-profile-editor" style="display: none;">
+          <div class="dashboard-header" style="margin-bottom: 20px;">
+            <div>
+              <h2>จัดการข้อมูลพื้นฐานของโรงเรียน 🏫</h2>
+              <p>กรอกและปรับปรุงข้อมูลที่ตั้ง ช่องทางการติดต่อ ชื่อผู้บริหาร และเจ้าหน้าที่ประสานงาน สสมน. ให้เป็นปัจจุบัน</p>
+            </div>
+            <div class="province-hotline-badge glass" style="background: rgba(251, 191, 36, 0.05); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid rgba(251, 191, 36, 0.2); text-align: right;">
+              <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;">สายตรงแอดมินจังหวัด:</span>
+              <strong style="color: white; font-size: 14.5px; font-family: var(--font-number); letter-spacing: 0.5px;">089-999-9999</strong>
+            </div>
+          </div>
+
+          <div class="widget-card glass" style="max-width: 800px; margin: 0 auto;">
+            <div class="widget-header">
+              <h3>ข้อมูลพื้นฐาน <span id="lbl-profile-school-name" style="color: var(--color-accent-gold);">โรงเรียน...</span></h3>
+              <p>ข้อมูลนี้จะแสดงผลในสมุดโทรศัพท์และทำเนียบผู้ประสานงานภาพรวมของส่วนกลางจังหวัด</p>
+            </div>
+            <div class="widget-body">
+              <form id="form-school-profile" class="standard-form">
+                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 12px;">📍 ที่ตั้งและข้อมูลติดต่อ</h4>
+                <div class="form-row">
+                  <div class="form-group col-3">
+                    <label for="school-profile-address">ตั้งอยู่เลขที่:</label>
+                    <input type="text" id="school-profile-address" placeholder="เช่น 148/1" class="form-control">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-moo">หมู่ที่:</label>
+                    <input type="text" id="school-profile-moo" placeholder="เช่น 1" class="form-control">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-tumbon">ตำบล:</label>
+                    <input type="text" id="school-profile-tumbon" placeholder="เช่น ในเวียง" class="form-control">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-amphoe">อำเภอ:</label>
+                    <select id="school-profile-amphoe" class="form-control">
+                      <option value="เมืองน่าน">เมืองน่าน</option>
+                      <option value="ปัว">ปัว</option>
+                      <option value="ท่าวังผา">ท่าวังผา</option>
+                      <option value="สา">สา</option>
+                      <option value="นาน้อย">นาน้อย</option>
+                      <option value="สันติสุข">สันติสุข</option>
+                      <option value="แม่จริม">แม่จริม</option>
+                      <option value="ทุ่งช้าง">ทุ่งช้าง</option>
+                      <option value="บ่อเกลือ">บ่อเกลือ</option>
+                      <option value="บ้านหลวง">บ้านหลวง</option>
+                      <option value="นาหมื่น">นาหมื่น</option>
+                      <option value="เชียงกลาง">เชียงกลาง</option>
+                      <option value="สองแคว">สองแคว</option>
+                      <option value="ภูเพียง">ภูเพียง</option>
+                      <option value="เฉลิมพระเกียรติ">เฉลิมพระเกียรติ</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="school-profile-phone">เบอร์โทรศัพท์โรงเรียน: <span class="required">*</span></label>
+                    <input type="text" id="school-profile-phone" required placeholder="เช่น 054-710321" class="form-control">
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="school-profile-fax">เบอร์โทรสาร (แฟกซ์):</label>
+                    <input type="text" id="school-profile-fax" placeholder="เช่น 054-710322" class="form-control">
+                  </div>
+                </div>
+
+                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">👥 บุคลากรผู้รับผิดชอบ</h4>
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="school-profile-director">ชื่อ-สกุล ของผู้อำนวยการโรงเรียน: <span class="required">*</span></label>
+                    <input type="text" id="school-profile-director" required placeholder="ระบุชื่อผู้อำนวยการ" class="form-control">
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="school-profile-director-phone">เบอร์โทรศัพท์มือถือ: <span class="required">*</span></label>
+                    <input type="text" id="school-profile-director-phone" required placeholder="เช่น 089-1234567" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="school-profile-coordinator">ชื่อ-สกุล ผู้ประสานงานของโรงเรียน: <span class="required">*</span></label>
+                    <input type="text" id="school-profile-coordinator" required placeholder="ระบุชื่อเจ้าหน้าที่ประสานงาน" class="form-control">
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="school-profile-coordinator-phone">เบอร์โทรศัพท์มือถือ ผู้ประสานงาน: <span class="required">*</span></label>
+                    <input type="text" id="school-profile-coordinator-phone" required placeholder="เช่น 081-2345678" class="form-control">
+                  </div>
+                </div>
+
+                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">📊 ข้อมูลกำลังคนและจำนวนนักเรียน (School Statistics)</h4>
+                
+                <!-- สรุปผลรวมครู/บุคลากร และสมาชิก สสมน. -->
+                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px; display: flex; gap: 24px; justify-content: space-around; flex-wrap: wrap;">
+                  <div>
+                    <span style="font-size: 12px; color: var(--color-text-muted);">👥 รวมครูและบุคลากรทั้งหมด:</span>
+                    <strong style="color: white; font-family: var(--font-number); margin-left: 6px; font-size: 15px;" id="lbl-profile-total-personnel">0 คน</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 12px; color: var(--color-text-muted);">💳 รวมสมาชิก สสมน. ทั้งหมด:</span>
+                    <strong style="color: var(--color-accent-gold); font-family: var(--font-number); margin-left: 6px; font-size: 15px;" id="lbl-profile-total-members">0 คน</strong>
+                  </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 14px;">
+                  <div class="form-group col-3">
+                    <label for="school-profile-director-count">จำนวน ผอ.: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-director-count" required min="0" placeholder="ระบุจำนวน ผอ." class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-deputy-count">จำนวน รอง ผอ.: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-deputy-count" required min="0" placeholder="ระบุจำนวน รอง ผอ." class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-teacher-count">จำนวน ครู: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-teacher-count" required min="0" placeholder="ระบุจำนวน ครู" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-3">
+                    <label for="school-profile-other-count">จำนวน บุคลากรทางการศึกษา: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-other-count" required min="0" placeholder="ระบุจำนวนบุคลากรทางการศึกษา" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 14px;">
+                  <div class="form-group col-4">
+                    <label for="school-profile-pensioners-count">จำนวนข้าราชการบำนาญในสังกัด: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-pensioners-count" required min="0" placeholder="ระบุจำนวนข้าราชการบำนาญ" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-4">
+                    <label for="school-profile-active-members-count">สมาชิก สสมน. ปฏิบัติราชการปัจจุบัน: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-active-members-count" required min="0" placeholder="ระบุจำนวนสมาชิกปฏิบัติราชการ" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-4">
+                    <label for="school-profile-retired-transferred-members-count">สมาชิก สสมน. เกษียณหรือย้าย: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-retired-transferred-members-count" required min="0" placeholder="ระบุจำนวนสมาชิกเกษียณหรือย้าย" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                </div>
+                
+                <div class="form-row" style="margin-bottom: 20px;">
+                  <div class="form-group col-6">
+                    <label for="school-profile-students-june">จำนวนนักเรียน ณ วันที่ 10 มิ.ย.: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-students-june" required min="0" placeholder="ระบุจำนวนนักเรียน ณ 10 มิ.ย. (ปีปัจจุบัน)" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="school-profile-students-november">จำนวนนักเรียน ณ วันที่ 10 พ.ย.: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-students-november" required min="0" placeholder="ระบุจำนวนนักเรียน ณ 10 พ.ย. (ปีปัจจุบัน)" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                </div>
+
+                <h4 class="section-title" style="color: var(--color-accent-rose); font-size: 14px; border-bottom: 1px solid rgba(244,63,94,0.15); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">🔑 ความปลอดภัย: รหัสผ่านเข้าสู่ระบบสังกัดโรงเรียน</h4>
+                <div class="form-row">
+                  <div class="form-group col-6">
+                    <label for="school-profile-password">ระบุรหัสผ่านเข้าใช้งานสังกัดใหม่: <span class="required">*</span></label>
+                    <input type="password" id="school-profile-password" required placeholder="ระบุรหัสผ่านใหม่..." class="form-control">
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="school-profile-password-confirm">ยืนยันรหัสผ่านใหม่อีกครั้ง: <span class="required">*</span></label>
+                    <input type="password" id="school-profile-password-confirm" required placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง..." class="form-control">
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full-width" style="margin-top: 20px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  <span>บันทึกการเปลี่ยนแปลงข้อมูลพื้นฐาน</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Province Admin View: Consolidated Directory -->
+        <div id="block-province-schools-directory" style="display: block;">
+          <div class="dashboard-header" style="margin-bottom: 20px;">
+            <div>
+              <h2>ทำเนียบผู้ประสานงาน สสมน. จังหวัดน่าน (Directory Overview) 📖</h2>
+              <p>ทำเนียบข้อมูลพื้นฐาน ผู้อำนวยการ และเจ้าหน้าที่ประสานงาน สสมน. ของสังกัดสถานศึกษาทั้ง 33 สังกัด</p>
+            </div>
+          </div>
+
+          <div class="widget-card glass">
+            <div class="widget-header header-with-filter">
+              <div>
+                <h3>ค้นหาและคัดกรองข้อมูลผู้ประสานงาน</h3>
+                <p>พิมพ์เพื่อค้นหาชื่อโรงเรียน ผู้ประสานงาน ผอ. หรือกรองคัดแยกตามอำเภอของจังหวัดน่าน</p>
+              </div>
+              <div class="widget-actions" style="display: flex; gap: 12px;">
+                <input type="text" id="search-schools-directory" placeholder="🔍 พิมพ์คำค้นหา..." class="filter-select search-input-custom" style="width: 220px; font-size: 13px; padding: 6px 12px; border-radius:var(--radius-md);">
+                <select id="filter-schools-amphoe" class="filter-select" style="font-size: 13px;">
+                  <option value="">-- กรองรายอำเภอ (ทั้งหมด) --</option>
+                  <option value="เมืองน่าน">อำเภอเมืองน่าน</option>
+                  <option value="ปัว">อำเภอปัว</option>
+                  <option value="ท่าวังผา">อำเภอท่าวังผา</option>
+                  <option value="สา">อำเภอสา</option>
+                  <option value="นาน้อย">อำเภอนาน้อย</option>
+                  <option value="สันติสุข">อำเภอสันติสุข</option>
+                  <option value="แม่จริม">อำเภอแม่จริม</option>
+                  <option value="ทุ่งช้าง">อำเภอทุ่งช้าง</option>
+                  <option value="บ่อเกลือ">อำเภอบ่อเกลือ</option>
+                  <option value="บ้านหลวง">อำเภอบ้านหลวง</option>
+                  <option value="นาหมื่น">อำเภอนาหมื่น</option>
+                  <option value="เชียงกลาง">อำเภอเชียงกลาง</option>
+                  <option value="สองแคว">อำเภอสองแคว</option>
+                  <option value="ภูเพียง">อำเภอภูเพียง</option>
+                  <option value="เฉลิมพระเกียรติ">อำเภอเฉลิมพระเกียรติ</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="widget-body no-padding">
+              <div class="table-responsive">
+                <table class="standard-table">
+                  <thead>
+                    <tr>
+                      <th class="text-center" style="width: 60px;">รหัส</th>
+                      <th>ชื่อสังกัด/โรงเรียน</th>
+                      <th>อำเภอ</th>
+                      <th>ที่ตั้งติดต่อ / เบอร์โทร</th>
+                      <th>ชื่อผู้อำนวยการ</th>
+                      <th>เจ้าหน้าที่ประสานงาน สสมน.</th>
+                      <th class="text-center">ติดต่อประสานงาน</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-schools-directory">
+                    <!-- Populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: DOWNLOAD DOCUMENTS CENTER -->
+      <section id="view-panel-documents" class="view-panel">
+        <div class="dashboard-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h2>ศูนย์ดาวน์โหลดเอกสาร สสมน. จังหวัดน่าน 📁</h2>
+            <p>รวมแบบฟอร์มการสมัครสมาชิก ข้อบังคับกองทุน และระเบียบปฏิบัติที่สำคัญเพื่อความสะดวกต่อสมาชิกและแอดมิน</p>
+          </div>
+          <div id="province-add-doc-trigger-wrapper" style="display: none;">
+            <button class="btn btn-primary btn-icon-text" onclick="openAddDocumentModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>เพิ่มเอกสารดาวน์โหลดใหม่</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="documents-grid-layout" id="documents-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px;">
+          <!-- Populate dynamically from app.js -->
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== DIALOG MODALS ==================== -->
+
+  <!-- MODAL 1: ADD & EDIT MEMBER PROFILE -->
+  <div id="modal-member" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal">
+      <div class="modal-header">
+        <h2 id="modal-member-title">สมัครลงทะเบียนสมาชิกใหม่</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <form id="form-member" autocomplete="off" class="standard-form">
+        <input type="hidden" id="member-row-index"> <!-- For edit reference -->
+        <input type="hidden" id="member-action-type" value="create"> <!-- create or edit -->
+        
+        <h3 class="section-title" style="margin-bottom:8px;">1. ข้อมูลส่วนบุคคลของสมาชิก</h3>
+        <div class="form-row">
+          <div class="form-group col-2">
+            <label for="member-title">คำนำหน้า: <span class="required">*</span></label>
+            <select id="member-title" required class="form-control" onchange="toggleTitleOtherInput('member')">
+              <option value="" disabled selected>เลือก</option>
+              <option value="นาย">นาย</option>
+              <option value="นาง">นาง</option>
+              <option value="นางสาว">นางสาว</option>
+              <option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="form-group col-4">
+            <label for="member-firstname">ชื่อจริง: <span class="required">*</span></label>
+            <input type="text" id="member-firstname" required placeholder="เช่น สมชาย, กัลยา" class="form-control">
+          </div>
+          <div class="form-group col-6">
+            <label for="member-lastname">นามสกุล: <span class="required">*</span></label>
+            <input type="text" id="member-lastname" required placeholder="เช่น ดีใจ, แสนน่าน" class="form-control">
+          </div>
+        </div>
+
+        <!-- Hidden input for customizable title other -->
+        <div class="form-group" id="block-member-title-other" style="display: none; animation: fadeIn 0.2s forwards;">
+          <label for="member-title-other">ระบุคำนำหน้าอื่น ๆ (เช่น ยศทหาร / ตน.วิชาการ): <span class="required">*</span></label>
+          <input type="text" id="member-title-other" placeholder="เช่น ดร., ร.ต.อ., พระครู" class="form-control">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="member-citizen-id">เลขประจำตัวประชาชน (13 หลัก): <span class="required">*</span></label>
+            <input type="text" id="member-citizen-id" required pattern="\d{13}" maxlength="13" placeholder="กรอกเฉพาะตัวเลข 13 หลัก" class="form-control">
+          </div>
+          <div class="form-group col-6">
+            <label for="member-phone">เบอร์โทรศัพท์: <span class="required">*</span></label>
+            <input type="tel" id="member-phone" required placeholder="เช่น 0891234567" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-4">
+            <label for="member-gender">เพศ: <span class="required">*</span></label>
+            <select id="member-gender" required class="form-control">
+              <option value="" disabled selected>-- เลือก --</option>
+              <option value="ชาย">ชาย</option>
+              <option value="หญิง">หญิง</option>
+            </select>
+          </div>
+          <div class="form-group col-4">
+            <label for="member-position">ตำแหน่งงาน: <span class="required">*</span></label>
+            <select id="member-position" required class="form-control">
+              <option value="" disabled selected>-- เลือกตำแหน่ง --</option>
+              <option value="ผอ.">ผู้อำนวยการ (ผอ.)</option>
+              <option value="รอง ผอ.">รองผู้อำนวยการ (รอง ผอ.)</option>
+              <option value="ครู">ข้าราชการครู</option>
+              <option value="ข้าราชการบำนาญ">ข้าราชการบำนาญ</option>
+              <option value="บุคลากรอื่น ๆ">บุคลากรอื่น ๆ</option>
+            </select>
+          </div>
+          <div class="form-group col-4">
+            <label for="member-school">สังกัดโรงเรียน/หน่วยงาน: <span class="required">*</span></label>
+            <select id="member-school" required class="form-control">
+              <!-- Will be populated dynamically by app.js. Same 33 choices. -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom override for Member ID when in EDIT mode, locked in CREATE mode -->
+        <div class="form-group" id="block-custom-member-id" style="display: none;">
+          <label for="member-custom-id">รหัสสมาชิก ( YYSSNNN ):</label>
+          <input type="text" id="member-custom-id" class="form-control" placeholder="ระบบจะคำนวณรหัสให้อัตโนมัติ">
+          <p class="field-help-text">หมายเหตุ: เฉพาะแอดมินระดับสูงที่จะแก้ไขรหัสนี้ได้โดยตรง</p>
+        </div>
+
+        <div class="form-row" id="block-financial-inputs">
+          <div class="form-group col-6">
+            <label>ค่าสมัครสมาชิกใหม่: <span class="required">*</span></label>
+            <div class="checkbox-input-group">
+              <input type="checkbox" id="member-fee-paid" checked disabled>
+              <label for="member-fee-paid">ชำระค่าธรรมเนียมแรกเข้า 50 บาทเรียบร้อย</label>
+            </div>
+          </div>
+          <div class="form-group col-6">
+            <label for="member-prepay-balance">เงินสะสมล่วงหน้าเริ่มต้น (บาท): <span class="required">*</span></label>
+            <input type="number" id="member-prepay-balance" value="150" min="1" placeholder="แนะนำ 150 บาท" required class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="member-address">ที่อยู่ตามทะเบียนบ้าน: <span class="required">*</span></label>
+          <textarea id="member-address" rows="2" required placeholder="กรอกข้อมูลที่อยู่ปัจจุบันตามทะเบียนบ้านโดยละเอียด..." class="form-control"></textarea>
+        </div>
+
+        <!-- Beneficiary section -->
+        <h3 class="section-title" style="margin-top:12px; margin-bottom:8px;">2. ข้อมูลผู้รับผลประโยชน์ (Beneficiary) & เอกสารแนบ</h3>
+        <div class="form-row">
+          <div class="form-group col-2">
+            <label for="member-beneficiary-title">คำนำหน้า: <span class="required">*</span></label>
+            <select id="member-beneficiary-title" required class="form-control" onchange="toggleTitleOtherInput('beneficiary')">
+              <option value="" disabled selected>เลือก</option>
+              <option value="นาย">นาย</option>
+              <option value="นาง">นาง</option>
+              <option value="นางสาว">นางสาว</option>
+              <option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="form-group col-4">
+            <label for="member-beneficiary-name">ชื่อ-นามสกุล ผู้รับผลประโยชน์: <span class="required">*</span></label>
+            <input type="text" id="member-beneficiary-name" required placeholder="เช่น สายใจ ดีใจแสนน่าน" class="form-control">
+          </div>
+          <div class="form-group col-3">
+            <label for="member-beneficiary-phone">เบอร์โทรศัพท์ผู้รับผลประโยชน์: <span class="required">*</span></label>
+            <input type="tel" id="member-beneficiary-phone" required placeholder="เช่น 0897654321" class="form-control">
+          </div>
+          <div class="form-group col-3">
+            <label for="member-beneficiary-relation">ความสัมพันธ์กับสมาชิก: <span class="required">*</span></label>
+            <select id="member-beneficiary-relation" required class="form-control">
+              <option value="" disabled selected>-- เลือกความสัมพันธ์ --</option>
+              <option value="คู่สมรส">คู่สมรส</option>
+              <option value="บุตร">บุตร</option>
+              <option value="บิดา">บิดา</option>
+              <option value="มารดา">มารดา</option>
+              <option value="พี่น้อง">พี่น้อง</option>
+              <option value="ผู้อยู่ในอุปการะ">ผู้อยู่ในอุปการะ</option>
+              <option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Hidden input for customizable beneficiary title other -->
+        <div class="form-group" id="block-beneficiary-title-other" style="display: none; animation: fadeIn 0.2s forwards;">
+          <label for="member-beneficiary-title-other">ระบุคำนำหน้าอื่น ๆ ของผู้รับผลประโยชน์: <span class="required">*</span></label>
+          <input type="text" id="member-beneficiary-title-other" placeholder="เช่น ดร., พล.ต., ครูบรูพา" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="member-doc-beneficiary-id">แนบสำเนาบัตรประชาชนผู้รับผลประโยชน์ (รูปภาพหลักฐาน):</label>
+          <input type="file" id="member-doc-beneficiary-id" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+        </div>
+
+        <!-- Supporting application documents -->
+        <h3 class="section-title" style="margin-top:12px; margin-bottom:8px;">3. เอกสารประกอบการสมัคร (ไฟล์แนบเพื่อเปิดดูย้อนหลัง)</h3>
+        <div class="form-row">
+          <div class="form-group col-4">
+            <label for="member-doc-application">ใบสมัคร สสมน. (รูปภาพ):</label>
+            <input type="file" id="member-doc-application" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+          </div>
+          <div class="form-group col-4">
+            <label for="member-doc-citizen">สำเนาบัตรประชาชน (รูปภาพ):</label>
+            <input type="file" id="member-doc-citizen" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+          </div>
+          <div class="form-group col-4">
+            <label for="member-doc-household">สำเนาทะเบียนบ้าน (รูปภาพ):</label>
+            <input type="file" id="member-doc-household" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-cancel-modal">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-member">บันทึกและรันหมายเลขสมาชิก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: VIEW PROFILE, HISTORY & TOP-UP -->
+  <div id="modal-profile-viewer" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal">
+      <div class="modal-header">
+        <h2>รายละเอียดและสมุดคู่ฝากสมาชิก สสมน.</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <div class="profile-details-body">
+        
+        <!-- Header Info Row -->
+        <div class="profile-header-card">
+          <div class="avatar-profile">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="profile-identity">
+            <h3 id="view-profile-name">นายสมศักดิ์ แสนน่าน</h3>
+            <div class="profile-meta-badges">
+              <span class="badge" id="view-profile-id">รหัสสมาชิก: 6901001</span>
+              <span class="badge" id="view-profile-position">ครู</span>
+              <span class="badge" id="view-profile-school">โรงเรียนสตรีศรีน่าน</span>
+            </div>
+          </div>
+          
+          <!-- Prepayment Balance highlight -->
+          <div class="balance-card">
+            <span class="balance-label">ยอดเงินสะสมล่วงหน้าคงเหลือ:</span>
+            <span class="balance-amount" id="view-profile-balance">฿150.00</span>
+            <span class="balance-status" id="view-profile-status">ปกติ</span>
+          </div>
+        </div>
+
+        <div class="profile-tabs-wrapper">
+          
+          <!-- Tab 1: Member Data & Topup & Beneficiary -->
+          <div class="profile-left-section">
+            <h4 class="section-title">ข้อมูลส่วนบุคคล</h4>
+            <div class="profile-info-grid">
+              <div class="info-item">
+                <span class="info-label">เลขประจำตัวประชาชน:</span>
+                <span class="info-value" id="view-profile-citizen">1559900123456</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">เบอร์โทรศัพท์:</span>
+                <span class="info-value" id="view-profile-phone">089-123-4567</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">เพศ:</span>
+                <span class="info-value" id="view-profile-gender">ชาย</span>
+              </div>
+              <div class="info-item info-full-row">
+                <span class="info-label">ที่อยู่ตามทะเบียนบ้าน:</span>
+                <span class="info-value" id="view-profile-address">123 หมู่ 2 ต.ในเวียง อ.เมืองน่าน จ.น่าน</span>
+              </div>
+            </div>
+
+            <!-- Beneficiary display -->
+            <h4 class="section-title" style="margin-top:12px;">ผู้รับผลประโยชน์ (Beneficiary)</h4>
+            <div class="profile-info-grid" style="background:rgba(217, 119, 6, 0.03); border-color:rgba(217, 119, 6, 0.15);">
+              <div class="info-item info-full-row">
+                <span class="info-label" style="color:var(--color-accent-gold)">ชื่อ - นามสกุล:</span>
+                <span class="info-value" id="view-profile-beneficiary-name">ไม่ระบุ</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">เบอร์โทรศัพท์:</span>
+                <span class="info-value" id="view-profile-beneficiary-phone">ไม่ระบุ</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">ความสัมพันธ์:</span>
+                <span class="info-value text-warning" id="view-profile-beneficiary-relation">ไม่ระบุ</span>
+              </div>
+            </div>
+
+            <!-- Registration Documents Viewer -->
+            <h4 class="section-title" style="margin-top:12px;">แฟ้มเอกสารประกอบการสมัครและสิทธิ์</h4>
+            <div class="supporting-docs-row" id="view-profile-docs-block">
+              <!-- Dynamically populated document buttons -->
+            </div>
+            
+            <!-- Quick Top-up box (Active for both roles for their school members) -->
+            <div class="topup-action-box glass" id="block-topup-section" style="margin-top:12px;">
+              <h5>เติมเงินเงินสะสมล่วงหน้า</h5>
+              <form id="form-profile-topup" class="form-inline-mini">
+                <input type="hidden" id="topup-member-row-index">
+                <div class="form-group flex-fill">
+                  <label for="topup-amount" class="sr-only">จำนวนเงินโอนเงินเติมเงิน (บาท):</label>
+                  <input type="number" id="topup-amount" value="100" min="20" max="5000" step="10" required class="form-control input-mini">
+                </div>
+                <button type="submit" class="btn btn-success btn-mini">
+                  เติมเงินสะสม
+                </button>
+              </form>
+              <p class="field-help-text">ขั้นต่ำ 20 บาท ป้อนยอดเงินโอนสะสมเพิ่มเพื่อชำระหนี้กรณีค้างจ่าย</p>
+            </div>
+          </div>
+          
+          <!-- Tab 2: Financial Ledger Ledger / Transaction logs -->
+          <div class="profile-right-section">
+            <h4 class="section-title">ประวัติการหักชำระ & ประวัติการโอนเงินสะสม</h4>
+            <div class="ledger-table-wrapper scrollable-card" style="max-height: 480px;">
+              <table class="premium-data-table mini-table">
+                <thead>
+                  <tr>
+                    <th>วันที่บันทึก</th>
+                    <th>ประเภทรายการ</th>
+                    <th class="text-right">จำนวนยอดโอน</th>
+                    <th class="text-right">ยอดคงเหลือ</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-body-profile-ledger">
+                  <!-- Will be populated dynamically by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: INITIATE SCHOOL TRANSFER -->
+  <div id="modal-transfer-school" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>แจ้งเรื่องโยกย้ายสังกัดสถานศึกษา</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <form id="form-member-transfer" autocomplete="off" class="standard-form">
+        <input type="hidden" id="transfer-member-row-index">
+        
+        <div class="transfer-alert-warning glass">
+          <h5>ข้อกำหนดทางตรรกะการย้ายโรงเรียน:</h5>
+          <ul>
+            <li>สมาชิกจะถูก <strong>ยกเลิกหมายเลขเดิม</strong> และ <strong>ออกรหัสใหม่</strong> ภายใต้รหัสสังกัดของโรงเรียนแห่งใหม่</li>
+            <li>ยอดเงินสะสมล่วงหน้าและประวัติการเงินทั้งหมดจะถูกโอนย้ายไปยังสังกัดใหม่</li>
+            <li>โรงเรียนเดิมจะยังคง <strong>จัดเก็บประวัติบันทึกสถานะรหัสเดิมไว้ในจดหมายเหตุย้อนหลัง</strong> เป็นบุคคลย้ายออก เพื่อความโปร่งใสทางการเงิน</li>
+          </ul>
+        </div>
+        
+        <div class="form-group">
+          <label>สมาชิกที่จะย้ายสังกัด:</label>
+          <div class="static-member-info-preview">
+            <strong id="transfer-preview-name">นายกิตติคุณ ดีแสนน่าน</strong>
+            <span id="transfer-preview-meta">รหัสเดิม: 6901002 // โรงเรียนสตรีศรีน่าน</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label>สังกัดเดิม:</label>
+            <input type="text" id="transfer-old-school-name" readonly class="form-control readonly-input">
+          </div>
+          <div class="form-group col-6">
+            <label for="transfer-new-school-id">เลือกสังกัดปลายทาง (โรงเรียนใหม่): <span class="required">*</span></label>
+            <select id="transfer-new-school-id" required class="form-control">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="transfer-reason-type">เหตุผลการย้ายสังกัด: <span class="required">*</span></label>
+            <select id="transfer-reason-type" required class="form-control" onchange="toggleTransferReasonYear()">
+              <!-- Option will be populated dynamically based on position in app.js -->
+            </select>
+          </div>
+          <div class="form-group col-6" id="group-transfer-reason-year" style="display: none;">
+            <label for="transfer-reason-year">ระบุปี พ.ศ. ที่ย้าย: <span class="required">*</span></label>
+            <input type="number" id="transfer-reason-year" min="2500" max="2600" value="2569" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="transfer-effective-date">วันเดือนปีที่ย้ายไปโรงเรียนใหม่: <span class="required">*</span></label>
+            <input type="date" id="transfer-effective-date" required class="form-control">
+          </div>
+          <div class="form-group col-6">
+            <label for="transfer-reason-note">หมายเหตุเพิ่มเติม:</label>
+            <input type="text" id="transfer-reason-note" placeholder="เช่น ย้ายกลับภูมิลำเนาเดิม, สับเปลี่ยนกับ..." class="form-control">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-cancel-modal">ยกเลิกการโอนย้าย</button>
+          <button type="submit" class="btn btn-danger">
+            ยืนยันอนุมัติย้ายสังกัดและออกรหัสใหม่
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD NEW DOWNLOAD DOCUMENT (Province Admin Mode - Round 4) -->
+  <div id="modal-add-document" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>เพิ่มเอกสารดาวน์โหลดใหม่ (สสมน. น่าน)</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeAddDocumentModal()">&times;</button>
+      </div>
+      
+      <form id="form-add-document" autocomplete="off" class="standard-form">
+        <div class="form-group">
+          <label for="doc-upload-title">ชื่อของเอกสาร: <span class="required">*</span></label>
+          <input type="text" id="doc-upload-title" required placeholder="เช่น ใบคำขอรับเงินสวัสดิการฌาปนกิจครู" class="form-control">
+        </div>
+        
+        <div class="form-group">
+          <label for="doc-upload-desc">คำอธิบายรายละเอียดสำคัญ: <span class="required">*</span></label>
+          <textarea id="doc-upload-desc" rows="3" required placeholder="ระบุรายละเอียดหน้าที่การใช้แบบฟอร์ม หรือปีข้อบังคับฉบับเต็ม..." class="form-control"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="doc-upload-category">หมวดหมู่เอกสาร: <span class="required">*</span></label>
+            <select id="doc-upload-category" required class="form-control">
+              <option value="เอกสารการสมัครสมาชิก">เอกสารการสมัครสมาชิก</option>
+              <option value="เอกสารการรับเงินสงเคราะห์ศพสำหรับผู้รับผลประโยชน์">เอกสารการรับเงินสงเคราะห์ศพสำหรับผู้รับผลประโยชน์</option>
+              <option value="ระเบียบข้อบังคับของ สสมน.">ระเบียบข้อบังคับของ สสมน.</option>
+              <option value="อื่น ๆ">อื่น ๆ</option>
+            </select>
+          </div>
+          <div class="form-group col-6">
+            <label for="doc-upload-format">ประเภทนามสกุลไฟล์: <span class="required">*</span></label>
+            <select id="doc-upload-format" required class="form-control">
+              <option value="PDF">PDF</option>
+              <option value="WORD">Word (DOCX)</option>
+              <option value="EXCEL">Excel (XLSX)</option>
+              <option value="ZIP">ZIP</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="doc-upload-size">ขนาดไฟล์ระบุ (เช่น 1.5 MB): <span class="required">*</span></label>
+            <input type="text" id="doc-upload-size" required placeholder="เช่น 1.2 MB" class="form-control">
+          </div>
+          <div class="form-group col-6">
+            <label for="doc-upload-year">ปี พ.ศ. ที่ปรับปรุง (เช่น 2569): <span class="required">*</span></label>
+            <input type="number" id="doc-upload-year" required min="2500" max="2600" value="2569" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="doc-upload-file">เลือกไฟล์แนบ หรือจำลองลิงก์ไฟล์: </label>
+          <input type="file" id="doc-upload-file" class="form-control file-input-control input-mini" style="font-size: 12px; padding: 6px;">
+          <input type="text" id="doc-upload-link" placeholder="หรือกรอกลิงก์จำลอง เช่น file_application.pdf" class="form-control" style="margin-top: 8px;">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-cancel-modal" onclick="closeAddDocumentModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">
+            บันทึกและขึ้นทะเบียนดาวน์โหลด
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: UPLOAD PAYMENT SLIP (School Admin Mode) -->
+  <div id="modal-upload-slip" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>ส่งสลิปหลักฐานโอนเงินค่าสงเคราะห์รายศพ</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <form id="form-upload-slip" autocomplete="off" class="standard-form">
+        <!-- Will contain a list of death IDs, school ID -->
+        <input type="hidden" id="slip-school-id">
+        <input type="hidden" id="slip-death-ids">
+        
+        <div class="slip-summary-alert glass">
+          <h5>รายการชำระเงินสำหรับโรงเรียน: <strong id="slip-preview-school-name">โรงเรียนสตรีศรีน่าน</strong></h5>
+          <div class="slip-debts-list" id="slip-preview-debts-list">
+            <!-- Populated dynamically -->
+          </div>
+          <div class="slip-total-summary">
+            <span>ยอดชำระยอดรวมค่าฌาปนกิจศพ:</span>
+            <span class="total-amount-highlight" id="slip-preview-total-amount">฿0.00</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="slip-transfer-date">วันเวลาที่โอนเงิน: <span class="required">*</span></label>
+            <input type="datetime-local" id="slip-transfer-date" required class="form-control">
+          </div>
+          <div class="form-group col-6">
+            <label for="slip-transfer-amount">จำนวนยอดโอนจริง (บาท): <span class="required">*</span></label>
+            <input type="number" id="slip-transfer-amount" required min="1" step="0.01" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="slip-image-file">แนบไฟล์สลิปหลักฐานโอนเงิน (Image): <span class="required">*</span></label>
+          <input type="file" id="slip-image-file" accept="image/*" required class="form-control file-input-control">
+          <p class="field-help-text">รองรับเฉพาะนามสกุลรูปภาพ JPG, PNG, GIF, JPEG (ระบบจะจำลองแปลงภาพแบบถาวร)</p>
+        </div>
+
+        <!-- Preview slip area -->
+        <div class="slip-preview-container" id="block-slip-preview" style="display: none;">
+          <span>ตัวอย่างรูปภาพสลิปที่อัปโหลด:</span>
+          <img id="img-slip-preview-tag" src="" alt="สลิปโอนเงิน">
+        </div>
+
+        <div class="form-group">
+          <label for="slip-notes">ข้อความบันทึกเพิ่มเติม / หมายเหตุ:</label>
+          <textarea id="slip-notes" rows="2" placeholder="เช่น โอนจากบัญชีธนาคารกรุงไทยของโรงเรียน ฯลฯ" class="form-control"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-cancel-modal">ยกเลิก</button>
+          <button type="submit" class="btn btn-success">ส่งหลักฐานยอดโอนเงิน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: PROVINCE ADMIN VERIFICATION & APPROVAL (SLIPS) -->
+  <div id="modal-verify-slip" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal">
+      <div class="modal-header">
+        <h2>ระบบตรวจสอบหลักฐานการโอนเงินภาพรวมโรงเรียน</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      
+      <div class="verification-layout">
+        
+        <!-- Left: Image Viewer -->
+        <div class="verification-left-pane">
+          <div class="zoomable-slip-viewer">
+            <img id="verify-slip-image" src="" alt="รูปหลักฐานสลิปโอนเงิน">
+          </div>
+        </div>
+        
+        <!-- Right: Verification info & Actions -->
+        <div class="verification-right-pane">
+          <h4 class="section-title">ข้อมูลธุรกรรมการส่งเงิน</h4>
+          <div class="profile-info-grid">
+            <div class="info-item">
+              <span class="info-label">โรงเรียนที่ทำรายการ:</span>
+              <span class="info-value" id="verify-slip-school">โรงเรียนสตรีศรีน่าน</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">วันเวลาที่ทำการโอน:</span>
+              <span class="info-value" id="verify-slip-date">2026-06-02 12:00</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">ยอดจำนวนเงินในสลิป:</span>
+              <span class="info-value text-success font-weight-bold" id="verify-slip-amount">฿200.00</span>
+            </div>
+            <div class="info-item info-full-row">
+              <span class="info-label">ชำระสงเคราะห์ศพผู้เสียชีวิตคดี:</span>
+              <span class="info-value" id="verify-slip-death-cases">เคสศพที่ 1, เคสศพที่ 2</span>
+            </div>
+            <div class="info-item info-full-row">
+              <span class="info-label">บันทึกเพิ่มเติมจากโรงเรียน:</span>
+              <span class="info-value" id="verify-slip-notes">ไม่มีข้อความเพิ่มเติม</span>
+            </div>
+          </div>
+          
+          <hr class="modal-divider">
+
+          <div class="verification-decisions-form">
+            <input type="hidden" id="verify-slip-school-id">
+            <input type="hidden" id="verify-slip-death-ids-str">
+            
+            <div class="form-group">
+              <label for="verify-feedback-notes">คำวิจารณ์/หมายเหตุการอนุมัติ (หากปฏิเสธ):</label>
+              <textarea id="verify-feedback-notes" rows="2" placeholder="เช่น ยอดเงินโอนไม่ตรงกับบิลหนี้, ขอความกรุณาแนบภาพสลิปที่ชัดเจนอีกครั้ง..." class="form-control"></textarea>
+            </div>
+            
+            <div class="verification-buttons-row">
+              <button id="btn-reject-slip" class="btn btn-danger flex-fill">
+                ปฏิเสธสลิป (ข้อมูลไม่ถูกต้อง)
+              </button>
+              <button id="btn-approve-slip" class="btn btn-success flex-fill">
+                อนุมัติและปรับสถานะเป็นชำระแล้ว
+              </button>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: SUPPORTING DOCUMENT DOCUMENT LIGHTBOX / PREVIEWER -->
+  <div id="modal-doc-viewer" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal" style="max-width:720px;">
+      <div class="modal-header">
+        <h2 id="modal-doc-viewer-title">เปิดดูเอกสารหลักฐานประกอบ</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      <div class="zoomable-slip-viewer" style="background:rgba(0,0,0,0.4); padding:16px; border-radius:var(--radius-md); min-height:420px;">
+        <img id="img-doc-viewer-tag" src="" alt="เอกสารแนบ" style="max-height: 500px; object-fit: contain;">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-close-modal">ปิดหน้าต่างเอกสาร</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 7: EXCEL IMPORT SUMMARY NOTIFICATION -->
+  <div id="modal-import-summary" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>สรุปรายงานการนำเข้าข้อมูลสมาชิกจาก Excel</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง">&times;</button>
+      </div>
+      <div class="standard-form">
+        <div class="slip-summary-alert glass" id="import-summary-success-block" style="background:rgba(16, 185, 129, 0.04); border-color:rgba(16, 185, 129, 0.2);">
+          <h4 class="text-success font-weight-bold" style="font-size:16px;">นำเข้าข้อมูลสำเร็จสมบูรณ์!</h4>
+          <p style="margin-top:6px; font-size:13.5px;" id="lbl-import-total-success">จำนวนสมาชิกที่นำเข้าเข้าระบบสำเร็จ: 0 ราย</p>
+        </div>
+        
+        <div id="import-summary-errors-block" style="display:none; max-height:200px; overflow-y:auto; padding:12px; background:rgba(244, 63, 94, 0.05); border:1px solid rgba(244, 63, 94, 0.15); border-radius:var(--radius-md);">
+          <h5 class="text-danger font-weight-bold" style="font-size:12.5px; margin-bottom:6px;">⚠️ แถวที่มีข้อมูลผิดพลาดและถูกข้ามการนำเข้า:</h5>
+          <ul id="import-errors-list" style="list-style:none; padding-left:0; font-size:12px; color:var(--color-text-muted);">
+            <!-- List of row errors populated dynamically -->
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-close-modal">ตกลงและอัปเดตระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD NEW PUBLIC ANNOUNCEMENT (Province Admin Mode) -->
+  <div id="modal-add-announcement" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>เขียนประกาศประชาสัมพันธ์ส่วนกลาง สสมน.</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeAddAnnouncementModal()">&times;</button>
+      </div>
+      <form id="form-add-announcement" autocomplete="off" class="standard-form">
+        <div class="form-group">
+          <label for="announce-title">หัวข้อประกาศข่าว: <span class="required">*</span></label>
+          <input type="text" id="announce-title" required placeholder="เช่น แจ้งกำหนดการประชุมใหญ่สามัญประจำปี..." class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="announce-content">เนื้อหาประกาศข่าวประชาสัมพันธ์: <span class="required">*</span></label>
+          <textarea id="announce-content" rows="4" required placeholder="ระบุเนื้อหาข่าวสารที่ต้องการสื่อสารไปยังแอดมินทุกโรงเรียนและสมาชิก..." class="form-control"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="announce-type">ประเภทประกาศ: <span class="required">*</span></label>
+            <select id="announce-type" required class="form-control">
+              <option value="ข่าวประชาสัมพันธ์ทั่วไป">ข่าวประชาสัมพันธ์ทั่วไป</option>
+              <option value="ข่าวด่วน">ข่าวด่วน 🚨</option>
+              <option value="ข่าวการเสียชีวิต/ฌาปนกิจศพ">ข่าวการเสียชีวิต/ฌาปนกิจศพ 🕯️</option>
+            </select>
+          </div>
+          <div class="form-group col-6">
+            <label for="announce-date">วันที่ลงข่าวสาร: <span class="required">*</span></label>
+            <input type="date" id="announce-date" required class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-bottom: 0;">
+          <button type="button" class="btn btn-secondary" onclick="closeAddAnnouncementModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">ลงประกาศประชาสัมพันธ์</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM CREMATION PAYOUT TO BENEFICIARY -->
+  <div id="modal-confirm-payout" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>บันทึกและยืนยันการโอนเงินสงเคราะห์ศพ</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeConfirmPayoutModal()">&times;</button>
+      </div>
+      <form id="form-confirm-payout" autocomplete="off" class="standard-form">
+        <input type="hidden" id="payout-case-id">
+        <div class="slip-summary-alert glass" style="background:rgba(251, 191, 36, 0.03); border-color:rgba(251, 191, 36, 0.15); margin-bottom:16px; padding:12px;">
+          <div style="font-size:12.5px; color:var(--color-text-dim);">ผู้เสียชีวิต: <strong id="payout-deceased-name" style="color:white;">-</strong></div>
+          <div style="font-size:12.5px; color:var(--color-text-dim); margin-top:4px;">ผู้รับผลประโยชน์: <strong id="payout-beneficiary-name" style="color:white;">-</strong></div>
+          <div style="font-size:13.5px; color:var(--color-text-dim); margin-top:4px; font-weight:700;">ยอดเงินสุทธิที่ต้องจ่าย: <span id="payout-net-amount" style="color:var(--color-accent-emerald);">฿0.00</span></div>
+        </div>
+        <div class="form-group">
+          <label for="payout-date">วันที่โอนเงินให้ทายาท: <span class="required">*</span></label>
+          <input type="date" id="payout-date" required class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="payout-notes">บันทึกช่วยจำการโอนเงิน: <span class="required">*</span></label>
+          <input type="text" id="payout-notes" required placeholder="เช่น โอนเงินผ่านบัญชีกองทุนกลางกรุงไทย อ้างอิงสลิปโอนเงิน..." class="form-control">
+        </div>
+        <div class="form-group">
+          <label>แนบรูปสลิปการโอนเงิน/หลักฐานการจ่าย: <span class="required">*</span></label>
+          <div style="display: flex; gap: 12px; align-items: center; margin-top: 6px;">
+            <input type="file" id="payout-slip-file" accept="image/*" style="display: none;" onchange="handlePayoutSlipUpload(this)">
+            <button type="button" class="btn btn-secondary btn-icon-text" onclick="document.getElementById('payout-slip-file').click()">
+              📸 อัปโหลดสลิป
+            </button>
+            <span id="lbl-payout-slip-filename" style="font-size: 12.5px; color: var(--color-text-muted);">ยังไม่ได้อัปโหลดหลักฐาน</span>
+          </div>
+          <input type="hidden" id="payout-slip-uri" required>
+        </div>
+        <div class="modal-footer" style="padding-bottom: 0;">
+          <button type="button" class="btn btn-secondary" onclick="closeConfirmPayoutModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-success">ยืนยันการจ่ายเงินสำเร็จ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: UPDATE CENTRAL BANK BALANCE -->
+  <div id="modal-update-bank-balance" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>อัปเดตยอดคงเหลือบัญชีธนาคารส่วนกลาง</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeUpdateBankBalanceModal()">&times;</button>
+      </div>
+      <form id="form-update-bank-balance" autocomplete="off" class="standard-form">
+        <div class="form-group">
+          <label for="bank-balance-amount">ระบุยอดเงินคงเหลือในบัญชีธนาคารส่วนกลาง (บาท): <span class="required">*</span></label>
+          <input type="number" id="bank-balance-amount" required min="0" step="0.01" placeholder="ระบุยอดเงินคงเหลือล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:16px;">
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="bank-operating-fee">ยอดเงินหักค่าดำเนินการสะสมร้อยละ 5 (บาท): <span class="required">*</span></label>
+          <input type="number" id="bank-operating-fee" required min="0" step="0.01" placeholder="ระบุยอดเงินหักค่าดำเนินการสะสมล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:16px;">
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="bank-balance-date">วันที่ระบุอัปเดตยอดบัญชี (แนะนำทุกวันที่ 5 ของเดือน): <span class="required">*</span></label>
+          <input type="date" id="bank-balance-date" required class="form-control">
+        </div>
+        <div class="modal-footer" style="padding-bottom: 0;">
+          <button type="button" class="btn btn-secondary" onclick="closeUpdateBankBalanceModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกยอดเงิน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Core Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
