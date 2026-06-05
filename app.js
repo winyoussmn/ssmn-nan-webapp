@@ -118,22 +118,20 @@ let appState = {
 function saveStateToLocalStorage() {
   if (appState.members) {
     appState.members.forEach(m => {
-      // Dual-Compatibility Sync: Sync camelCase and lowercase name keys
+      // Sync camelCase and lowercase name keys
+      if (m.firstname) m.firstName = m.firstname;
+      if (m.lastname) m.lastName = m.lastname;
       if (m.firstName && !m.firstname) m.firstname = m.firstName;
-      if (m.firstname && !m.firstName) m.firstName = m.firstname;
       if (m.lastName && !m.lastname) m.lastname = m.lastName;
-      if (m.lastname && !m.lastName) m.lastName = m.lastname;
       
-      // Sync beneficiary properties
+      // Sync beneficiary properties: always overwrite flat properties from the nested beneficiary object if it exists
       if (m.beneficiary) {
-        if (!m.beneficiaryTitle) m.beneficiaryTitle = m.beneficiary.title || "นาย";
-        if (!m.beneficiaryFirstName || m.beneficiaryFirstName === "-") {
-          const parts = (m.beneficiary.name || "").split(" ");
-          m.beneficiaryFirstName = parts[0] || "-";
-          m.beneficiaryLastName = parts.slice(1).join(" ") || "";
-        }
-        if (!m.beneficiaryPhone) m.beneficiaryPhone = m.beneficiary.phone || "-";
-        if (!m.beneficiaryRelation) m.beneficiaryRelation = m.beneficiary.relation || "-";
+        m.beneficiaryTitle = m.beneficiary.title || "นาย";
+        const parts = (m.beneficiary.name || "").trim().split(/\s+/);
+        m.beneficiaryFirstName = parts[0] || "-";
+        m.beneficiaryLastName = parts.slice(1).join(" ") || "";
+        m.beneficiaryPhone = m.beneficiary.phone || "-";
+        m.beneficiaryRelation = m.beneficiary.relation || "-";
       } else if (m.beneficiaryFirstName) {
         m.beneficiary = {
           title: m.beneficiaryTitle || "นาย",
