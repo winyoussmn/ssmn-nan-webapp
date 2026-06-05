@@ -4746,6 +4746,45 @@ window.addEventListener("DOMContentLoaded", function() {
     renderLiquidityAnalyzer();
   };
 
+  // Mobile Sidebar Drawer Toggle
+  const toggleBtn = document.getElementById('btn-sidebar-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+
+  if (toggleBtn && sidebar && backdrop) {
+    toggleBtn.addEventListener('click', function() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('active');
+    });
+
+    backdrop.addEventListener('click', function() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+    });
+
+    // Close sidebar when clicking any menu item (on mobile/tablet)
+    const menuItems = sidebar.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+      item.addEventListener('click', function() {
+        if (window.innerWidth <= 1024) {
+          sidebar.classList.remove('open');
+          backdrop.classList.remove('active');
+        }
+      });
+    });
+
+    // Also close on logout button click
+    const logoutBtn = document.getElementById('btn-action-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function() {
+        if (window.innerWidth <= 1024) {
+          sidebar.classList.remove('open');
+          backdrop.classList.remove('active');
+        }
+      });
+    }
+  }
+
   // ยิงซิงค์ดึงข้อมูลจาก Cloudflare Database เบื้องหลัง (Stale-While-Revalidate)
   loadStateFromCloudflare();
 });

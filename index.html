@@ -90,6 +90,7 @@
 
   <!-- ==================== MAIN ROOT APP CONTAINER ==================== -->
   <div class="app-container" id="main-app-container" style="display: none;">
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     
     <!-- Sidebar Navigation & Role Controller -->
     <aside class="sidebar">
@@ -214,8 +215,17 @@
       <!-- Top Header Bar -->
       <header class="top-bar">
         <div class="header-left">
-          <h1 id="page-title">ระบบแดชบอร์ดภาพรวมจังหวัด</h1>
-          <p class="subtitle" id="page-subtitle">แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน</p>
+          <button id="btn-sidebar-toggle" class="btn-sidebar-toggle" aria-label="เปิดเมนู">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="header-title-group">
+            <h1 id="page-title">ระบบแดชบอร์ดภาพรวมจังหวัด</h1>
+            <p class="subtitle" id="page-subtitle">แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน</p>
+          </div>
         </div>
         
         <div class="header-right">
