@@ -1052,12 +1052,12 @@ window.toggleCitizenIdReveal = function(element, originalCid) {
 };
 
 function renderMembersDirectory() {
-  const tbody = document.getElementById("tbl-body-members");
+  const tableWrapper = document.querySelector(".main-table-wrapper");
   const emptyState = document.getElementById("tbl-members-empty");
   const resultCounter = document.getElementById("count-directory-results");
   const scopeLabel = document.getElementById("txt-directory-scope");
   
-  if (!tbody) return;
+  if (!tableWrapper) return;
 
   const searchQuery = document.getElementById("member-search-input").value.trim().toLowerCase();
   const positionFilter = document.getElementById("filter-member-position").value;
@@ -1101,7 +1101,7 @@ function renderMembersDirectory() {
   
   if (appState.activeRole === "school") {
     const sch = SCHOOLS.find(s => s.id === appState.activeSchoolId);
-    scopeLabel.textContent = `แสดงผลเฉพาะบุคลากรสังกัด ${sch.name} ทั้งที่สังกัดอยู่และที่โอนย้ายออกแล้ว`;
+    scopeLabel.textContent = `แสดงผลเฉพาะบุคลากรสังกัด ${sch ? sch.name : ""} ทั้งที่สังกัดอยู่และที่โอนย้ายออกแล้ว`;
   } else {
     scopeLabel.textContent = "ตารางสารบบข้อมูลสมาชิกพร้อมสถานะเงินกองกลางฌาปนกิจน่านทั้งจังหวัด";
   }
@@ -1110,109 +1110,231 @@ function renderMembersDirectory() {
   document.getElementById("btn-clear-directory-filters").style.display = isAnyFilterActive ? "inline-block" : "none";
 
   if (filtered.length === 0) {
-    tbody.innerHTML = "";
+    tableWrapper.innerHTML = "";
     emptyState.style.display = "flex";
     return;
   }
 
   emptyState.style.display = "none";
-  let html = "";
-  
-  filtered.forEach(member => {
-    const sch = SCHOOLS.find(s => s.id === member.schoolId);
-    const balance = parseFloat(member.prepayBalance);
-    
-    let balanceClass = "text-success font-weight-bold";
-    let statusBadge = `<span class="badge badge-active">ใช้งานอยู่</span>`;
-    
-    if (member.status === "deceased") {
-      statusBadge = `<span class="badge badge-deceased">เสียชีวิต</span>`;
-      balanceClass = "text-currency text-muted";
-    } else if (member.status === "transferred") {
-      statusBadge = `<span class="badge badge-transferred">ย้ายสังกัดแล้ว</span>`;
-      balanceClass = "text-currency text-muted";
-    } else if (balance < 0) {
-      statusBadge = `<span class="badge badge-arrears">ค้างชำระ (เงินลบ)</span>`;
-      balanceClass = "text-danger font-weight-bold";
-    }
 
-    let actionButtons = "";
-    if (member.status === "active") {
-      actionButtons = `
-        <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดสมุดคู่ฝากและแฟ้มประวัติ">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </button>
-        <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
-          </svg>
-        </button>
-        <button class="btn-action-icon transfer-btn" onclick="openTransferSchoolModal('${member.id}')" title="แจ้งโยกย้ายสังกัดโรงเรียนใหม่">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="17 1 21 5 17 9"></polyline>
-            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-            <polyline points="7 23 3 19 7 15"></polyline>
-            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-          </svg>
-        </button>
-        <button class="btn-action-icon delete-btn" onclick="deleteMember('${member.id}')" title="ลบข้อมูลถาวร">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-        </button>
-      `;
-    } else {
-      actionButtons = `
-        <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดดูประวัติและหลักฐาน">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-        </button>
-        <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
-          </svg>
-        </button>
-      `;
-    }
-
-    const rowClass = member.status === "deceased" ? "row-deceased" : (member.status === "transferred" ? "row-transferred" : "");
-
-    html += `
-      <tr class="${rowClass}">
-        <td class="font-weight-bold text-currency text-warning">${member.id}</td>
-        <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
-        <td>${member.position}</td>
-        <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
-          <span class="masked-cid">${maskCitizenId(member.citizenId)}</span>
-          <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
-        </td>
-        <td>${sch ? sch.name : 'ไม่ระบุ'}</td>
-        <td class="text-currency">${member.phone}</td>
-        <td class="text-right text-currency ${balanceClass}">
-          ${balance >= 0 ? '฿' + balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-฿' + Math.abs(balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-        </td>
-        <td class="text-center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${member.applicationFeePaid ? '#10b981' : '#f43f5e'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            ${member.applicationFeePaid ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
-          </svg>
-        </td>
-        <td class="text-center">${statusBadge}</td>
-        <td class="text-center">
-          <div class="action-buttons-group">${actionButtons}</div>
-        </td>
-      </tr>
+  if (appState.activeRole === "school") {
+    // แสดงแบบตารางราบเดี่ยว (สิทธิ์โรงเรียน)
+    tableWrapper.innerHTML = `
+      <table class="premium-data-table" id="tbl-members-directory">
+        <thead>
+          <tr>
+            <th>หมายเลขสมาชิก</th>
+            <th>ชื่อ - นามสกุล</th>
+            <th>ตำแหน่ง</th>
+            <th>เลขประจำตัวประชาชน</th>
+            <th>สังกัดโรงเรียน/หน่วยงาน</th>
+            <th>เบอร์โทรศัพท์</th>
+            <th class="text-right">เงินสะสมล่วงหน้า</th>
+            <th class="text-center">ค่าแรกเข้า (50฿)</th>
+            <th class="text-center">สถานะ</th>
+            <th class="text-center">การดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody id="tbl-body-members"></tbody>
+      </table>
     `;
-  });
+    
+    const tbody = document.getElementById("tbl-body-members");
+    let html = "";
+    
+    filtered.forEach(member => {
+      const sch = SCHOOLS.find(s => s.id === member.schoolId);
+      const balance = parseFloat(member.prepayBalance);
+      
+      let balanceClass = "text-success font-weight-bold";
+      let statusBadge = `<span class="badge badge-active">ใช้งานอยู่</span>`;
+      
+      if (member.status === "deceased") {
+        statusBadge = `<span class="badge badge-deceased">เสียชีวิต</span>`;
+        balanceClass = "text-currency text-muted";
+      } else if (member.status === "transferred") {
+        statusBadge = `<span class="badge badge-transferred">ย้ายสังกัดแล้ว</span>`;
+        balanceClass = "text-currency text-muted";
+      } else if (balance < 0) {
+        statusBadge = `<span class="badge badge-arrears">ค้างชำระ (เงินลบ)</span>`;
+        balanceClass = "text-danger font-weight-bold";
+      }
 
-  tbody.innerHTML = html;
+      let actionButtons = "";
+      if (member.status === "active") {
+        actionButtons = `
+          <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดสมุดคู่ฝากและแฟ้มประวัติ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+          <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
+            </svg>
+          </button>
+          <button class="btn-action-icon transfer-btn" onclick="openTransferSchoolModal('${member.id}')" title="แจ้งโยกย้ายสังกัดโรงเรียนใหม่">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+              <polyline points="7 23 3 19 7 15"></polyline>
+              <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+            </svg>
+          </button>
+          <button class="btn-action-icon delete-btn" onclick="deleteMember('${member.id}')" title="ลบข้อมูลถาวร">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        `;
+      } else {
+        actionButtons = `
+          <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดดูประวัติและหลักฐาน">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+          <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
+            </svg>
+          </button>
+        `;
+      }
+
+      const rowClass = member.status === "deceased" ? "row-deceased" : (member.status === "transferred" ? "row-transferred" : "");
+
+      html += `
+        <tr class="${rowClass}">
+          <td class="font-weight-bold text-currency text-warning">${member.id}</td>
+          <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
+          <td>${member.position}</td>
+          <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
+            <span class="masked-cid">${maskCitizenId(member.citizenId)}</span>
+            <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
+          </td>
+          <td>${sch ? sch.name : 'ไม่ระบุ'}</td>
+          <td class="text-currency">${member.phone}</td>
+          <td class="text-right text-currency ${balanceClass}">
+            ${balance >= 0 ? '฿' + balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-฿' + Math.abs(balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+          </td>
+          <td class="text-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${member.applicationFeePaid ? '#10b981' : '#f43f5e'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              ${member.applicationFeePaid ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
+            </svg>
+          </td>
+          <td class="text-center">${statusBadge}</td>
+          <td class="text-center">
+            <div class="action-buttons-group">${actionButtons}</div>
+          </td>
+        </tr>
+      `;
+    });
+    
+    tbody.innerHTML = html;
+  } else {
+    // แสดงแบบโฟลเดอร์รายชื่อแยกโรงเรียน (สิทธิ์จังหวัด)
+    let foldersHtml = "";
+    
+    SCHOOLS.forEach(sch => {
+      const schoolMembers = filtered.filter(m => m.schoolId === sch.id);
+      if (schoolMembers.length === 0) return; // ข้ามโรงเรียนที่ไม่มีสมาชิกตรงตามเงื่อนไขค้นหา
+      
+      let rowsHtml = "";
+      schoolMembers.forEach(member => {
+        const balance = parseFloat(member.prepayBalance);
+        let balanceClass = "text-success font-weight-bold";
+        let statusBadge = `<span class="badge badge-active">ใช้งานอยู่</span>`;
+        
+        if (member.status === "deceased") {
+          statusBadge = `<span class="badge badge-deceased">เสียชีวิต</span>`;
+          balanceClass = "text-currency text-muted";
+        } else if (member.status === "transferred") {
+          statusBadge = `<span class="badge badge-transferred">ย้ายสังกัดแล้ว</span>`;
+          balanceClass = "text-currency text-muted";
+        } else if (balance < 0) {
+          statusBadge = `<span class="badge badge-arrears">ค้างชำระ (เงินลบ)</span>`;
+          balanceClass = "text-danger font-weight-bold";
+        }
+
+        // แอดมินจังหวัด: ดูได้เท่านั้น ไม่มีปุ่มแก้ไข ลบ ย้ายสังกัด
+        const actionButtons = `
+          <button class="btn-action-icon view-btn" onclick="openProfileViewer('${member.id}')" title="เปิดดูรายละเอียดสมาชิกและสมุดคู่ฝาก">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        `;
+
+        const rowClass = member.status === "deceased" ? "row-deceased" : (member.status === "transferred" ? "row-transferred" : "");
+
+        rowsHtml += `
+          <tr class="${rowClass}">
+            <td class="font-weight-bold text-currency text-warning">${member.id}</td>
+            <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
+            <td>${member.position}</td>
+            <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
+              <span class="masked-cid">${maskCitizenId(member.citizenId)}</span>
+              <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
+            </td>
+            <td>${sch.name}</td>
+            <td class="text-currency">${member.phone}</td>
+            <td class="text-right text-currency ${balanceClass}">
+              ${balance >= 0 ? '฿' + balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-฿' + Math.abs(balance).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+            <td class="text-center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${member.applicationFeePaid ? '#10b981' : '#f43f5e'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                ${member.applicationFeePaid ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>'}
+              </svg>
+            </td>
+            <td class="text-center">${statusBadge}</td>
+            <td class="text-center">
+              <div class="action-buttons-group">${actionButtons}</div>
+            </td>
+          </tr>
+        `;
+      });
+
+      foldersHtml += `
+        <details class="school-group-details glass" style="margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; background: rgba(15, 23, 42, 0.2);">
+          <summary style="padding: 14px 18px; font-weight: 700; color: var(--color-accent-gold); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; background: rgba(30, 41, 59, 0.4); outline: none;">
+            <span style="font-size: 16px;">📁</span>
+            <span style="font-size: 14px; flex-grow: 1;">รหัส ${sch.id} - ${sch.name} (${schoolMembers.length} คน)</span>
+            <span style="font-size: 11px; color: var(--color-text-dim);">คลิกเพื่อ เปิด/ปิด รายชื่อ</span>
+          </summary>
+          <div style="padding: 0; background: rgba(15, 23, 42, 0.1); border-top: 1px solid rgba(255,255,255,0.05); overflow-x: auto;">
+            <table class="premium-data-table" style="margin: 0; border: none; border-radius: 0;">
+              <thead>
+                <tr>
+                  <th>หมายเลขสมาชิก</th>
+                  <th>ชื่อ - นามสกุล</th>
+                  <th>ตำแหน่ง</th>
+                  <th>เลขประจำตัวประชาชน</th>
+                  <th>สังกัดโรงเรียน/หน่วยงาน</th>
+                  <th>เบอร์โทรศัพท์</th>
+                  <th class="text-right">เงินสะสมล่วงหน้า</th>
+                  <th class="text-center">ค่าแรกเข้า (50฿)</th>
+                  <th class="text-center">สถานะ</th>
+                  <th class="text-center">การดำเนินการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      `;
+    });
+
+    tableWrapper.innerHTML = foldersHtml;
+  }
 }
 
 // ยื่นสมัครหรือลงทะเบียนสมาชิกใหม่พร้อมอัปโหลดไฟล์ประกอบการสมัคร
@@ -3259,6 +3381,10 @@ function openAddMemberModal() {
 }
 
 function openEditMemberModal(memberId) {
+  if (appState.activeRole === "province") {
+    alert("สิทธิ์การแก้ไขข้อมูลสมาชิกสงวนไว้เฉพาะแอดมินโรงเรียนต้นสังกัดเท่านั้น");
+    return;
+  }
   const member = appState.members.find(m => m.id === memberId);
   if (!member) {
     alert("ไม่พบข้อมูลสมาชิกที่ระบุ");
@@ -4021,18 +4147,13 @@ function renderSchoolsDirectory() {
             <div style="font-weight: 600; color: white;">${profile.coordinator}</div>
             <div style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ: ${profile.coordinatorPhone}</div>
           </td>
-          <td class="text-center">
-            <a href="tel:${profile.coordinatorPhone}" class="btn btn-secondary btn-mini" style="padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;">
-              📞 โทรผู้ประสานงาน
-            </a>
-          </td>
         </tr>
       `;
     }
   });
 
   if (!html) {
-    html = `<tr><td colspan="7" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลสังกัดที่ตรงตามเงื่อนไขการค้นหา</td></tr>`;
+    html = `<tr><td colspan="6" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลสังกัดที่ตรงตามเงื่อนไขการค้นหา</td></tr>`;
   }
   tbody.innerHTML = html;
 }
