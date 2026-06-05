@@ -66,7 +66,7 @@ const DEFAULT_SCHOOL_PROFILES = {
   "07": { address: "12", moo: "1", tumbon: "เชียงกลาง", amphoe: "เชียงกลาง", phone: "054-797115", fax: "054-797116", director: "นายสมเกียรติ ยศกลาง", directorPhone: "089-567-8901", coordinator: "นางมณีวรรณ เมืองน่าน", coordinatorPhone: "085-6789012" },
   "08": { address: "88", moo: "1", tumbon: "บ่อเกลือใต้", amphoe: "บ่อเกลือ", phone: "054-778088", fax: "054-778089", director: "นายเฉลิม ขุนบ่อ", directorPhone: "089-123-9876", coordinator: "นางสาวศิริพร ใจงาม", coordinatorPhone: "081-9876543" },
   "09": { address: "47", moo: "7", tumbon: "ป่ากลาง", amphoe: "ปัว", phone: "054-791047", fax: "054-791048", director: "นายวัชระ ป่ากลาง", directorPhone: "089-333-4444", coordinator: "นางสาวสุดา แก้วหวาน", coordinatorPhone: "084-3456789" },
-  "10": { address: "123", moo: "5", tumbon: "ทุ่งช้าง", amphoe: "ทุ่งช้าง", phone: "054-795123", fax: "054-795124", director: "นายรังสรรค์ แสนทุ่ง", directorPhone: "089-012-3456", coordinator: "นายกิติพงษ์ แก้วดี", coordinatorPhone: "080-1234567" },
+  "10": { address: "69", moo: "2", tumbon: "ทุ่งช้าง", amphoe: "ทุ่งช้าง", phone: "054-795167", fax: "054-795003", director: "ว่าที่ร้อยโทวิญญู ศรีบุญเรือง", directorPhone: "097-2151119", coordinator: "นางสาวอนุสรา ศรีทาเกิด", coordinatorPhone: "064-3346214" },
   "11": { address: "15", moo: "1", tumbon: "แหนด", amphoe: "แม่จริม", phone: "054-769015", fax: "054-769016", director: "นายบุญยืน ขุนเขา", directorPhone: "089-901-2345", coordinator: "นางสาวพิกุล แก้วมณี", coordinatorPhone: "089-0123456" },
   "12": { address: "180", moo: "6", tumbon: "ในเวียง", amphoe: "เมืองน่าน", phone: "054-710180", fax: "054-710181", director: "พระครูนันทบุรีวิทยา", directorPhone: "089-777-8888", coordinator: "นายสมเกียรติ ยศหลวง", coordinatorPhone: "088-3456789" },
   "13": { address: "99", moo: "3", tumbon: "ป่าแลวหลวง", amphoe: "สันติสุข", phone: "054-775199", fax: "054-775198", director: "นายสุรพล แสนคำ", directorPhone: "089-890-1234", coordinator: "นายธีระ จิตภักดี", coordinatorPhone: "088-9012345" },
@@ -3567,15 +3567,93 @@ function generateDemoData() {
     { fn: "จิรเดช", ln: "มีคุณ", pos: "ครู", sch: "01", balance: 150, gender: "ชาย" },
     { fn: "ธัญญารัตน์", ln: "สตรีศรี", pos: "ครู", sch: "01", balance: 150, gender: "หญิง" },
     { fn: "กรกฎ", ln: "ศรีสวัสดิ์", pos: "ครู", sch: "02", balance: 150, gender: "ชาย" },
-    { fn: "ปาริชาติ", ln: "สะแสนน่าน", pos: "ครู", sch: "02", balance: 150, gender: "หญิง" }
+    { fn: "ปาริชาติ", ln: "สะแสนน่าน", pos: "ครู", sch: "02", balance: 150, gender: "หญิง" },
+    // สมาชิกของโรงเรียนทุ่งช้าง (กู้คืนข้อมูลจริงจากระบบคลาวด์)
+    {
+      id: "69101001",
+      title: "ว่าที่ร้อยโท",
+      fn: "วิญญู",
+      ln: "ศรีบุญเรือง",
+      citizenId: "5550500560168",
+      phone: "097-2151119",
+      gender: "ชาย",
+      pos: "ผอ.",
+      sch: "10",
+      balance: 90,
+      address: "บ้านเลขที่ 69 หมู่ 2 ต.ทุ่งช้าง อ.ทุ่งช้าง จ.น่าน",
+      beneficiary: {
+        title: "เด็กชาย",
+        name: "รณพีร์ ศรีบุญเรือง",
+        phone: "064-7692383",
+        relation: "บุตร"
+      },
+      ledger: [
+        {
+          date: "2026-06-05 14:01",
+          type: "charge",
+          amount: -100,
+          description: "ลด/ปรับปรุงเงินสะสมล่วงหน้าออกจากระบบ",
+          balanceAfter: 110
+        },
+        {
+          date: "2026-06-05 14:01",
+          type: "charge",
+          amount: -90,
+          description: "ลด/ปรับปรุงเงินสะสมล่วงหน้าออกจากระบบ",
+          balanceAfter: 20
+        },
+        {
+          date: "2026-06-05 14:02",
+          type: "deposit",
+          amount: 70,
+          description: "โอนเติมเงินสะสมล่วงหน้าเข้าระบบ สสมน.",
+          balanceAfter: 90
+        }
+      ]
+    },
+    {
+      id: "69101002",
+      title: "นางสาว",
+      fn: "จิณฐดานัณป์",
+      ln: "จิณสิทธิ์",
+      citizenId: "3550600133460",
+      phone: "0815825615",
+      gender: "หญิง",
+      pos: "รอง ผอ.",
+      sch: "10",
+      balance: 90,
+      address: "บ้านเลขที่ 123 หมู่ 5 ต.ทุ่งช้าง อ.ทุ่งช้าง จ.น่าน",
+      beneficiary: {
+        title: "ด.ช.",
+        name: "ธนรบ วันเสน",
+        phone: "0930615352",
+        relation: "บุตร"
+      },
+      ledger: [
+        {
+          date: "2026-06-05 14:00",
+          type: "deposit",
+          amount: 50,
+          description: "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่",
+          balanceAfter: 50
+        },
+        {
+          date: "2026-06-05 14:00",
+          type: "deposit",
+          amount: 90,
+          description: "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน.",
+          balanceAfter: 90
+        }
+      ]
+    }
   ];
 
   names.forEach((p, index) => {
-    const generatedId = generateMemberId(p.sch);
-    const idCard = "1559900" + String(100000 + index);
-    const phone = "089" + String(1000000 + index);
+    const generatedId = p.id || generateMemberId(p.sch, p.pos);
+    const idCard = p.citizenId || ("1559900" + String(100000 + index));
+    const phone = p.phone || ("089" + String(1000000 + index));
 
-    const ledger = [
+    const ledger = p.ledger || [
       INITIAL_LEDGER_ENTRY(50, "จ่ายค่าสมัครชำระแรกเข้าแรกสมัครใหม่"),
       INITIAL_LEDGER_ENTRY(p.balance, "เงินโอนสะสมล่วงหน้าแรกเข้า สสมน.")
     ];
@@ -3583,8 +3661,8 @@ function generateDemoData() {
     // จำลองแนบเอกสารใบสมัครเริ่มต้น (SVG Base64 แบบจำลอง)
     const docApp = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%230f172a'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2310b981' font-size='16'>ใบสมัครของ ${p.fn} ${p.ln}</text></svg>";
 
-    let title = p.gender === "ชาย" ? "นาย" : "นางสาว";
-    if (index === 5) title = "นาง";
+    let title = p.title || (p.gender === "ชาย" ? "นาย" : "นางสาว");
+    if (index === 5 && !p.title) title = "นาง";
 
     const m = {
       id: generatedId,
@@ -3599,8 +3677,8 @@ function generateDemoData() {
       prepayBalance: p.balance,
       applicationFeePaid: true,
       status: "active",
-      address: `บ้านเลขที่ ${10 + index} หมู่ 1 ต.ในเวียง อ.เมืองน่าน จ.น่าน`,
-      beneficiary: {
+      address: p.address || `บ้านเลขที่ ${10 + index} หมู่ 1 ต.ในเวียง อ.เมืองน่าน จ.น่าน`,
+      beneficiary: p.beneficiary || {
         title: "นาง",
         name: `หวานใจ ${p.ln}`,
         phone: "0898765432",
