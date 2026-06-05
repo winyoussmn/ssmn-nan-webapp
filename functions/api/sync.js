@@ -21,7 +21,9 @@ async function ensureTables(db) {
       beneficiaryPhone TEXT,
       beneficiaryRelation TEXT,
       documents TEXT,
-      ledger TEXT
+      ledger TEXT,
+      gender TEXT,
+      address TEXT
     );`,
     `CREATE TABLE IF NOT EXISTS death_cases (
       id TEXT PRIMARY KEY,
@@ -105,8 +107,14 @@ async function ensureTables(db) {
     if (!columns.includes("ledger")) {
       await db.prepare("ALTER TABLE members ADD COLUMN ledger TEXT").run();
     }
+    if (!columns.includes("gender")) {
+      await db.prepare("ALTER TABLE members ADD COLUMN gender TEXT").run();
+    }
+    if (!columns.includes("address")) {
+      await db.prepare("ALTER TABLE members ADD COLUMN address TEXT").run();
+    }
   } catch (err) {
-    console.error("Migration error (ledger/documents columns):", err.message);
+    console.error("Migration error (ledger/documents/gender/address columns):", err.message);
   }
 }
 
@@ -263,8 +271,8 @@ export async function onRequestPost(context) {
           INSERT INTO members (
             id, firstname, lastname, title, citizenId, schoolId, position, phone, prepayBalance, status,
             beneficiaryTitle, beneficiaryFirstName, beneficiaryLastName, beneficiaryPhone, beneficiaryRelation,
-            documents, ledger
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            documents, ledger, gender, address
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           m.id, m.firstname || m.firstName || "", m.lastname || m.lastName || "", m.title || "นาย",
           m.citizenId || "", m.schoolId || "", m.position || "ครู", m.phone || "", m.prepayBalance || 0, m.status || "active",
@@ -274,7 +282,9 @@ export async function onRequestPost(context) {
           m.beneficiaryPhone || (m.beneficiary ? m.beneficiary.phone : "-"),
           m.beneficiaryRelation || (m.beneficiary ? m.beneficiary.relation : "-"),
           JSON.stringify(m.documents || {}),
-          JSON.stringify(m.ledger || [])
+          JSON.stringify(m.ledger || []),
+          m.gender || "ชาย",
+          m.address || ""
         ));
       });
     }
