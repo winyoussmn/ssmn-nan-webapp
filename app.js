@@ -3296,9 +3296,23 @@ function ensureSchoolProfilesStats() {
 
     const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + profile.otherCount;
 
-    if (profile.pensionersCount === undefined) profile.pensionersCount = Math.round(totalPersonnel * 0.15);
-    if (profile.activeMembersCount === undefined) profile.activeMembersCount = Math.round(totalPersonnel * 0.80);
-    if (profile.retiredTransferredMembersCount === undefined) profile.retiredTransferredMembersCount = Math.round(totalPersonnel * 0.20);
+    // คำนวณเชื่อมโยงโดยตรงจากฐานข้อมูลจริง
+    const dbActive = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position !== 'ข้าราชการบำนาญ').length;
+    const dbPensioners = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position === 'ข้าราชการบำนาญ').length;
+    const dbRetiredTransferred = appState.members.filter(m => m.schoolId === sch.id && (m.status === 'transferred' || (m.status === 'active' && m.position === 'ข้าราชการบำนาญ'))).length;
+
+    const hasMembersInDB = appState.members.some(m => m.schoolId === sch.id);
+
+    if (hasMembersInDB) {
+      profile.pensionersCount = dbPensioners;
+      profile.activeMembersCount = dbActive;
+      profile.retiredTransferredMembersCount = dbRetiredTransferred;
+    } else {
+      if (profile.pensionersCount === undefined) profile.pensionersCount = Math.round(totalPersonnel * 0.15);
+      if (profile.activeMembersCount === undefined) profile.activeMembersCount = Math.round(totalPersonnel * 0.80);
+      if (profile.retiredTransferredMembersCount === undefined) profile.retiredTransferredMembersCount = Math.round(totalPersonnel * 0.20);
+    }
+
     if (profile.studentsJune === undefined) profile.studentsJune = totalPersonnel * 10;
     if (profile.studentsNovember === undefined) profile.studentsNovember = Math.round(totalPersonnel * 10.2);
   });
@@ -3396,6 +3410,78 @@ function initSchoolProfileForm() {
   const pwd = appState.schoolPasswords[schoolId] || "school1234";
   if (document.getElementById("school-profile-password")) document.getElementById("school-profile-password").value = pwd;
   if (document.getElementById("school-profile-password-confirm")) document.getElementById("school-profile-password-confirm").value = pwd;
+
+  // เช็คว่าสังกัดนี้มีการลงทะเบียนรายชื่อสมาชิกในระบบแล้วหรือไม่
+  const hasMembersInDB = appState.members.some(m => m.schoolId === schoolId);
+  const activeInput = document.getElementById("school-profile-active-members-count");
+  const retiredInput = document.getElementById("school-profile-retired-transferred-members-count");
+  const pensionersInput = document.getElementById("school-profile-pensioners-count");
+
+  // ลบตัวบอกสถานะการเชื่อมต่อเดิม (ถ้ามี)
+  const oldIndicator = document.getElementById("db-sync-indicator-form");
+  if (oldIndicator) oldIndicator.remove();
+
+  if (hasMembersInDB) {
+    if (activeInput) {
+      activeInput.setAttribute("readonly", "true");
+      activeInput.style.background = "rgba(255, 255, 255, 0.07)";
+      activeInput.style.cursor = "not-allowed";
+    }
+    if (retiredInput) {
+      retiredInput.setAttribute("readonly", "true");
+      retiredInput.style.background = "rgba(255, 255, 255, 0.07)";
+      retiredInput.style.cursor = "not-allowed";
+    }
+    if (pensionersInput) {
+      pensionersInput.setAttribute("readonly", "true");
+      pensionersInput.style.background = "rgba(255, 255, 255, 0.07)";
+      pensionersInput.style.cursor = "not-allowed";
+    }
+
+    // แทรกข้อความแจ้งว่าซิงค์อัตโนมัติเรียบร้อยแล้ว
+    const indicator = document.createElement("div");
+    indicator.id = "db-sync-indicator-form";
+    indicator.className = "alert";
+    indicator.style.background = "rgba(16, 185, 129, 0.12)";
+    indicator.style.border = "1px solid rgba(16, 185, 129, 0.3)";
+    indicator.style.color = "var(--color-accent-emerald)";
+    indicator.style.padding = "10px 14px";
+    indicator.style.borderRadius = "8px";
+    indicator.style.marginBottom = "14px";
+    indicator.style.fontSize = "13px";
+    indicator.style.display = "flex";
+    indicator.style.alignItems = "center";
+    indicator.style.gap = "8px";
+    indicator.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <strong>เชื่อมโยงสำเร็จ:</strong> ข้อมูลสมาชิกและผู้เกษียณ สสมน. คำนวณอัตโนมัติจากรายชื่อสมาชิกในฐานข้อมูลกลางเรียบร้อย
+    `;
+
+    const targetRow = activeInput ? activeInput.closest(".form-row") : null;
+    if (targetRow) {
+      targetRow.parentNode.insertBefore(indicator, targetRow);
+    }
+  } else {
+    // ปลดล็อกให้คีย์เองกรณีที่โรงเรียนยังไม่มีรายชื่อสมาชิกในฐานข้อมูล
+    if (activeInput) {
+      activeInput.removeAttribute("readonly");
+      activeInput.style.background = "";
+      activeInput.style.cursor = "";
+    }
+    if (retiredInput) {
+      retiredInput.removeAttribute("readonly");
+      retiredInput.style.background = "";
+      retiredInput.style.cursor = "";
+    }
+    if (pensionersInput) {
+      pensionersInput.removeAttribute("readonly");
+      pensionersInput.style.background = "";
+      pensionersInput.style.cursor = "";
+    }
+  }
 
   // คำนวณยอดรวมทันทีที่ดึงข้อมูล
   updateSchoolProfileTotals();
@@ -3511,6 +3597,8 @@ function renderSchoolsDirectory() {
       const retiredTransferredMembers = profile.retiredTransferredMembersCount !== undefined ? profile.retiredTransferredMembersCount : defaultRetired;
       const totalM = activeMembers + retiredTransferredMembers;
 
+      const hasMembersInDB = appState.members.some(m => m.schoolId === sch.id);
+
       html += `
         <tr>
           <td class="text-center" style="font-family: var(--font-number); font-weight: 600; color: var(--color-accent-amber);">${sch.id}</td>
@@ -3520,7 +3608,10 @@ function renderSchoolsDirectory() {
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
               <span style="font-weight: 500;">👥 บุคลากร: ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | บุคลากรทางการศึกษา ${personnel.other} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
-              <span style="color: #60a5fa; font-weight: 500;">💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
+              <span style="color: #60a5fa; font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                <span>💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
+                ${hasMembersInDB ? `<span style="color: var(--color-accent-emerald); font-size: 10px; font-weight: 600; margin-left: 2px; padding: 1.5px 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 4px; display: inline-flex; align-items: center; gap: 3.5px;"><span style="width: 4.5px; height: 4.5px; border-radius: 50%; background: var(--color-accent-emerald);"></span>เชื่อมโยงระบบแล้ว</span>` : ""}
+              </span>
             </div>
           </td>
           <td><span class="badge badge-success-outline" style="font-size:11px;">อ.${profile.amphoe}</span></td>
