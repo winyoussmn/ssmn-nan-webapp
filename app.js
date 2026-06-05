@@ -936,6 +936,36 @@ function getBase64FromFile(file) {
   });
 }
 
+// ฟังก์ชันแปลงเลขประจำตัวประชาชนให้อยู่ในรูปของการปกปิด (Masked Format)
+function maskCitizenId(cid) {
+  if (!cid) return "-";
+  const clean = cid.replace(/-/g, "");
+  if (clean.length < 13) return cid;
+  // แสดงผลแบบปกปิด เช่น 1-2345-XXXXX-XX-X
+  return `${clean.substring(0, 1)}-${clean.substring(1, 5)}-XXXXX-${clean.substring(10, 12)}-${clean.substring(12)}`;
+}
+
+// ฟังก์ชันสลับแสดง/ปกปิดเลขประจำตัวประชาชนเมื่อคลิก
+window.toggleCitizenIdReveal = function(element, originalCid) {
+  const span = element.querySelector(".masked-cid");
+  const eye = element.querySelector("span:last-child");
+  if (!span) return;
+  
+  const cid = originalCid || element.getAttribute("data-original-cid") || "";
+  const cleanOriginal = cid.replace(/-/g, "");
+  const formattedOriginal = cleanOriginal.length === 13 
+    ? `${cleanOriginal.substring(0, 1)}-${cleanOriginal.substring(1, 5)}-${cleanOriginal.substring(5, 10)}-${cleanOriginal.substring(10, 12)}-${cleanOriginal.substring(12)}`
+    : cid;
+
+  if (span.textContent.includes("X")) {
+    span.textContent = formattedOriginal;
+    if (eye) eye.textContent = "🙈";
+  } else {
+    span.textContent = maskCitizenId(cid);
+    if (eye) eye.textContent = "👁️";
+  }
+};
+
 function renderMembersDirectory() {
   const tbody = document.getElementById("tbl-body-members");
   const emptyState = document.getElementById("tbl-members-empty");
@@ -1030,6 +1060,12 @@ function renderMembersDirectory() {
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
         </button>
+        <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
+          </svg>
+        </button>
         <button class="btn-action-icon transfer-btn" onclick="openTransferSchoolModal('${member.id}')" title="แจ้งโยกย้ายสังกัดโรงเรียนใหม่">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="17 1 21 5 17 9"></polyline>
@@ -1041,7 +1077,7 @@ function renderMembersDirectory() {
         <button class="btn-action-icon delete-btn" onclick="deleteMember('${member.id}')" title="ลบข้อมูลถาวร">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path>
           </svg>
         </button>
       `;
@@ -1051,6 +1087,12 @@ function renderMembersDirectory() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
             <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </button>
+        <button class="btn-action-icon edit-btn" onclick="openEditMemberModal('${member.id}')" style="color: var(--color-accent-amber); border-color: rgba(251, 191, 36, 0.2);" title="แก้ไขข้อมูลส่วนตัวและอัปเดตเอกสารแนบ">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path>
           </svg>
         </button>
       `;
@@ -1063,7 +1105,10 @@ function renderMembersDirectory() {
         <td class="font-weight-bold text-currency text-warning">${member.id}</td>
         <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
         <td>${member.position}</td>
-        <td class="text-currency">${member.citizenId}</td>
+        <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
+          <span class="masked-cid">${maskCitizenId(member.citizenId)}</span>
+          <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
+        </td>
         <td>${sch ? sch.name : 'ไม่ระบุ'}</td>
         <td class="text-currency">${member.phone}</td>
         <td class="text-right text-currency ${balanceClass}">
@@ -1195,6 +1240,7 @@ document.getElementById("form-member").addEventListener("submit", async function
       };
 
       // ถ่ายรูปใหม่ถ้าแนบรูปเข้ามาใหม่
+      if (!member.documents) member.documents = {};
       if (docApplication) member.documents.application = docApplication;
       if (docCitizen) member.documents.citizen = docCitizen;
       if (docHousehold) member.documents.household = docHousehold;
@@ -2343,7 +2389,16 @@ window.openProfileViewer = function(memberId) {
     statusEl.className = "balance-status text-danger";
   }
 
-  document.getElementById("view-profile-citizen").textContent = member.citizenId;
+  const citizenEl = document.getElementById("view-profile-citizen");
+  if (citizenEl) {
+    citizenEl.textContent = maskCitizenId(member.citizenId);
+  }
+  const citizenContainer = document.getElementById("view-profile-citizen-container");
+  if (citizenContainer) {
+    citizenContainer.setAttribute("data-original-cid", member.citizenId);
+    const eye = citizenContainer.querySelector("span:last-child");
+    if (eye) eye.textContent = "👁️"; // Reset eye icon
+  }
   document.getElementById("view-profile-phone").textContent = member.phone;
   document.getElementById("view-profile-gender").textContent = member.gender;
   document.getElementById("view-profile-address").textContent = member.address;
@@ -3012,17 +3067,149 @@ function openAddMemberModal() {
   schoolSelect.disabled = appState.activeRole === "school";
 
   const statusOption = document.getElementById("member-status-option");
-  if (statusOption) statusOption.value = "new";
+  if (statusOption) {
+    statusOption.value = "new";
+    const statusRow = statusOption.closest('.form-row');
+    if (statusRow) statusRow.style.display = "flex";
+  }
   
   const prepayInput = document.getElementById("member-prepay-balance");
   if (prepayInput) prepayInput.value = 90;
 
   if (window.toggleMemberStatusOptions) window.toggleMemberStatusOptions();
 
+  // เคลียร์ป้ายระบุไฟล์แนบเดิม (ถ้ามี)
+  const previewIds = [
+    "edit-member-doc-beneficiary-id-preview",
+    "edit-member-doc-application-preview",
+    "edit-member-doc-citizen-preview",
+    "edit-member-doc-household-preview"
+  ];
+  previewIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = "none";
+      el.innerHTML = "";
+    }
+  });
+
   document.getElementById("member-address").value = "";
 
   document.getElementById("modal-member").classList.add("active");
 }
+
+function openEditMemberModal(memberId) {
+  const member = appState.members.find(m => m.id === memberId);
+  if (!member) {
+    alert("ไม่พบข้อมูลสมาชิกที่ระบุ");
+    return;
+  }
+
+  // รีเซ็ตฟอร์ม
+  document.getElementById("form-member").reset();
+  
+  // ตั้งค่าประเภทการดำเนินการและข้อความหัวเรื่อง
+  document.getElementById("member-action-type").value = "edit";
+  document.getElementById("modal-member-title").textContent = "แก้ไขข้อมูลสมาชิกและเอกสารประกอบ";
+  document.getElementById("btn-save-member").textContent = "บันทึกการแก้ไขข้อมูล";
+  
+  // แสดงและล็อกรหัสสมาชิก
+  document.getElementById("block-custom-member-id").style.display = "block";
+  document.getElementById("member-custom-id").value = member.id;
+  document.getElementById("member-custom-id").readOnly = true;
+
+  // ซ่อนส่วนข้อมูลการเงินและสถานะสมาชิกแรกสมัคร
+  document.getElementById("block-financial-inputs").style.display = "none";
+  
+  const statusOption = document.getElementById("member-status-option");
+  if (statusOption) {
+    const statusRow = statusOption.closest('.form-row');
+    if (statusRow) statusRow.style.display = "none";
+  }
+
+  // เติมข้อมูลส่วนตัวสมาชิก
+  const titleSelect = document.getElementById("member-title");
+  const knownTitles = ["นาย", "นาง", "นางสาว"];
+  if (knownTitles.includes(member.title)) {
+    titleSelect.value = member.title;
+    document.getElementById("block-member-title-other").style.display = "none";
+    document.getElementById("member-title-other").value = "";
+  } else {
+    titleSelect.value = "อื่น ๆ";
+    document.getElementById("block-member-title-other").style.display = "block";
+    document.getElementById("member-title-other").value = member.title || "";
+  }
+
+  document.getElementById("member-firstname").value = member.firstname || "";
+  document.getElementById("member-lastname").value = member.lastname || "";
+  document.getElementById("member-citizen-id").value = member.citizenId || "";
+  document.getElementById("member-phone").value = member.phone || "";
+  document.getElementById("member-gender").value = member.gender || "";
+  document.getElementById("member-position").value = member.position || "";
+  
+  const schoolSelect = document.getElementById("member-school");
+  schoolSelect.value = member.schoolId || "";
+  schoolSelect.disabled = (appState.activeRole === "school");
+
+  document.getElementById("member-address").value = member.address || "";
+
+  // เติมข้อมูลผู้รับผลประโยชน์
+  const beneficiary = member.beneficiary || {};
+  const benTitleSelect = document.getElementById("member-beneficiary-title");
+  if (knownTitles.includes(beneficiary.title)) {
+    benTitleSelect.value = beneficiary.title;
+    document.getElementById("block-beneficiary-title-other").style.display = "none";
+    document.getElementById("member-beneficiary-title-other").value = "";
+  } else if (beneficiary.title) {
+    benTitleSelect.value = "อื่น ๆ";
+    document.getElementById("block-beneficiary-title-other").style.display = "block";
+    document.getElementById("member-beneficiary-title-other").value = beneficiary.title;
+  } else {
+    benTitleSelect.value = "";
+    document.getElementById("block-beneficiary-title-other").style.display = "none";
+    document.getElementById("member-beneficiary-title-other").value = "";
+  }
+
+  document.getElementById("member-beneficiary-name").value = beneficiary.name || "";
+  document.getElementById("member-beneficiary-phone").value = beneficiary.phone || "";
+  document.getElementById("member-beneficiary-relation").value = beneficiary.relation || "";
+
+  // แสดงประวัติและลิงก์ของเอกสารแนบเดิมที่มีในระบบ
+  const docs = member.documents || {};
+  const docFields = [
+    { id: "edit-member-doc-beneficiary-id-preview", file: docs.beneficiaryId, label: "บัตร ปชช. ผู้รับผลประโยชน์" },
+    { id: "edit-member-doc-application-preview", file: docs.application, label: "ใบสมัคร สสมน." },
+    { id: "edit-member-doc-citizen-preview", file: docs.citizen, label: "บัตรประชาชนสมาชิก" },
+    { id: "edit-member-doc-household-preview", file: docs.household, label: "ทะเบียนบ้านสมาชิก" }
+  ];
+
+  docFields.forEach(field => {
+    const el = document.getElementById(field.id);
+    if (el) {
+      if (field.file) {
+        el.style.display = "block";
+        el.innerHTML = `
+          <span style="font-size: 13px; color: var(--color-accent-teal); font-weight: 500;">✔️ มีไฟล์เอกสารเดิมในระบบ:</span>
+          <button type="button" class="btn btn-link" style="padding: 0 4px; font-size: 13px; text-decoration: underline; color: var(--color-accent-amber); background: none; border: none; cursor: pointer;" onclick="viewDocumentLightbox('${field.file}', '${field.label} ของ ${member.firstname} ${member.lastname}')">คลิกเพื่อเปิดดู</button>
+        `;
+      } else {
+        el.style.display = "none";
+        el.innerHTML = "";
+      }
+    }
+  });
+
+  // เคลียร์การเลือกไฟล์ใหม่ที่ค้างอยู่
+  document.getElementById("member-doc-beneficiary-id").value = "";
+  document.getElementById("member-doc-application").value = "";
+  document.getElementById("member-doc-citizen").value = "";
+  document.getElementById("member-doc-household").value = "";
+
+  document.getElementById("modal-member").classList.add("active");
+}
+
+window.openAddMemberModal = openAddMemberModal;
+window.openEditMemberModal = openEditMemberModal;
 
 document.getElementById("btn-clear-directory-filters").addEventListener("click", function() {
   document.getElementById("member-search-input").value = "";

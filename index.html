@@ -1404,6 +1404,7 @@
         <div class="form-group">
           <label for="member-doc-beneficiary-id">แนบสำเนาบัตรประชาชนผู้รับผลประโยชน์ (รูปภาพหลักฐาน):</label>
           <input type="file" id="member-doc-beneficiary-id" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+          <div id="edit-member-doc-beneficiary-id-preview" style="margin-top: 6px; display: none;"></div>
         </div>
 
         <!-- Supporting application documents -->
@@ -1412,14 +1413,17 @@
           <div class="form-group col-4">
             <label for="member-doc-application">ใบสมัคร สสมน. (รูปภาพ):</label>
             <input type="file" id="member-doc-application" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+            <div id="edit-member-doc-application-preview" style="margin-top: 6px; display: none;"></div>
           </div>
           <div class="form-group col-4">
             <label for="member-doc-citizen">สำเนาบัตรประชาชน (รูปภาพ):</label>
             <input type="file" id="member-doc-citizen" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+            <div id="edit-member-doc-citizen-preview" style="margin-top: 6px; display: none;"></div>
           </div>
           <div class="form-group col-4">
             <label for="member-doc-household">สำเนาทะเบียนบ้าน (รูปภาพ):</label>
             <input type="file" id="member-doc-household" accept="image/*" class="form-control file-input-control" style="padding: 6px;">
+            <div id="edit-member-doc-household-preview" style="margin-top: 6px; display: none;"></div>
           </div>
         </div>
 
@@ -1474,7 +1478,10 @@
             <div class="profile-info-grid">
               <div class="info-item">
                 <span class="info-label">เลขประจำตัวประชาชน:</span>
-                <span class="info-value" id="view-profile-citizen">1559900123456</span>
+                <span class="info-value text-currency" id="view-profile-citizen-container" style="cursor: pointer; display: inline-flex; align-items: center;" onclick="toggleCitizenIdReveal(this)" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
+                  <span class="masked-cid" id="view-profile-citizen">-</span>
+                  <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
+                </span>
               </div>
               <div class="info-item">
                 <span class="info-label">เบอร์โทรศัพท์:</span>
