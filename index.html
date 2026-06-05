@@ -50,6 +50,9 @@
           <button type="button" id="btn-login-role-province" class="btn-role active">
             แอดมินจังหวัด
           </button>
+          <button type="button" id="btn-login-role-committee" class="btn-role">
+            คณะกรรมการ สสมน.
+          </button>
           <button type="button" id="btn-login-role-school" class="btn-role">
             แอดมินโรงเรียน
           </button>
@@ -65,7 +68,10 @@
 
         <div class="form-group">
           <label for="login-password">รหัสผ่านเข้าระบบ (Password): <span class="required">*</span></label>
-          <input type="password" id="login-password" required placeholder="ป้อนรหัสผ่านเฉพาะกลุ่มแอดมิน" class="form-control">
+          <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="login-password" required placeholder="ป้อนรหัสผ่านเฉพาะกลุ่มแอดมิน" class="form-control" style="padding-right: 40px; width: 100%;">
+            <span class="password-toggle-icon" onclick="togglePasswordInput('login-password', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-full-width btn-icon-text" style="margin-top: 10px;">
@@ -82,6 +88,7 @@
         <h5>🔑 รหัสผ่านเริ่มต้นสำหรับทดสอบระบบ:</h5>
         <ul>
           <li><strong>แอดมินจังหวัด</strong>: <code class="credential-code">province1234</code></li>
+          <li><strong>คณะกรรมการ สสมน.</strong>: <code class="credential-code">committee1234</code></li>
           <li><strong>แอดมินโรงเรียน</strong>: <code class="credential-code">school1234</code></li>
         </ul>
       </div>
@@ -1236,11 +1243,17 @@
                 <div class="form-row">
                   <div class="form-group col-6">
                     <label for="school-profile-password">ระบุรหัสผ่านเข้าใช้งานสังกัดใหม่: <span class="required">*</span></label>
-                    <input type="password" id="school-profile-password" required placeholder="ระบุรหัสผ่านใหม่..." class="form-control">
+                    <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="school-profile-password" required placeholder="ระบุรหัสผ่านใหม่..." class="form-control" style="padding-right: 40px; width: 100%;">
+                      <span class="password-toggle-icon" onclick="togglePasswordInput('school-profile-password', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+                    </div>
                   </div>
                   <div class="form-group col-6">
                     <label for="school-profile-password-confirm">ยืนยันรหัสผ่านใหม่อีกครั้ง: <span class="required">*</span></label>
-                    <input type="password" id="school-profile-password-confirm" required placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง..." class="form-control">
+                    <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                      <input type="password" id="school-profile-password-confirm" required placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง..." class="form-control" style="padding-right: 40px; width: 100%;">
+                      <span class="password-toggle-icon" onclick="togglePasswordInput('school-profile-password-confirm', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+                    </div>
                   </div>
                 </div>
 

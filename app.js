@@ -541,9 +541,9 @@ function calculateStats() {
   const arrearsCount = activeMembers.filter(m => parseFloat(m.prepayBalance) < 0).length;
   const currentSchool = SCHOOLS.find(s => s.id === appState.activeSchoolId);
 
-  if (appState.activeRole === "province") {
-    // --- สิทธิ์จังหวัด ---
-    document.getElementById("page-title").textContent = "ระบบแดชบอร์ดภาพรวมจังหวัด";
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
+    // --- สิทธิ์จังหวัด / คณะกรรมการ ---
+    document.getElementById("page-title").textContent = appState.activeRole === "committee" ? "ระบบแดชบอร์ดคณะกรรมการ สสมน." : "ระบบแดชบอร์ดภาพรวมจังหวัด";
     document.getElementById("page-subtitle").textContent = "แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน";
     document.getElementById("btn-action-primary").style.display = "inline-flex";
     document.getElementById("text-action-primary").textContent = "แจ้งสมาชิกเสียชีวิต";
@@ -786,7 +786,7 @@ function calculateStats() {
   let currentNonActive = 0;
   let currentRatio = 0;
 
-  if (appState.activeRole === "province") {
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
     let totalProvincePersonnel = 0;
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
@@ -1117,6 +1117,35 @@ function maskCitizenId(cid) {
   return `${clean.substring(0, 1)}-${clean.substring(1, 5)}-XXXXX-${clean.substring(10, 12)}-${clean.substring(12)}`;
 }
 
+// ฟังก์ชันสลับแสดง/ปกปิดรหัสผ่านโรงเรียนในทำเนียบ
+window.toggleSchoolPasswordReveal = function(element, schoolId) {
+  const span = element.querySelector(".masked-school-pwd");
+  const eye = element.querySelector("span:last-child");
+  if (!span) return;
+  
+  const pwd = appState.schoolPasswords[schoolId] || "school1234";
+  if (span.textContent === "••••••••") {
+    span.textContent = pwd;
+    if (eye) eye.textContent = "🙈";
+  } else {
+    span.textContent = "••••••••";
+    if (eye) eye.textContent = "👁️";
+  }
+};
+
+// ฟังก์ชันสลับแสดง/ปกปิดรหัสผ่านในฟอร์มต่างๆ
+window.togglePasswordInput = function(inputId, iconElement) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === "password") {
+    input.type = "text";
+    iconElement.textContent = "🙈";
+  } else {
+    input.type = "password";
+    iconElement.textContent = "👁️";
+  }
+};
+
 // ฟังก์ชันสลับแสดง/ปกปิดเลขประจำตัวประชาชนเมื่อคลิก
 window.toggleCitizenIdReveal = function(element, originalCid) {
   const span = element.querySelector(".masked-cid");
@@ -1148,7 +1177,7 @@ function renderMembersDirectory() {
 
   const searchQuery = document.getElementById("member-search-input").value.trim().toLowerCase();
   const positionFilter = document.getElementById("filter-member-position").value;
-  const schoolFilter = appState.activeRole === "province" ? document.getElementById("filter-member-school").value : appState.activeSchoolId;
+  const schoolFilter = (appState.activeRole === "province" || appState.activeRole === "committee") ? document.getElementById("filter-member-school").value : appState.activeSchoolId;
   const statusFilter = document.getElementById("filter-member-status").value;
 
   let filtered = appState.members.filter(m => {
@@ -1193,7 +1222,7 @@ function renderMembersDirectory() {
     scopeLabel.textContent = "ตารางสารบบข้อมูลสมาชิกพร้อมสถานะเงินกองกลางฌาปนกิจน่านทั้งจังหวัด";
   }
 
-  const isAnyFilterActive = searchQuery || positionFilter !== "all" || statusFilter !== "active" || (appState.activeRole === "province" && schoolFilter !== "all");
+  const isAnyFilterActive = searchQuery || positionFilter !== "all" || statusFilter !== "active" || ((appState.activeRole === "province" || appState.activeRole === "committee") && schoolFilter !== "all");
   document.getElementById("btn-clear-directory-filters").style.display = isAnyFilterActive ? "inline-block" : "none";
 
   if (filtered.length === 0) {
@@ -2298,7 +2327,7 @@ window.handleMatrixCellClick = function(deathCaseId, schoolId) {
   const invoice = appState.schoolInvoices.find(inv => inv.deathCaseId === deathCaseId && inv.schoolId === schoolId);
   if (!invoice) return;
 
-  if (appState.activeRole !== "province") {
+  if (appState.activeRole !== "province" && appState.activeRole !== "committee") {
     alert(`สังกัด: ${invoice.schoolName}\nคดีศพ: ${invoice.deathCaseName}\nหนี้ค้างชำระ: ฿${invoice.totalOwed.toLocaleString()}\nสถานะชำระเงิน: ${invoice.status === 'unpaid' ? 'ยังไม่ได้โอนเงินและแนบหลักฐาน' : (invoice.status === 'pending' ? 'ส่งหลักฐานโอนเงินรอยืนยันแล้ว' : 'แอดมินจังหวัดยืนยันชำระแล้ว')}`);
     return;
   }
@@ -2980,7 +3009,7 @@ document.getElementById("import-excel-file").addEventListener("change", function
           }
 
           let targetSchoolId = appState.activeSchoolId;
-          if (appState.activeRole === "province") {
+          if (appState.activeRole === "province" || appState.activeRole === "committee") {
             targetSchoolId = String(row["รหัสโรงเรียน"] || row["schoolId"] || "33").padStart(2, "0");
           }
 
@@ -3163,7 +3192,7 @@ function parseExcelCSVContent(csvText) {
       continue;
     }
 
-    const targetSchoolId = appState.activeRole === "province" ? schoolId : appState.activeSchoolId;
+    const targetSchoolId = (appState.activeRole === "province" || appState.activeRole === "committee") ? schoolId : appState.activeSchoolId;
 
     let mStatus = "active";
     if (statusText.includes("เสียชีวิต")) mStatus = "deceased";
@@ -3287,14 +3316,24 @@ let selectedLoginRole = "province";
 
 document.getElementById("btn-login-role-province").addEventListener("click", function() {
   this.classList.add("active");
+  document.getElementById("btn-login-role-committee").classList.remove("active");
   document.getElementById("btn-login-role-school").classList.remove("active");
   document.getElementById("login-school-wrapper").style.display = "none";
   selectedLoginRole = "province";
 });
 
+document.getElementById("btn-login-role-committee").addEventListener("click", function() {
+  this.classList.add("active");
+  document.getElementById("btn-login-role-province").classList.remove("active");
+  document.getElementById("btn-login-role-school").classList.remove("active");
+  document.getElementById("login-school-wrapper").style.display = "none";
+  selectedLoginRole = "committee";
+});
+
 document.getElementById("btn-login-role-school").addEventListener("click", function() {
   this.classList.add("active");
   document.getElementById("btn-login-role-province").classList.remove("active");
+  document.getElementById("btn-login-role-committee").classList.remove("active");
   document.getElementById("login-school-wrapper").style.display = "block";
   selectedLoginRole = "school";
 });
@@ -3313,6 +3352,15 @@ document.getElementById("form-login").addEventListener("submit", function(e) {
       loginSuccess();
     } else {
       alert("❌ รหัสผ่านแอดมินจังหวัดไม่ถูกต้อง กรุณาป้อน province1234");
+      document.getElementById("login-password").focus();
+    }
+  } else if (selectedLoginRole === "committee") {
+    if (password === "committee1234" || password === "committee123") {
+      appState.activeRole = "committee";
+      appState.activeSchoolId = "33"; // ส่วนกลางคือ 33
+      loginSuccess();
+    } else {
+      alert("❌ รหัสผ่านคณะกรรมการไม่ถูกต้อง กรุณาป้อน committee1234");
       document.getElementById("login-password").focus();
     }
   } else {
@@ -3346,6 +3394,9 @@ function loginSuccess(isRestore = false) {
   if (appState.activeRole === "province") {
     if (roleNameEl) roleNameEl.textContent = "แอดมินจังหวัด";
     if (scopeNameEl) scopeNameEl.textContent = "จังหวัดน่าน (ทั้งหมด)";
+  } else if (appState.activeRole === "committee") {
+    if (roleNameEl) roleNameEl.textContent = "คณะกรรมการ สสมน.";
+    if (scopeNameEl) scopeNameEl.textContent = "จังหวัดน่าน (สิทธิ์เทียบเท่าจังหวัด)";
   } else {
     if (roleNameEl) roleNameEl.textContent = "แอดมินโรงเรียน";
     if (scopeNameEl) scopeNameEl.textContent = school ? school.name : "ไม่ระบุสังกัด";
@@ -3412,7 +3463,7 @@ document.getElementById("btn-nav-members").addEventListener("click", () => switc
 document.getElementById("btn-nav-cremation").addEventListener("click", () => switchTab("cremation"));
 
 document.getElementById("btn-action-primary").addEventListener("click", function() {
-  if (appState.activeRole === "province") {
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
     switchTab("cremation");
     document.getElementById("block-province-death-creation").scrollIntoView({ behavior: 'smooth' });
   } else {
@@ -3468,7 +3519,7 @@ function openAddMemberModal() {
 }
 
 function openEditMemberModal(memberId) {
-  if (appState.activeRole === "province") {
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
     alert("สิทธิ์การแก้ไขข้อมูลสมาชิกสงวนไว้เฉพาะแอดมินโรงเรียนต้นสังกัดเท่านั้น");
     return;
   }
@@ -3587,7 +3638,7 @@ window.openEditMemberModal = openEditMemberModal;
 document.getElementById("btn-clear-directory-filters").addEventListener("click", function() {
   document.getElementById("member-search-input").value = "";
   document.getElementById("filter-member-position").value = "all";
-  if (appState.activeRole === "province") {
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
     document.getElementById("filter-member-school").value = "all";
   }
   document.getElementById("filter-member-status").value = "active";
@@ -4289,7 +4340,15 @@ function renderSchoolsDirectory() {
           <td class="text-center" style="font-family: var(--font-number); font-weight: 600; color: var(--color-accent-amber);">${sch.id}</td>
           <td>
             <div style="font-weight: 600; color: white;">${sch.name}</div>
-            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">เบอร์แฟกซ์: ${profile.fax || '-'}</div>
+            <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <span>เบอร์แฟกซ์: ${profile.fax || '-'}</span>
+              <span style="color: rgba(255,255,255,0.15);">|</span>
+              <span style="color: var(--color-text-dim);">รหัสผ่านระบบ: </span>
+              <span onclick="toggleSchoolPasswordReveal(this, '${sch.id}')" style="cursor: pointer; color: var(--color-accent-amber); font-weight: 600; font-family: var(--font-number); display: inline-flex; align-items: center; gap: 4px;" title="คลิกเพื่อแสดง/ปกปิดรหัสผ่าน">
+                <span class="masked-school-pwd">••••••••</span>
+                <span>👁️</span>
+              </span>
+            </div>
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
               <span style="font-weight: 500;">👥 บุคลากร: ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | บุคลากรทางการศึกษา ${personnel.other} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
@@ -4422,8 +4481,8 @@ function checkBiAnnualCertificationStatus() {
       updateSchoolCertificationWidget();
     }
   } 
-  // หากเป็นสิทธิ์แอดมินจังหวัด
-  else if (appState.activeRole === "province") {
+  // หากเป็นสิทธิ์แอดมินจังหวัด / คณะกรรมการ
+  else if (appState.activeRole === "province" || appState.activeRole === "committee") {
     alertBanner.style.display = info.isActive ? "flex" : "none";
     
     const btnCertify = document.getElementById("btn-certify-school-data");
@@ -4735,11 +4794,11 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
   const sidebarContact = document.getElementById("province-admin-contact-sidebar");
   const dashboardContact = document.getElementById("block-school-province-contact");
 
-  if (appState.activeRole === "province") {
+  if (appState.activeRole === "province" || appState.activeRole === "committee") {
     if (sidebarContact) sidebarContact.style.display = "none";
     if (dashboardContact) dashboardContact.style.display = "none";
-    if (roleLabel) roleLabel.textContent = "แอดมินจังหวัด";
-    if (scopeLabel) scopeLabel.textContent = "จังหวัดน่าน (ทั้งหมด)";
+    if (roleLabel) roleLabel.textContent = appState.activeRole === "committee" ? "คณะกรรมการ สสมน." : "แอดมินจังหวัด";
+    if (scopeLabel) scopeLabel.textContent = appState.activeRole === "committee" ? "จังหวัดน่าน (สิทธิ์เทียบเท่าจังหวัด)" : "จังหวัดน่าน (ทั้งหมด)";
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
     
     if (certBlockProvince) certBlockProvince.style.display = "block";
@@ -4780,7 +4839,7 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
   }
 
   // ปรับปรุงการแสดงผลวิดเจ็ตและปุ่มระดับจังหวัด
-  const isProvince = appState.activeRole === "province";
+  const isProvince = appState.activeRole === "province" || appState.activeRole === "committee";
   const btnAddAnn = document.getElementById("btn-add-announcement-trigger");
   if (btnAddAnn) btnAddAnn.style.display = isProvince ? "block" : "none";
 
@@ -4944,7 +5003,7 @@ function renderDocumentsGrid() {
 
   const trigger = document.getElementById("province-add-doc-trigger-wrapper");
   if (trigger) {
-    trigger.style.display = appState.activeRole === "province" ? "block" : "none";
+    trigger.style.display = (appState.activeRole === "province" || appState.activeRole === "committee") ? "block" : "none";
   }
 
   if (!appState.documents || appState.documents.length === 0) {
@@ -5018,7 +5077,7 @@ function renderDocumentsGrid() {
             </svg>
             <span>ดาวน์โหลดเอกสาร</span>
           </button>
-          ${appState.activeRole === "province" ? `
+          ${(appState.activeRole === "province" || appState.activeRole === "committee") ? `
           <button onclick="deleteDocument('${doc.id}')" class="btn btn-danger btn-mini btn-full-width" style="background: rgba(244, 63, 94, 0.1); border-color: var(--color-accent-rose); color: var(--color-accent-rose);" type="button">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
               <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -5169,7 +5228,7 @@ function renderAnnouncementsBoard() {
                 <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 10px; padding: 1px 6px; border-radius: 4px;">${ann.type}</span>
               </div>
               <p style="font-size: 12.5px; color: var(--color-text-muted); margin-top: 6px; line-height: 1.45; white-space: pre-wrap;">${ann.content}</p>
-              ${appState.activeRole === "province" ? `
+              ${(appState.activeRole === "province" || appState.activeRole === "committee") ? `
                 <div style="margin-top: 8px; text-align: right;">
                   <button onclick="deleteAnnouncement('${ann.id}')" class="btn btn-danger btn-mini" style="padding: 2px 8px; font-size: 10.5px; background: rgba(244, 63, 94, 0.1); border-color: var(--color-accent-rose); color: var(--color-accent-rose);" type="button">ลบประกาศ</button>
                 </div>
@@ -5279,11 +5338,11 @@ function renderCremationPayoutsTable() {
   const approvedDeaths = appState.deathCases.filter(d => d.status !== "pending_approval");
 
   if (approvedDeaths.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${appState.activeRole === 'province' ? 8 : 7}" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่มีข้อมูลการจ่ายเงินสงเคราะห์ศพในรอบปัจจุบัน</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${(appState.activeRole === 'province' || appState.activeRole === 'committee') ? 8 : 7}" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่มีข้อมูลการจ่ายเงินสงเคราะห์ศพในรอบปัจจุบัน</td></tr>`;
     return;
   }
 
-  const isProvince = appState.activeRole === 'province';
+  const isProvince = appState.activeRole === 'province' || appState.activeRole === 'committee';
   let html = "";
   
   approvedDeaths.forEach(death => {
