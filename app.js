@@ -527,6 +527,8 @@ function calculateStats() {
     document.getElementById("block-school-payments-actions").style.display = "none";
     document.getElementById("block-school-death-creation").style.display = "none";
     document.getElementById("widget-provincial-schools-rankings").style.display = "block";
+    const schoolCertWidget = document.getElementById("widget-school-bi-annual-certification");
+    if (schoolCertWidget) schoolCertWidget.style.display = "none";
 
     renderProvincialPositionStats(activeMembers, totalProvincePersonnel);
     
@@ -593,6 +595,11 @@ function calculateStats() {
     document.getElementById("block-school-payments-actions").style.display = "block";
     document.getElementById("block-school-death-creation").style.display = "block";
     document.getElementById("widget-provincial-schools-rankings").style.display = "none";
+    const schoolCertWidget = document.getElementById("widget-school-bi-annual-certification");
+    if (schoolCertWidget) {
+      schoolCertWidget.style.display = "block";
+      updateSchoolCertificationWidget();
+    }
 
     renderSchoolPositionStats(schoolMembers, currentSchool);
   }
@@ -3972,6 +3979,9 @@ function checkBiAnnualCertificationStatus() {
         btnCertify.style.cursor = "pointer";
       }
     }
+    if (typeof updateSchoolCertificationWidget === "function") {
+      updateSchoolCertificationWidget();
+    }
   } 
   // หากเป็นสิทธิ์แอดมินจังหวัด
   else if (appState.activeRole === "province") {
@@ -4031,6 +4041,90 @@ window.toggleSimulateReviewDate = function() {
   checkBiAnnualCertificationStatus();
   alert(`🧪 สลับเข้าสู่โหมด ${appState.simulatedReviewWindow ? "จำลองช่วงเวลากำหนดตรวจสอบครึ่งปี (30 มิถุนายน)" : "เวลาตามจริงปฏิทินระบบ"} เรียบร้อยแล้ว!\nสังเกตแถบแบนเนอร์แจ้งเตือนตรวจสอบข้อมูลที่ส่วนบนแดชบอร์ดหลักได้ทันที`);
 };
+
+function updateSchoolCertificationWidget() {
+  const now = new Date();
+  const year = now.getFullYear() + 543; // ปี พ.ศ.
+  const schoolId = appState.activeSchoolId;
+
+  // ตรวจรอบ 1 (R1)
+  const keyR1 = `${year}_R1`;
+  const certR1 = appState.certifications[keyR1] && appState.certifications[keyR1][schoolId];
+  const lblStatusR1 = document.getElementById("lbl-school-cert-r1-status");
+  const lblInfoR1 = document.getElementById("lbl-school-cert-r1-info");
+  const btnR1 = document.getElementById("btn-school-certify-r1");
+
+  if (lblStatusR1 && lblInfoR1 && btnR1) {
+    if (certR1) {
+      lblStatusR1.textContent = "🟢 รับรองแล้ว";
+      lblStatusR1.className = "badge badge-success-outline";
+      lblInfoR1.innerHTML = `ผู้รับรอง: <strong>${certR1.certifiedBy}</strong><br>วันที่รับรอง: ${certR1.certifiedDate}`;
+      btnR1.style.display = "none";
+    } else {
+      lblStatusR1.textContent = "🔴 ค้างการรับรอง";
+      lblStatusR1.className = "badge badge-danger-outline";
+      lblInfoR1.innerHTML = "ผู้รับรอง: - <br>วันที่รับรอง: -";
+      btnR1.style.display = "block";
+      btnR1.disabled = false;
+    }
+  }
+
+  // ตรวจรอบ 2 (R2)
+  const keyR2 = `${year}_R2`;
+  const certR2 = appState.certifications[keyR2] && appState.certifications[keyR2][schoolId];
+  const lblStatusR2 = document.getElementById("lbl-school-cert-r2-status");
+  const lblInfoR2 = document.getElementById("lbl-school-cert-r2-info");
+  const btnR2 = document.getElementById("btn-school-certify-r2");
+
+  if (lblStatusR2 && lblInfoR2 && btnR2) {
+    if (certR2) {
+      lblStatusR2.textContent = "🟢 รับรองแล้ว";
+      lblStatusR2.className = "badge badge-success-outline";
+      lblInfoR2.innerHTML = `ผู้รับรอง: <strong>${certR2.certifiedBy}</strong><br>วันที่รับรอง: ${certR2.certifiedDate}`;
+      btnR2.style.display = "none";
+    } else {
+      lblStatusR2.textContent = "🔴 ค้างการรับรอง";
+      lblStatusR2.className = "badge badge-danger-outline";
+      lblInfoR2.innerHTML = "ผู้รับรอง: - <br>วันที่รับรอง: -";
+      btnR2.style.display = "block";
+      btnR2.disabled = false;
+    }
+  }
+}
+
+window.certifySchoolRound = function(round) {
+  const now = new Date();
+  const year = now.getFullYear() + 543;
+  const key = `${year}_R${round}`;
+  const schoolId = appState.activeSchoolId;
+  const school = SCHOOLS.find(s => s.id === schoolId);
+  const profile = appState.schoolProfiles[schoolId] || {};
+
+  const roundText = round === 1 ? "ครั้งที่ 1 (30 มิ.ย.)" : "ครั้งที่ 2 (30 ธ.ค.)";
+
+  if (!confirm(`คุณต้องการยืนยันและรับรองว่า "รายชื่อข้อมูลสมาชิก สสมน. ในสังกัดของ ${school ? school.name : ''}" ${roundText} ณ ปัจจุบันถูกต้องสมบูรณ์ ตรงตามทะเบียนประวัติบุคลากรเรียบร้อยแล้วใช่หรือไม่?\n*(การรับรองความถูกต้องนี้จะบันทึกประวัติส่งเชื่อมโยงไปยังส่วนกลางจังหวัด)`)) {
+    return;
+  }
+
+  if (!appState.certifications[key]) {
+    appState.certifications[key] = {};
+  }
+
+  const currentDateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  appState.certifications[key][schoolId] = {
+    certified: true,
+    certifiedBy: profile.coordinator || "เจ้าหน้าที่ประสานงาน สสมน.",
+    certifiedDate: currentDateStr
+  };
+
+  saveStateToLocalStorage();
+  alert(`🟢 การกดยืนยันและรับรองข้อมูลสมาชิก ${roundText} เสร็จสมบูรณ์!\nระบบส่วนกลางจังหวัดน่านได้รับการบันทึกข้อมูลประวัติผู้รับรองของสถานศึกษาท่านเรียบร้อยแล้วเมื่อ ${currentDateStr}`);
+  
+  checkBiAnnualCertificationStatus();
+  updateSchoolCertificationWidget();
+};
+
+window.updateSchoolCertificationWidget = updateSchoolCertificationWidget;
 
 // เรนเดอร์ตารางภาพรวมจังหวัดตรวจสอบสถานะรับรองของ 33 สังกัด
 function renderSchoolCertifications() {

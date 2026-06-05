@@ -534,6 +534,47 @@
             </div>
           </div>
 
+          <!-- Right Widget for School: Bi-Annual Data Certification -->
+          <div class="widget-card glass" id="widget-school-bi-annual-certification" style="display: none;">
+            <div class="widget-header">
+              <h3>📋 ยืนยันและรับรองความถูกต้องของข้อมูลประจำครึ่งปี</h3>
+              <p>ผู้ประสานงาน สสมน. ของสถานศึกษาต้องกดยืนยันรับรองความถูกต้องของรายชื่อกำลังพลและสมาชิกปีละ 2 ครั้ง</p>
+            </div>
+            <div class="widget-body" style="display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- Round 1 -->
+              <div class="cert-round-card glass" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <strong style="color: white; font-size: 13.5px;">ครั้งที่ 1 (สิ้นสุดวันที่ 30 มิถุนายน)</strong>
+                  <span id="lbl-school-cert-r1-status" class="badge badge-danger-outline" style="font-size: 11px;">🔴 ค้างการรับรอง</span>
+                </div>
+                <div style="font-size: 12px; color: var(--color-text-muted);" id="lbl-school-cert-r1-info">
+                  ผู้รับรอง: - <br>
+                  วันที่รับรอง: -
+                </div>
+                <button type="button" id="btn-school-certify-r1" onclick="certifySchoolRound(1)" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
+                  ✍️ กดยืนยันรับรองข้อมูลครั้งที่ 1
+                </button>
+              </div>
+
+              <!-- Round 2 -->
+              <div class="cert-round-card glass" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <strong style="color: white; font-size: 13.5px;">ครั้งที่ 2 (สิ้นสุดวันที่ 30 ธันวาคม)</strong>
+                  <span id="lbl-school-cert-r2-status" class="badge badge-danger-outline" style="font-size: 11px;">🔴 ค้างการรับรอง</span>
+                </div>
+                <div style="font-size: 12px; color: var(--color-text-muted);" id="lbl-school-cert-r2-info">
+                  ผู้รับรอง: - <br>
+                  วันที่รับรอง: -
+                </div>
+                <button type="button" id="btn-school-certify-r2" onclick="certifySchoolRound(2)" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
+                  ✍️ กดยืนยันรับรองข้อมูลครั้งที่ 2
+                </button>
+              </div>
+
+            </div>
+          </div>
+
           <!-- School Transfer and History Widget (Active in Province Admin) -->
           <div class="widget-card glass full-width-widget scrollable-card">
             <div class="widget-header">
