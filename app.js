@@ -315,6 +315,48 @@ async function loadStateFromCloudflare() {
     
     // หากข้อมูลในฐานข้อมูล D1 ไม่ว่างเปล่า (มีสมาชิก หรือเคยซิงค์แล้ว) ให้เขียนทับแอปสเตท
     if (data.members && data.members.length > 0) {
+      data.members.forEach(m => {
+        // กู้คืนโครงสร้างชื่อคู่ขนาน
+        if (m.firstName && !m.firstname) m.firstname = m.firstName;
+        if (m.firstname && !m.firstName) m.firstName = m.firstname;
+        if (m.lastName && !m.lastname) m.lastname = m.lastName;
+        if (m.lastname && !m.lastName) m.lastName = m.lastname;
+
+        // กู้คืนโครงสร้างทายาทและผู้รับผลประโยชน์
+        if (m.beneficiary) {
+          if (!m.beneficiaryTitle) m.beneficiaryTitle = m.beneficiary.title || "นาย";
+          if (!m.beneficiaryFirstName || m.beneficiaryFirstName === "-") {
+            const parts = (m.beneficiary.name || "").split(" ");
+            m.beneficiaryFirstName = parts[0] || "-";
+            m.beneficiaryLastName = parts.slice(1).join(" ") || "";
+          }
+          if (!m.beneficiaryPhone) m.beneficiaryPhone = m.beneficiary.phone || "-";
+          if (!m.beneficiaryRelation) m.beneficiaryRelation = m.beneficiary.relation || "-";
+        } else if (m.beneficiaryFirstName) {
+          m.beneficiary = {
+            title: m.beneficiaryTitle || "นาย",
+            name: (m.beneficiaryFirstName + " " + (m.beneficiaryLastName || "")).trim(),
+            phone: m.beneficiaryPhone || "-",
+            relation: m.beneficiaryRelation || "-"
+          };
+        }
+
+        // ดีซีเรียลไลซ์เอกสารประกอบและสมุดคู่ฝากกรณีส่งแบบสตริง
+        if (typeof m.documents === "string") {
+          try {
+            m.documents = JSON.parse(m.documents);
+          } catch(e) {
+            m.documents = {};
+          }
+        }
+        if (typeof m.ledger === "string") {
+          try {
+            m.ledger = JSON.parse(m.ledger);
+          } catch(e) {
+            m.ledger = [];
+          }
+        }
+      });
       appState.members = data.members;
       appState.deathCases = data.deathCases || [];
       appState.schoolProfiles = data.schoolProfiles || {};
@@ -502,6 +544,24 @@ function calculateStats() {
     document.getElementById("lbl-funds-title").textContent = "ยอดกองทุนสะสมล่วงหน้ารวม";
     document.getElementById("stat-funds-total").textContent = "฿" + totalFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("stat-funds-subtitle").textContent = "ยอดสะสมสำรองของสมาชิกทั้งจังหวัด";
+
+    let totalDeposits = 0;
+    let totalCharges = 0;
+    activeMembers.forEach(m => {
+      if (m.ledger) {
+        m.ledger.forEach(item => {
+          const amt = parseFloat(item.amount) || 0;
+          if (item.type === "deposit" || amt >= 0) {
+            totalDeposits += amt;
+          } else {
+            totalCharges += Math.abs(amt);
+          }
+        });
+      }
+    });
+    
+    document.getElementById("stat-funds-total-deposits").textContent = "฿" + totalDeposits.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("stat-funds-total-charges").textContent = "฿" + totalCharges.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
     // ตั้งค่ากล่องแจ้งเตือน (คดีตายรออนุมัติ + สลิปค้างตรวจ)
     const pendingSlipsCount = appState.schoolInvoices.filter(inv => inv.status === "pending").length;
@@ -568,6 +628,24 @@ function calculateStats() {
     document.getElementById("lbl-funds-title").textContent = "ยอดเงินสะสมล่วงหน้าของสังกัด";
     document.getElementById("stat-funds-total").textContent = "฿" + schoolFunds.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     document.getElementById("stat-funds-subtitle").textContent = `เงินสำรองทำบุญสะสมของ ${currentSchool.name}`;
+
+    let totalDeposits = 0;
+    let totalCharges = 0;
+    schoolMembers.forEach(m => {
+      if (m.ledger) {
+        m.ledger.forEach(item => {
+          const amt = parseFloat(item.amount) || 0;
+          if (item.type === "deposit" || amt >= 0) {
+            totalDeposits += amt;
+          } else {
+            totalCharges += Math.abs(amt);
+          }
+        });
+      }
+    });
+    
+    document.getElementById("stat-funds-total-deposits").textContent = "฿" + totalDeposits.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById("stat-funds-total-charges").textContent = "฿" + totalCharges.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
     
     // ค้างชำระของแอดมินโรงเรียน
     const schoolUnpaidInvoices = appState.schoolInvoices.filter(inv => inv.schoolId === appState.activeSchoolId && inv.status === "unpaid");
@@ -2481,22 +2559,25 @@ window.openProfileViewer = function(memberId) {
 };
 
 function renderLedgerBook(ledger = []) {
-  const tbody = document.getElementById("tbl-body-profile-ledger");
-  if (!tbody) return;
-
-  if (ledger.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center">ไม่พบบันทึกการฝากหักเงินสะสมในระบบ</td></tr>`;
-    return;
-  }
+  const tbodyDeposits = document.getElementById("tbl-body-profile-ledger-deposits");
+  const tbodyCharges = document.getElementById("tbl-body-profile-ledger-charges");
+  
+  if (!tbodyDeposits || !tbodyCharges) return;
 
   const reversedLedger = [...ledger].reverse();
-  let html = "";
+  
+  let depositsHtml = "";
+  let chargesHtml = "";
+  
+  let depositCount = 0;
+  let chargeCount = 0;
+
   reversedLedger.forEach(item => {
-    const amt = parseFloat(item.amount);
-    const balanceAfter = parseFloat(item.balanceAfter);
+    const amt = parseFloat(item.amount) || 0;
+    const balanceAfter = parseFloat(item.balanceAfter) || 0;
     const typeClass = item.type === "deposit" ? "text-success font-weight-bold" : "text-danger font-weight-bold";
 
-    html += `
+    const rowHtml = `
       <tr>
         <td class="text-currency" style="font-size:11.5px; color:var(--color-text-dim);">${item.date}</td>
         <td style="font-size:12px; font-weight:500;">${item.description}</td>
@@ -2508,9 +2589,27 @@ function renderLedgerBook(ledger = []) {
         </td>
       </tr>
     `;
+
+    if (item.type === "deposit" || amt >= 0) {
+      depositsHtml += rowHtml;
+      depositCount++;
+    } else {
+      chargesHtml += rowHtml;
+      chargeCount++;
+    }
   });
 
-  tbody.innerHTML = html;
+  if (depositCount === 0) {
+    tbodyDeposits.innerHTML = `<tr><td colspan="4" class="text-center" style="color:var(--color-text-dim); font-size:12px; padding:12px 0;">ไม่มีประวัติการฝาก/โอนเงินสะสม</td></tr>`;
+  } else {
+    tbodyDeposits.innerHTML = depositsHtml;
+  }
+
+  if (chargeCount === 0) {
+    tbodyCharges.innerHTML = `<tr><td colspan="4" class="text-center" style="color:var(--color-text-dim); font-size:12px; padding:12px 0;">ไม่มีประวัติการหักชำระเงินสะสม</td></tr>`;
+  } else {
+    tbodyCharges.innerHTML = chargesHtml;
+  }
 }
 
 window.onTopupActionTypeChange = function() {

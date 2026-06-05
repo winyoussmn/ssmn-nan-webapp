@@ -381,6 +381,10 @@
               <span class="kpi-title" id="lbl-funds-title">ยอดกองทุนสะสมล่วงหน้า</span>
               <span class="kpi-number text-currency" id="stat-funds-total">฿0.00</span>
               <span class="kpi-trend" id="stat-funds-subtitle">ชำระแรกเข้า (50 บาท) ครบถ้วน</span>
+              <div id="stat-funds-breakdown" style="font-size: 11px; margin-top: 6px; display: flex; gap: 8px; color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 6px; flex-wrap: wrap;">
+                <span style="color: var(--color-accent-emerald); font-weight: 500;">📈 ฝากสะสม: <span id="stat-funds-total-deposits">฿0.00</span></span>
+                <span style="color: var(--color-accent-rose); font-weight: 500;">📉 หักสะสม: <span id="stat-funds-total-charges">฿0.00</span></span>
+              </div>
             </div>
           </div>
           
@@ -1601,22 +1605,43 @@
           </div>
           
           <!-- Tab 2: Financial Ledger Ledger / Transaction logs -->
-          <div class="profile-right-section">
-            <h4 class="section-title">ประวัติการหักชำระ & ประวัติการโอนเงินสะสม</h4>
-            <div class="ledger-table-wrapper scrollable-card" style="max-height: 480px;">
-              <table class="premium-data-table mini-table">
-                <thead>
-                  <tr>
-                    <th>วันที่บันทึก</th>
-                    <th>ประเภทรายการ</th>
-                    <th class="text-right">จำนวนยอดโอน</th>
-                    <th class="text-right">ยอดคงเหลือ</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-body-profile-ledger">
-                  <!-- Will be populated dynamically by app.js -->
-                </tbody>
-              </table>
+          <div class="profile-right-section" style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+              <h4 class="section-title" style="margin-bottom: 8px;">📈 ประวัติการฝาก/โอนเงินสะสม</h4>
+              <div class="ledger-table-wrapper scrollable-card" style="max-height: 220px; overflow-y: auto;">
+                <table class="premium-data-table mini-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่บันทึก</th>
+                      <th>ประเภทรายการ</th>
+                      <th class="text-right">จำนวนยอดโอน</th>
+                      <th class="text-right">ยอดคงเหลือ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-profile-ledger-deposits">
+                    <!-- Will be populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="section-title" style="margin-bottom: 8px; border-left-color: var(--color-accent-rose);">📉 ประวัติการหักชำระ/ลดเงินสะสม</h4>
+              <div class="ledger-table-wrapper scrollable-card" style="max-height: 220px; overflow-y: auto;">
+                <table class="premium-data-table mini-table">
+                  <thead>
+                    <tr>
+                      <th>วันที่บันทึก</th>
+                      <th>ประเภทรายการ</th>
+                      <th class="text-right">จำนวนหักจ่าย</th>
+                      <th class="text-right">ยอดคงเหลือ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl-body-profile-ledger-charges">
+                    <!-- Will be populated dynamically by app.js -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           

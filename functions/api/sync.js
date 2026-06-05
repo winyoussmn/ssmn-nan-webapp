@@ -19,7 +19,9 @@ async function ensureTables(db) {
       beneficiaryFirstName TEXT,
       beneficiaryLastName TEXT,
       beneficiaryPhone TEXT,
-      beneficiaryRelation TEXT
+      beneficiaryRelation TEXT,
+      documents TEXT,
+      ledger TEXT
     );`,
     `CREATE TABLE IF NOT EXISTS death_cases (
       id TEXT PRIMARY KEY,
@@ -91,6 +93,21 @@ async function ensureTables(db) {
 
   const prepared = tableQueries.map(q => db.prepare(q));
   await db.batch(prepared);
+
+  // Self-Healing Column Creator for ledger and documents in case table existed
+  try {
+    const tableInfo = await db.prepare("PRAGMA table_info(members)").all();
+    const columns = tableInfo.results.map(r => r.name);
+    
+    if (!columns.includes("documents")) {
+      await db.prepare("ALTER TABLE members ADD COLUMN documents TEXT").run();
+    }
+    if (!columns.includes("ledger")) {
+      await db.prepare("ALTER TABLE members ADD COLUMN ledger TEXT").run();
+    }
+  } catch (err) {
+    console.error("Migration error (ledger/documents columns):", err.message);
+  }
 }
 
 // 1. GET Request: ดึงข้อมูลล่าสุดจาก Cloudflare D1 ส่งให้ Client
@@ -173,9 +190,31 @@ export async function onRequestGet(context) {
       centralConfig[c.key] = c.value;
     });
 
-    // ประกอบร่าง JSON Payload
+    // ประกอบร่าง JSON Payload และแปลงข้อมูลคอลัมน์ JSON และโครงสร้างทายาท
     const payload = {
-      members: membersRes.results || [],
+      members: (membersRes.results || []).map(m => {
+        try {
+          m.documents = m.documents ? JSON.parse(m.documents) : {};
+        } catch (e) {
+          m.documents = {};
+        }
+        try {
+          m.ledger = m.ledger ? JSON.parse(m.ledger) : [];
+        } catch (e) {
+          m.ledger = [];
+        }
+        // สร้างออบเจ็กต์ทายาทให้สอดคล้องกันเพื่อป้องกันการเปิดระบบเข้ามาแล้วไม่พบ
+        m.beneficiary = {
+          title: m.beneficiaryTitle || "นาย",
+          name: ((m.beneficiaryFirstName || "") + " " + (m.beneficiaryLastName || "")).trim() || "-",
+          phone: m.beneficiaryPhone || "-",
+          relation: m.beneficiaryRelation || "-"
+        };
+        // สร้างตัวแปรเสริมเพื่อความเข้ากันได้
+        m.firstName = m.firstname;
+        m.lastName = m.lastname;
+        return m;
+      }),
       deathCases: deathsRes.results || [],
       schoolProfiles,
       schoolPasswords,
@@ -223,8 +262,9 @@ export async function onRequestPost(context) {
         statements.push(db.prepare(`
           INSERT INTO members (
             id, firstname, lastname, title, citizenId, schoolId, position, phone, prepayBalance, status,
-            beneficiaryTitle, beneficiaryFirstName, beneficiaryLastName, beneficiaryPhone, beneficiaryRelation
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            beneficiaryTitle, beneficiaryFirstName, beneficiaryLastName, beneficiaryPhone, beneficiaryRelation,
+            documents, ledger
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           m.id, m.firstname || m.firstName || "", m.lastname || m.lastName || "", m.title || "นาย",
           m.citizenId || "", m.schoolId || "", m.position || "ครู", m.phone || "", m.prepayBalance || 0, m.status || "active",
@@ -232,7 +272,9 @@ export async function onRequestPost(context) {
           m.beneficiaryFirstName || (m.beneficiary ? (m.beneficiary.name ? m.beneficiary.name.split(" ")[0] : "-") : "-"),
           m.beneficiaryLastName || (m.beneficiary ? (m.beneficiary.name ? m.beneficiary.name.split(" ").slice(1).join(" ") : "") : ""),
           m.beneficiaryPhone || (m.beneficiary ? m.beneficiary.phone : "-"),
-          m.beneficiaryRelation || (m.beneficiary ? m.beneficiary.relation : "-")
+          m.beneficiaryRelation || (m.beneficiary ? m.beneficiary.relation : "-"),
+          JSON.stringify(m.documents || {}),
+          JSON.stringify(m.ledger || [])
         ));
       });
     }
