@@ -225,7 +225,7 @@ function loadStateFromLocalStorage() {
   }
   if (cachedDeaths) appState.deathCases = JSON.parse(cachedDeaths);
   if (cachedInvoices) appState.schoolInvoices = JSON.parse(cachedInvoices);
-  if (cachedTransfers) appState.transferLogs = JSON.parse(cachedTransfers);
+  if (cachedTransfers) appState.transferLogs = JSON.parse(cachedTransfers).filter(l => l.type !== "system");
   
   if (cachedProfiles) {
     appState.schoolProfiles = JSON.parse(cachedProfiles);
@@ -1802,44 +1802,31 @@ function renderTransferLogsTimeline() {
   const container = document.getElementById("widget-transfer-logs");
   if (!container) return;
 
-  if (appState.transferLogs.length === 0) {
+  const validLogs = (appState.transferLogs || []).filter(log => log.type !== "system");
+
+  if (validLogs.length === 0) {
     container.innerHTML = `<div class="timeline-empty">ไม่พบประวัติการทำเรื่องย้ายสังกัดในระบบ สสมน.</div>`;
     return;
   }
 
   let html = "";
-  appState.transferLogs.forEach(log => {
-    if (log.type === "system") {
-      html += `
-        <div class="transfer-log-card" style="border-color: rgba(255, 255, 255, 0.06); background: rgba(255, 255, 255, 0.015);">
-          <div class="transfer-log-icon" style="color: var(--color-accent-gold); border-color: rgba(251, 191, 36, 0.25); background: rgba(251, 191, 36, 0.05);">
-            ⚙️
-          </div>
-          <div class="transfer-log-content">
-            <h5 style="color: var(--color-accent-gold);">บันทึกการเบิกจ่าย / ระบบ</h5>
-            <p style="color: white; font-weight: 500;">${log.description}</p>
-          </div>
-          <div class="transfer-log-date">${log.date}</div>
+  validLogs.forEach(log => {
+    html += `
+      <div class="transfer-log-card">
+        <div class="transfer-log-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l17 17"/>
+          </svg>
         </div>
-      `;
-    } else {
-      html += `
-        <div class="transfer-log-card">
-          <div class="transfer-log-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M4 4l17 17"/>
-            </svg>
-          </div>
-          <div class="transfer-log-content">
-            <h5>${log.memberName}</h5>
-            <p>ย้ายสังกัดจาก <strong>${log.oldSchool}</strong> รหัสเดิม <span class="text-warning font-weight-bold">${log.oldId}</span></p>
-            <p>ไปยัง <strong>${log.newSchool}</strong> รับรหัสใหม่ <span class="text-success font-weight-bold">${log.newId}</span></p>
-            <p class="field-help-text" style="margin-top:2px;">เหตุผล: ${log.reason}</p>
-          </div>
-          <div class="transfer-log-date">${log.date}</div>
+        <div class="transfer-log-content">
+          <h5>${log.memberName}</h5>
+          <p>ย้ายสังกัดจาก <strong>${log.oldSchool}</strong> รหัสเดิม <span class="text-warning font-weight-bold">${log.oldId}</span></p>
+          <p>ไปยัง <strong>${log.newSchool}</strong> รับรหัสใหม่ <span class="text-success font-weight-bold">${log.newId}</span></p>
+          <p class="field-help-text" style="margin-top:2px;">เหตุผล: ${log.reason}</p>
         </div>
-      `;
-    }
+        <div class="transfer-log-date">${log.date}</div>
+      </div>
+    `;
   });
 
   container.innerHTML = html;
@@ -3343,7 +3330,7 @@ document.getElementById("import-database-file").addEventListener("change", funct
         appState.members = data.members;
         appState.deathCases = data.deathCases;
         appState.schoolInvoices = data.schoolInvoices;
-        appState.transferLogs = data.transferLogs || [];
+        appState.transferLogs = (data.transferLogs || []).filter(l => l.type !== "system");
         
         saveStateToLocalStorage();
         alert("นำเข้าฐานข้อมูลสำรองสำเร็จ! ระบบได้รับการอัปเดตใหม่ทั้งหมดแล้ว");
@@ -3742,25 +3729,40 @@ function updateDemoButtonsVisibility() {
   // Only Province Admin has permission to see/run the demo data import
   const isProvinceAdmin = (appState.activeRole === "province");
 
-  if (btnCancel) {
-    btnCancel.style.display = "none"; // Always hide cancel button as requested
-  }
-
   if (isProvinceAdmin) {
-    if (btnGen) {
-      btnGen.style.display = "flex";
-      btnGen.style.alignItems = "center";
-      btnGen.style.justifyContent = "center";
-      btnGen.style.gap = "6px";
-    }
-    if (warningBox) {
-      warningBox.style.display = "flex";
-      warningBox.style.color = "#fecdd3";
-      warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.12)";
-      warningBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
-      warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> ท่านสามารถนำเข้าข้อมูลสมมติมาทดลองใช้ระบบ โดยไม่กระทบข้อมูลจริงที่กรอกไว้</span>`;
+    if (appState.hasDemoData) {
+      if (btnCancel) {
+        btnCancel.style.display = "flex";
+        btnCancel.style.alignItems = "center";
+        btnCancel.style.justifyContent = "center";
+        btnCancel.style.gap = "6px";
+      }
+      if (btnGen) btnGen.style.display = "none";
+      if (warningBox) {
+        warningBox.style.display = "flex";
+        warningBox.style.color = "#a7f3d0"; // emerald light
+        warningBox.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+        warningBox.style.borderColor = "rgba(16, 185, 129, 0.3)";
+        warningBox.innerHTML = `<span>⚠️</span><span><strong>โหมดทดสอบระบบ:</strong> ระบบกำลังรันในโหมดข้อมูลทดสอบระบบ ท่านสามารถกดปุ่มยกเลิกด้านบนเพื่อย้อนกลับคืนข้อมูลจริงที่เคยกรอกไว้ได้</span>`;
+      }
+    } else {
+      if (btnCancel) btnCancel.style.display = "none";
+      if (btnGen) {
+        btnGen.style.display = "flex";
+        btnGen.style.alignItems = "center";
+        btnGen.style.justifyContent = "center";
+        btnGen.style.gap = "6px";
+      }
+      if (warningBox) {
+        warningBox.style.display = "flex";
+        warningBox.style.color = "#fecdd3"; // rose light
+        warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.12)";
+        warningBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
+        warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> แอดมินจังหวัดสามารถนำเข้าข้อมูลสมมติมาทดลองใช้งานระบบ โดยไม่กระทบต่อข้อมูลจริงที่มีอยู่ในระบบ</span>`;
+      }
     }
   } else {
+    if (btnCancel) btnCancel.style.display = "none";
     if (btnGen) btnGen.style.display = "none";
     if (warningBox) warningBox.style.display = "none";
   }
@@ -5773,20 +5775,10 @@ window.cancelPayoutStatus = function(caseId) {
     death.payoutDate = undefined;
     death.payoutNotes = undefined;
     death.payoutSlip = undefined;
-    
-    appState.transferLogs.push({
-      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      type: "system",
-      amount: netPayout,
-      description: `ยกเลิกรายการจ่ายเงินทายาทของสมาชิกเสียชีวิต (ยอดเงินโอนคืนบัญชีกองทุนกลาง): ${death.name} (${death.id})`
-    });
 
     saveStateToLocalStorage();
     renderCremationPayoutsTable();
     renderLiquidityAnalyzer();
-    if (window.renderTransferLogsTimeline) {
-      window.renderTransferLogsTimeline();
-    }
     alert("🟢 ยกเลิกบันทึกการโอนเงินสงเคราะห์ศพเรียบร้อยแล้ว");
   }
 };
@@ -5954,22 +5946,11 @@ if (formConfirmPayout) {
       const netPayout = death.netPayout || 0;
       appState.centralBankBalance -= netPayout;
 
-      // Add to transferLogs
-      appState.transferLogs.push({
-        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        type: "system",
-        amount: -netPayout,
-        description: `โอนเงินสงเคราะห์ศพผู้เสียชีวิตสำเร็จ: ${death.name} (${death.id}) ผู้รับประโยชน์: ${death.beneficiaryName} ยอดสุทธิ ฿${netPayout.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-      });
-
       saveStateToLocalStorage();
       closeConfirmPayoutModal();
       renderCremationPayoutsTable();
       renderLiquidityAnalyzer();
       renderAnnouncementsBoard();
-      if (window.renderTransferLogsTimeline) {
-        window.renderTransferLogsTimeline();
-      }
       alert(`🟢 ยืนยันการจ่ายเงินสำเร็จ!\nบันทึกรายการโอนเงินและแนบหลักฐานสลิปสำหรับ ${death.name} เรียบร้อยแล้ว`);
     }
   });
