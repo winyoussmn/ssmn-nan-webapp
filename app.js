@@ -155,6 +155,29 @@ function saveStateToLocalStorage() {
   localStorage.setItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE", appState.centralBankUpdateDate);
   localStorage.setItem("สสมน_NAN_CENTRAL_OPERATING_FEE", (appState.centralOperatingFee || 0).toString());
 
+  // บันทึกสถานะโหมดทดสอบระบบและการสำรองข้อมูลเดิม
+  localStorage.setItem("สสมน_NAN_HAS_DEMO_DATA", appState.hasDemoData ? "true" : "false");
+  if (appState.preDemoSchoolProfiles) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_PROFILES", JSON.stringify(appState.preDemoSchoolProfiles));
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_PROFILES");
+  }
+  if (appState.preDemoCentralBankBalance !== undefined) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_BANK_BALANCE", appState.preDemoCentralBankBalance.toString());
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_BANK_BALANCE");
+  }
+  if (appState.preDemoCentralBankUpdateDate !== undefined) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_BANK_UPDATE_DATE", appState.preDemoCentralBankUpdateDate);
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_BANK_UPDATE_DATE");
+  }
+  if (appState.preDemoCentralOperatingFee !== undefined) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE", appState.preDemoCentralOperatingFee.toString());
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE");
+  }
+
   // ยิงซิงค์ไปยัง Cloudflare D1 Database ในเบื้องหลัง
   syncStateToCloudflare();
 }
@@ -255,6 +278,26 @@ function loadStateFromLocalStorage() {
     appState.centralOperatingFee = parseFloat(cachedOperatingFee);
   } else {
     appState.centralOperatingFee = 0;
+  }
+
+  // โหลดสถานะโหมดทดสอบระบบและการสำรองข้อมูลเดิม
+  const cachedHasDemo = localStorage.getItem("สสมน_NAN_HAS_DEMO_DATA");
+  if (cachedHasDemo) appState.hasDemoData = (cachedHasDemo === "true");
+
+  const cachedPreDemoProfiles = localStorage.getItem("สสมน_NAN_PRE_DEMO_PROFILES");
+  if (cachedPreDemoProfiles) appState.preDemoSchoolProfiles = JSON.parse(cachedPreDemoProfiles);
+
+  const cachedPreDemoBank = localStorage.getItem("สสมน_NAN_PRE_DEMO_BANK_BALANCE");
+  if (cachedPreDemoBank) appState.preDemoCentralBankBalance = parseFloat(cachedPreDemoBank);
+
+  const cachedPreDemoUpdateDate = localStorage.getItem("สสมน_NAN_PRE_DEMO_BANK_UPDATE_DATE");
+  if (cachedPreDemoUpdateDate) appState.preDemoCentralBankUpdateDate = cachedPreDemoUpdateDate;
+
+  const cachedPreDemoFee = localStorage.getItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE");
+  if (cachedPreDemoFee) appState.preDemoCentralOperatingFee = parseFloat(cachedPreDemoFee);
+
+  if (typeof updateDemoButtonsVisibility === "function") {
+    updateDemoButtonsVisibility();
   }
 }
 
@@ -415,6 +458,10 @@ async function loadStateFromCloudflare() {
       renderMembersDirectory();
       renderSchoolRankingsTable();
       populateReportDeathDropdowns();
+
+      if (typeof updateDemoButtonsVisibility === "function") {
+        updateDemoButtonsVisibility();
+      }
     }
 
     if (syncBtnStatus) {
@@ -3664,6 +3711,10 @@ if (document.getElementById("filter-member-school")) {
 document.getElementById("filter-ranking-order").addEventListener("change", renderSchoolRankingsTable);
 
 document.getElementById("btn-gen-demo-data").addEventListener("click", generateDemoData);
+const btnCancelDemo = document.getElementById("btn-cancel-demo-data");
+if (btnCancelDemo) {
+  btnCancelDemo.addEventListener("click", cancelDemoData);
+}
 
 const closeButtons = document.querySelectorAll(".btn-close-modal, .btn-cancel-modal, .btn-cancel");
 closeButtons.forEach(btn => {
@@ -3683,16 +3734,107 @@ modalsList.forEach(m => {
 });
 
 // ==================== 14. DEMO DATA GENERATOR SYSTEM ====================
+function updateDemoButtonsVisibility() {
+  const btnCancel = document.getElementById("btn-cancel-demo-data");
+  const btnGen = document.getElementById("btn-gen-demo-data");
+  const warningBox = document.getElementById("demo-warning-box");
+
+  if (!btnCancel) return;
+
+  if (appState.hasDemoData) {
+    btnCancel.style.display = "flex";
+    btnCancel.style.alignItems = "center";
+    btnCancel.style.justifyContent = "center";
+    btnCancel.style.gap = "6px";
+    
+    if (btnGen) btnGen.style.display = "none";
+    if (warningBox) {
+      warningBox.style.color = "#99f6e4";
+      warningBox.style.backgroundColor = "rgba(20, 184, 166, 0.12)";
+      warningBox.style.borderColor = "rgba(20, 184, 166, 0.3)";
+      warningBox.innerHTML = `<span>💡</span><span><strong>โหมดทดสอบระบบ:</strong> กำลังใช้ข้อมูลทดสอบร่วมกับข้อมูลจริง ท่านสามารถยกเลิกเพื่อลบข้อมูลทดสอบออกได้</span>`;
+    }
+  } else {
+    btnCancel.style.display = "none";
+    if (btnGen) {
+      btnGen.style.display = "flex";
+      btnGen.style.alignItems = "center";
+      btnGen.style.justifyContent = "center";
+      btnGen.style.gap = "6px";
+    }
+    if (warningBox) {
+      warningBox.style.color = "#fecdd3";
+      warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.12)";
+      warningBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
+      warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> ท่านสามารถนำเข้าข้อมูลสมมติมาทดลองใช้ระบบ และกด "ยกเลิกข้อมูลทดสอบ" เพื่อลบออกได้ตลอดเวลา โดยไม่กระทบข้อมูลจริงที่กรอกไว้</span>`;
+    }
+  }
+}
+
+function clearDemoDataOnly() {
+  appState.members = (appState.members || []).filter(m => !m.isDemo);
+  appState.deathCases = (appState.deathCases || []).filter(d => !d.isDemo);
+  appState.schoolInvoices = (appState.schoolInvoices || []).filter(i => !i.isDemo);
+  appState.transferLogs = (appState.transferLogs || []).filter(l => !l.isDemo);
+  
+  if (appState.preDemoSchoolProfiles) {
+    appState.schoolProfiles = JSON.parse(JSON.stringify(appState.preDemoSchoolProfiles));
+    delete appState.preDemoSchoolProfiles;
+  }
+  if (appState.preDemoCentralBankBalance !== undefined) {
+    appState.centralBankBalance = appState.preDemoCentralBankBalance;
+    delete appState.preDemoCentralBankBalance;
+  }
+  if (appState.preDemoCentralBankUpdateDate !== undefined) {
+    appState.centralBankUpdateDate = appState.preDemoCentralBankUpdateDate;
+    delete appState.preDemoCentralBankUpdateDate;
+  }
+  if (appState.preDemoCentralOperatingFee !== undefined) {
+    appState.centralOperatingFee = appState.preDemoCentralOperatingFee;
+    delete appState.preDemoCentralOperatingFee;
+  }
+}
+
+function cancelDemoData() {
+  if (confirm("คุณต้องการยกเลิกการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?\n(ข้อมูลทดสอบระบบทั้งหมดจะถูกลบออก และเหลือเฉพาะข้อมูลจริงที่คุณหรือโรงเรียนกรอกไว้)")) {
+    clearDemoDataOnly();
+    appState.hasDemoData = false;
+    saveStateToLocalStorage();
+    calculateStats();
+    updateDemoButtonsVisibility();
+    
+    // Refresh tables/views
+    initSchoolProfileForm();
+    checkBiAnnualCertificationStatus();
+    renderSchoolsDirectory();
+    renderDocumentsGrid();
+    renderAnnouncementsBoard();
+    renderCremationPayoutsTable();
+    renderLiquidityAnalyzer();
+    renderMembersDirectory();
+    renderSchoolRankingsTable();
+    
+    alert("🟢 ยกเลิกข้อมูลทดสอบระบบเรียบร้อยแล้ว!");
+  }
+}
+
 function generateDemoData() {
-  if (!confirm("⚠️ คำเตือนสำคัญ: การดำเนินการนี้จะล้างข้อมูลสมาชิกและประวัติเอกสารประกอบทั้งหมดที่ท่านกรอกหรือแก้ไขไว้ในขณะนี้ออกไปจนหมด\n\nคุณต้องการนำเข้าข้อมูลทดสอบระบบเพื่อเคลียร์ฐานข้อมูลทับใหม่ใช่หรือไม่?")) {
+  if (!confirm("⚠️ นำเข้าข้อมูลทดสอบระบบ:\n\nระบบจะนำเข้าสมาชิกและข้อมูลจำลองอื่นๆ มาให้ท่านทดลองใช้งาน โดยจะคงข้อมูลเดิมที่ท่านกรอกไว้ และท่านสามารถกด 'ยกเลิกข้อมูลทดสอบ' เพื่อย้อนกลับได้ตลอดเวลา\n\nคุณต้องการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?")) {
     return;
   }
 
-  appState.members = [];
-  appState.deathCases = [];
-  appState.schoolInvoices = [];
-  appState.transferLogs = [];
-  appState.schoolProfiles = { ...DEFAULT_SCHOOL_PROFILES };
+  // 1. Remove old demo data first (in case they generate again)
+  clearDemoDataOnly();
+  
+  // 2. Backup current school profiles & bank parameters
+  appState.preDemoSchoolProfiles = JSON.parse(JSON.stringify(appState.schoolProfiles));
+  appState.preDemoCentralBankBalance = appState.centralBankBalance;
+  appState.preDemoCentralBankUpdateDate = appState.centralBankUpdateDate;
+  appState.preDemoCentralOperatingFee = appState.centralOperatingFee;
+  appState.hasDemoData = true;
+
+  // Overwrite schoolProfiles with demo values (will be restored on cancel)
+  appState.schoolProfiles = JSON.parse(JSON.stringify(DEFAULT_SCHOOL_PROFILES));
   ensureSchoolProfilesStats();
 
   const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
@@ -3840,178 +3982,203 @@ function generateDemoData() {
         household: docApp,
         beneficiaryId: docApp
       },
-      ledger: ledger
+      ledger: ledger,
+      isDemo: true // Tag it!
     };
 
     appState.members.push(m);
   });
 
   // 2. จำลองประวัติย้ายสังกัด
-  const transferUser1 = appState.members[0]; 
-  const oldId = transferUser1.id;
-  const newId = generateMemberId("02");
-  
-  transferUser1.status = "transferred";
-  transferUser1.ledger.push({
-    date: dateStr,
-    type: "charge",
-    amount: 0,
-    description: `โอนปิดรหัสเพื่อย้ายสังกัดไปยัง โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน (รหัสสมาชิกใหม่คือ ${newId})`,
-    balanceAfter: parseFloat(transferUser1.prepayBalance)
-  });
-
-  const newActiveRec = {
-    ...transferUser1,
-    id: newId,
-    schoolId: "02",
-    status: "active",
-    ledger: [
-      ...transferUser1.ledger,
-      {
-        date: dateStr,
-        type: "deposit",
-        amount: 0,
-        description: `โอนย้ายฐานเงินสะสมล่วงหน้าติดตัวมาจากสังกัด โรงเรียนสตรีศรีน่าน (รหัสสมาชิกเก่า: ${oldId})`,
-        balanceAfter: parseFloat(transferUser1.prepayBalance)
-      }
-    ]
-  };
-  appState.members.push(newActiveRec);
-
-  appState.transferLogs.push({
-    date: dateStr,
-    memberName: `${transferUser1.firstname} ${transferUser1.lastname}`,
-    oldSchool: "โรงเรียนสตรีศรีน่าน",
-    newSchool: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
-    oldId: oldId,
-    newId: newId,
-    reason: "ย้ายตามผลสอบเลื่อนขั้นรับตำแหน่ง ผู้อำนวยการโรงเรียนใหม่"
-  });
-
-  // 3. จำลองเคสเสียชีวิต อนุมัติแล้ว (นายประเสริฐ แงงงาม)
-  const deadPerson = appState.members[4]; 
-  deadPerson.status = "deceased";
-  deadPerson.ledger.push({
-    date: dateStr,
-    type: "charge",
-    amount: 0,
-    description: `เสียชีวิตอย่างสงบเมื่อวันที่ 2026-05-15 ปิดยอดเงินสะสมล่วงหน้าถาวร`,
-    balanceAfter: parseFloat(deadPerson.prepayBalance)
-  });
-
-  const deathCaseId = "DEATH_DEMO_001";
-  const mockDoc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%23450a0a'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ef4444' font-size='16'>ใบมรณบัตร: นายประเสริฐ แงงงาม</text></svg>";
-  
-  const calcInfo = getDeathCalculationInfo("2026-05-15", deadPerson);
-  const deathCase = {
-    id: deathCaseId,
-    memberId: deadPerson.id,
-    name: `${deadPerson.title || ''}${deadPerson.firstname} ${deadPerson.lastname}`,
-    schoolName: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
-    schoolId: "02",
-    reportedDate: "2026-05-15",
-    chargeAmount: 30,
-    cause: "กล้ามเนื้อหัวใจขาดเลือดเฉียบพลัน",
-    status: "approved",
-    documents: {
-      certificate: mockDoc,
-      citizen: mockDoc,
-      household: mockDoc
-    },
-    beneficiaryName: calcInfo.beneficiaryName,
-    referenceDateText: calcInfo.refDateText,
-    referenceMemberCount: calcInfo.activeMembersCount,
-    grossPayout: calcInfo.grossPayout,
-    operatingFee: calcInfo.operatingFee,
-    netPayout: calcInfo.netPayout
-  };
-  appState.deathCases.push(deathCase);
-
-  // หักเงินทุกคน 30 บาท
-  const activeList = appState.members.filter(m => m.status === "active");
-  activeList.forEach(m => {
-    const curBal = parseFloat(m.prepayBalance);
-    m.prepayBalance = curBal - 30;
-    m.ledger.push({
+  const transferUser1 = appState.members.find(m => m.isDemo); 
+  if (transferUser1) {
+    const oldId = transferUser1.id;
+    const newId = generateMemberId("02");
+    
+    transferUser1.status = "transferred";
+    transferUser1.ledger.push({
       date: dateStr,
       type: "charge",
-      amount: -30,
-      description: `หักเงินสงเคราะห์รายศพกรณีการเสียชีวิตของ นายประเสริฐ แงงงาม (${deadPerson.id})`,
-      balanceAfter: curBal - 30
+      amount: 0,
+      description: `โอนปิดรหัสเพื่อย้ายสังกัดไปยัง โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน (รหัสสมาชิกใหม่คือ ${newId})`,
+      balanceAfter: parseFloat(transferUser1.prepayBalance)
     });
-  });
 
-  // สร้าง Invoices 33 โรงเรียน
-  SCHOOLS.forEach(sch => {
-    const schoolActiveCount = activeList.filter(m => m.schoolId === sch.id).length;
-    const totalOwed = schoolActiveCount * 30;
-
-    let status = "unpaid";
-    let slipData = null;
-
-    if (totalOwed === 0) {
-      status = "paid";
-    } else if (sch.id === "02") {
-      status = "paid";
-      slipData = {
-        transferDate: dateStr,
-        transferAmount: totalOwed,
-        imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2310b981' font-size='16'>สลิปโอนเงินสำเร็จ [ศรีสวัสดิ์ฯ]</text></svg>",
-        notes: "โอนผ่านระบบ Mobile Banking ธนาคารกรุงไทยของกองทุนโรงเรียน"
-      };
-    } else if (sch.id === "01") {
-      status = "pending";
-      slipData = {
-        transferDate: dateStr,
-        transferAmount: totalOwed,
-        imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23fbbf24' font-size='16'>สลิปหลักฐานโอนเงินภาพรวม [สตรีศรีน่าน]</text></svg>",
-        notes: "รอการตรวจสอบสิทธิ์และรับยอดโอนเงินทำบุญจังหวัด"
-      };
-    }
-
-    const invoice = {
-      deathCaseId: deathCaseId,
-      deathCaseName: `${deadPerson.firstname} ${deadPerson.lastname}`,
-      schoolId: sch.id,
-      schoolName: sch.name,
-      activeCount: schoolActiveCount,
-      deductionAmount: 30,
-      totalOwed: totalOwed,
-      status: status,
-      slipData: slipData
+    const newActiveRec = {
+      ...transferUser1,
+      id: newId,
+      schoolId: "02",
+      status: "active",
+      isDemo: true, // Tag it!
+      ledger: [
+        ...transferUser1.ledger,
+        {
+          date: dateStr,
+          type: "deposit",
+          amount: 0,
+          description: `โอนย้ายฐานเงินสะสมล่วงหน้าติดตัวมาจากสังกัด โรงเรียนสตรีศรีน่าน (รหัสสมาชิกเก่า: ${oldId})`,
+          balanceAfter: parseFloat(transferUser1.prepayBalance)
+        }
+      ]
     };
-    appState.schoolInvoices.push(invoice);
-  });
+    appState.members.push(newActiveRec);
+
+    appState.transferLogs.push({
+      date: dateStr,
+      memberName: `${transferUser1.firstname} ${transferUser1.lastname}`,
+      oldSchool: "โรงเรียนสตรีศรีน่าน",
+      newSchool: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
+      oldId: oldId,
+      newId: newId,
+      reason: "ย้ายตามผลสอบเลื่อนขั้นรับตำแหน่ง ผู้อำนวยการโรงเรียนใหม่",
+      isDemo: true // Tag it!
+    });
+  }
+
+  // 3. จำลองเคสเสียชีวิต อนุมัติแล้ว (นายประเสริฐ แงงงาม)
+  const deadPerson = appState.members.find(m => m.isDemo && m.firstname === "ประเสริฐ"); 
+  if (deadPerson) {
+    deadPerson.status = "deceased";
+    deadPerson.ledger.push({
+      date: dateStr,
+      type: "charge",
+      amount: 0,
+      description: `เสียชีวิตอย่างสงบเมื่อวันที่ 2026-05-15 ปิดยอดเงินสะสมล่วงหน้าถาวร`,
+      balanceAfter: parseFloat(deadPerson.prepayBalance)
+    });
+
+    const deathCaseId = "DEATH_DEMO_001";
+    const mockDoc = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'><rect width='100%' height='100%' fill='%23450a0a'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23ef4444' font-size='16'>ใบมรณบัตร: นายประเสริฐ แงงงาม</text></svg>";
+    
+    const calcInfo = getDeathCalculationInfo("2026-05-15", deadPerson);
+    const deathCase = {
+      id: deathCaseId,
+      memberId: deadPerson.id,
+      name: `${deadPerson.title || ''}${deadPerson.firstname} ${deadPerson.lastname}`,
+      schoolName: "โรงเรียนศรีสวัสดิ์วิทยาคารจังหวัดน่าน",
+      schoolId: "02",
+      reportedDate: "2026-05-15",
+      chargeAmount: 30,
+      cause: "กล้ามเนื้อหัวใจขาดเลือดเฉียบพลัน",
+      status: "approved",
+      documents: {
+        certificate: mockDoc,
+        citizen: mockDoc,
+        household: mockDoc
+      },
+      beneficiaryName: calcInfo.beneficiaryName,
+      referenceDateText: calcInfo.refDateText,
+      referenceMemberCount: calcInfo.activeMembersCount,
+      grossPayout: calcInfo.grossPayout,
+      operatingFee: calcInfo.operatingFee,
+      netPayout: calcInfo.netPayout,
+      isDemo: true // Tag it!
+    };
+    appState.deathCases.push(deathCase);
+
+    // หักเงินทุกคน 30 บาท (เฉพาะ demo members เพื่อเลี่ยงการแก้ไขข้อมูลจริง)
+    const activeList = appState.members.filter(m => m.status === "active" && m.isDemo);
+    activeList.forEach(m => {
+      const curBal = parseFloat(m.prepayBalance);
+      m.prepayBalance = curBal - 30;
+      m.ledger.push({
+        date: dateStr,
+        type: "charge",
+        amount: -30,
+        description: `หักเงินสงเคราะห์รายศพกรณีการเสียชีวิตของ นายประเสริฐ แงงงาม (${deadPerson.id})`,
+        balanceAfter: curBal - 30
+      });
+    });
+
+    // สร้าง Invoices 33 โรงเรียน
+    SCHOOLS.forEach(sch => {
+      const schoolActiveCount = activeList.filter(m => m.schoolId === sch.id).length;
+      const totalOwed = schoolActiveCount * 30;
+
+      let status = "unpaid";
+      let slipData = null;
+
+      if (totalOwed === 0) {
+        status = "paid";
+      } else if (sch.id === "02") {
+        status = "paid";
+        slipData = {
+          transferDate: dateStr,
+          transferAmount: totalOwed,
+          imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2310b981' font-size='16'>สลิปโอนเงินสำเร็จ [ศรีสวัสดิ์ฯ]</text></svg>",
+          notes: "โอนผ่านระบบ Mobile Banking ธนาคารกรุงไทยของกองทุนโรงเรียน"
+        };
+      } else if (sch.id === "01") {
+        status = "pending";
+        slipData = {
+          transferDate: dateStr,
+          transferAmount: totalOwed,
+          imageUri: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='100%' height='100%' fill='%231e293b'/><text x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23fbbf24' font-size='16'>สลิปหลักฐานโอนเงินภาพรวม [สตรีศรีน่าน]</text></svg>",
+          notes: "รอการตรวจสอบสิทธิ์และรับยอดโอนเงินทำบุญจังหวัด"
+        };
+      }
+
+      const invoice = {
+        deathCaseId: deathCaseId,
+        deathCaseName: `${deadPerson.firstname} ${deadPerson.lastname}`,
+        schoolId: sch.id,
+        schoolName: sch.name,
+        activeCount: schoolActiveCount,
+        deductionAmount: 30,
+        totalOwed: totalOwed,
+        status: status,
+        slipData: slipData,
+        isDemo: true // Tag it!
+      };
+      appState.schoolInvoices.push(invoice);
+    });
+  }
 
   // 4. จำลองเคสแจ้งตาย "รอยืนยัน" (Pending Approval) ของแอดมินโรงเรียน
-  const pendingDeadPerson = appState.members[7]; // นางสาวขวัญใจ ปัววิทยา
-  const calcInfoPending = getDeathCalculationInfo("2026-06-01", pendingDeadPerson);
-  const pendingDeathCase = {
-    id: "DEATH_PEND_DEMO_001",
-    memberId: pendingDeadPerson.id,
-    name: `${pendingDeadPerson.title || ''}${pendingDeadPerson.firstname} ${pendingDeadPerson.lastname}`,
-    schoolName: "โรงเรียนปัว",
-    schoolId: "03",
-    reportedDate: "2026-06-01",
-    chargeAmount: 30,
-    cause: "โรคมะเร็งตับระยะสุดท้าย",
-    status: "pending_approval",
-    documents: {
-      certificate: mockDoc,
-      citizen: mockDoc,
-      household: mockDoc
-    },
-    beneficiaryName: calcInfoPending.beneficiaryName,
-    referenceDateText: calcInfoPending.refDateText,
-    referenceMemberCount: calcInfoPending.activeMembersCount,
-    grossPayout: calcInfoPending.grossPayout,
-    operatingFee: calcInfoPending.operatingFee,
-    netPayout: calcInfoPending.netPayout
-  };
-  appState.deathCases.unshift(pendingDeathCase);
+  const pendingDeadPerson = appState.members.find(m => m.isDemo && m.firstname === "ขวัญใจ"); 
+  if (pendingDeadPerson) {
+    const calcInfoPending = getDeathCalculationInfo("2026-06-01", pendingDeadPerson);
+    const pendingDeathCase = {
+      id: "DEATH_PEND_DEMO_001",
+      memberId: pendingDeadPerson.id,
+      name: `${pendingDeadPerson.title || ''}${pendingDeadPerson.firstname} ${pendingDeadPerson.lastname}`,
+      schoolName: "โรงเรียนปัว",
+      schoolId: "03",
+      reportedDate: "2026-06-01",
+      chargeAmount: 30,
+      cause: "โรคมะเร็งตับระยะสุดท้าย",
+      status: "pending_approval",
+      documents: {
+        certificate: mockDoc,
+        citizen: mockDoc,
+        household: mockDoc
+      },
+      beneficiaryName: calcInfoPending.beneficiaryName,
+      referenceDateText: calcInfoPending.refDateText,
+      referenceMemberCount: calcInfoPending.activeMembersCount,
+      grossPayout: calcInfoPending.grossPayout,
+      operatingFee: calcInfoPending.operatingFee,
+      netPayout: calcInfoPending.netPayout,
+      isDemo: true // Tag it!
+    };
+    appState.deathCases.unshift(pendingDeathCase);
+  }
 
   saveStateToLocalStorage();
-  alert("นำเข้าฐานข้อมูล สมาชิกเอกสารแนบ และเคสคดีแจ้งศพจำลองเข้าระบบสำเร็จ!");
+  updateDemoButtonsVisibility();
+  
+  // Refresh tables/views
+  initSchoolProfileForm();
+  checkBiAnnualCertificationStatus();
+  renderSchoolsDirectory();
+  renderDocumentsGrid();
+  renderAnnouncementsBoard();
+  renderCremationPayoutsTable();
+  renderLiquidityAnalyzer();
+  renderMembersDirectory();
+  renderSchoolRankingsTable();
+
+  alert("🟢 นำเข้าข้อมูลทดสอบระบบสำเร็จ!\nท่านสามารถยกเลิกเพื่อลบข้อมูลทดสอบนี้ออกได้ตลอดเวลา");
   calculateStats();
 }
 
@@ -4951,6 +5118,9 @@ window.addEventListener("DOMContentLoaded", function() {
   renderAnnouncementsBoard();
   renderCremationPayoutsTable();
   renderLiquidityAnalyzer();
+  if (typeof updateDemoButtonsVisibility === "function") {
+    updateDemoButtonsVisibility();
+  }
 
   // ตรวจสอบเซสชันความปลอดภัยในการจำค่าล็อกอิน
   const isLoggedIn = sessionStorage.getItem("สสมน_NAN_LOGGED_IN") === "true";
@@ -5175,12 +5345,6 @@ window.deleteDocument = function(docId) {
   if (doc) {
     if (confirm(`คุณแน่ใจหรือไม่ที่จะลบเอกสาร "${doc.title}" ออกจากคลังดาวน์โหลดระบบ?`)) {
       appState.documents = appState.documents.filter(d => d.id !== docId);
-      appState.transferLogs.push({
-        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        type: "system",
-        amount: 0,
-        description: `ลบเอกสารออกจากคลังดาวน์โหลดระบบ: "${doc.title}" (${doc.link})`
-      });
       saveStateToLocalStorage();
       renderDocumentsGrid();
       alert("ลบเอกสารเรียบร้อยแล้ว!");

@@ -71,12 +71,13 @@ async function ensureTables(db) {
     );`,
     `CREATE TABLE IF NOT EXISTS documents (
       id TEXT PRIMARY KEY,
-      name TEXT,
+      title TEXT,
+      desc TEXT,
       category TEXT,
-      fileSize TEXT,
+      format TEXT,
+      size TEXT,
       year TEXT,
-      downloadCount INTEGER,
-      url TEXT
+      link TEXT
     );`,
     `CREATE TABLE IF NOT EXISTS announcements (
       id TEXT PRIMARY KEY,
@@ -115,6 +116,30 @@ async function ensureTables(db) {
     }
   } catch (err) {
     console.error("Migration error (ledger/documents/gender/address columns):", err.message);
+  }
+
+  // Self-Healing Column Creator for documents table in case it existed
+  try {
+    const tableInfo = await db.prepare("PRAGMA table_info(documents)").all();
+    const columns = tableInfo.results.map(r => r.name);
+    
+    if (!columns.includes("title")) {
+      await db.prepare("ALTER TABLE documents ADD COLUMN title TEXT").run();
+    }
+    if (!columns.includes("desc")) {
+      await db.prepare("ALTER TABLE documents ADD COLUMN desc TEXT").run();
+    }
+    if (!columns.includes("format")) {
+      await db.prepare("ALTER TABLE documents ADD COLUMN format TEXT").run();
+    }
+    if (!columns.includes("size")) {
+      await db.prepare("ALTER TABLE documents ADD COLUMN size TEXT").run();
+    }
+    if (!columns.includes("link")) {
+      await db.prepare("ALTER TABLE documents ADD COLUMN link TEXT").run();
+    }
+  } catch (err) {
+    console.error("Migration error (documents table columns):", err.message);
   }
 }
 
@@ -226,8 +251,16 @@ export async function onRequestGet(context) {
       deathCases: deathsRes.results || [],
       schoolProfiles,
       schoolPasswords,
-      certifications,
-      documents: docsRes.results || [],
+      documents: (docsRes.results || []).map(doc => ({
+        id: doc.id,
+        title: doc.title || doc.name || "",
+        desc: doc.desc || "",
+        category: doc.category || "",
+        format: doc.format || "PDF",
+        size: doc.size || doc.fileSize || "",
+        year: doc.year ? parseInt(doc.year) : 2569,
+        link: doc.link || doc.url || ""
+      })),
       announcements: announcementsRes.results || [],
       centralBankBalance: centralConfig.centralBankBalance !== undefined ? parseFloat(centralConfig.centralBankBalance) : 250000,
       centralBankUpdateDate: centralConfig.centralBankUpdateDate || "2026-06-01",
@@ -350,11 +383,11 @@ export async function onRequestPost(context) {
     if (data.documents && data.documents.length > 0) {
       data.documents.forEach(doc => {
         statements.push(db.prepare(`
-          INSERT INTO documents (id, name, category, fileSize, year, downloadCount, url)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO documents (id, title, desc, category, format, size, year, link)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
-          doc.id, doc.name || "", doc.category || "", doc.fileSize || "", doc.year || "",
-          doc.downloadCount || 0, doc.url || ""
+          doc.id, doc.title || doc.name || "", doc.desc || "", doc.category || "",
+          doc.format || "PDF", doc.size || doc.fileSize || "", String(doc.year || ""), doc.link || doc.url || ""
         ));
       });
     }
