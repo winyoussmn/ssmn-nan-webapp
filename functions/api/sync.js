@@ -23,7 +23,8 @@ async function ensureTables(db) {
       documents TEXT,
       ledger TEXT,
       gender TEXT,
-      address TEXT
+      address TEXT,
+      isDemo INTEGER DEFAULT 0
     );`,
     `CREATE TABLE IF NOT EXISTS death_cases (
       id TEXT PRIMARY KEY,
@@ -37,7 +38,8 @@ async function ensureTables(db) {
       payoutStatus TEXT,
       payoutDate TEXT,
       payoutSlip TEXT,
-      payoutNotes TEXT
+      payoutNotes TEXT,
+      isDemo INTEGER DEFAULT 0
     );`,
     `CREATE TABLE IF NOT EXISTS school_profiles (
       schoolId TEXT PRIMARY KEY,
@@ -114,8 +116,23 @@ async function ensureTables(db) {
     if (!columns.includes("address")) {
       await db.prepare("ALTER TABLE members ADD COLUMN address TEXT").run();
     }
+    if (!columns.includes("isDemo")) {
+      await db.prepare("ALTER TABLE members ADD COLUMN isDemo INTEGER DEFAULT 0").run();
+    }
   } catch (err) {
     console.error("Migration error (ledger/documents/gender/address columns):", err.message);
+  }
+
+  // Self-Healing Column Creator for death_cases table
+  try {
+    const tableInfo = await db.prepare("PRAGMA table_info(death_cases)").all();
+    const columns = tableInfo.results.map(r => r.name);
+    
+    if (!columns.includes("isDemo")) {
+      await db.prepare("ALTER TABLE death_cases ADD COLUMN isDemo INTEGER DEFAULT 0").run();
+    }
+  } catch (err) {
+    console.error("Migration error (death_cases table columns):", err.message);
   }
 
   // Self-Healing Column Creator for documents table in case it existed
@@ -246,9 +263,13 @@ export async function onRequestGet(context) {
         // สร้างตัวแปรเสริมเพื่อความเข้ากันได้
         m.firstName = m.firstname;
         m.lastName = m.lastname;
+        m.isDemo = m.isDemo === 1 || m.isDemo === true || m.isDemo === "true";
         return m;
       }),
-      deathCases: deathsRes.results || [],
+      deathCases: (deathsRes.results || []).map(d => {
+        d.isDemo = d.isDemo === 1 || d.isDemo === true || d.isDemo === "true";
+        return d;
+      }),
       schoolProfiles,
       schoolPasswords,
       documents: (docsRes.results || []).map(doc => ({
@@ -304,8 +325,8 @@ export async function onRequestPost(context) {
           INSERT INTO members (
             id, firstname, lastname, title, citizenId, schoolId, position, phone, prepayBalance, status,
             beneficiaryTitle, beneficiaryFirstName, beneficiaryLastName, beneficiaryPhone, beneficiaryRelation,
-            documents, ledger, gender, address
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            documents, ledger, gender, address, isDemo
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           m.id, m.firstname || m.firstName || "", m.lastname || m.lastName || "", m.title || "นาย",
           m.citizenId || "", m.schoolId || "", m.position || "ครู", m.phone || "", m.prepayBalance || 0, m.status || "active",
@@ -317,7 +338,8 @@ export async function onRequestPost(context) {
           JSON.stringify(m.documents || {}),
           JSON.stringify(m.ledger || []),
           m.gender || "ชาย",
-          m.address || ""
+          m.address || "",
+          m.isDemo ? 1 : 0
         ));
       });
     }
@@ -329,12 +351,13 @@ export async function onRequestPost(context) {
         statements.push(db.prepare(`
           INSERT INTO death_cases (
             id, memberId, reportedDate, referenceDateText, referenceMemberCount, grossPayout, operatingFee, netPayout,
-            payoutStatus, payoutDate, payoutSlip, payoutNotes
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            payoutStatus, payoutDate, payoutSlip, payoutNotes, isDemo
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           d.id, d.memberId || "", d.reportedDate || "", d.referenceDateText || "", d.referenceMemberCount || 0,
           d.grossPayout || 0, d.operatingFee || 0, d.netPayout || 0, d.payoutStatus || "pending",
-          d.payoutDate || "", d.payoutSlip || "", d.payoutNotes || ""
+          d.payoutDate || "", d.payoutSlip || "", d.payoutNotes || "",
+          d.isDemo ? 1 : 0
         ));
       });
     }
