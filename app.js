@@ -391,8 +391,8 @@ async function loadStateFromCloudflare() {
     
     const data = await response.json();
     
-    // หากข้อมูลในฐานข้อมูล D1 ไม่ว่างเปล่า (มีสมาชิก หรือเคยซิงค์แล้ว) ให้เขียนทับแอปสเตท
-    if (data.members && data.members.length > 0) {
+    const hasCloudProfiles = data.schoolProfiles && Object.keys(data.schoolProfiles).length > 0;
+    if (hasCloudProfiles) {
       data.members.forEach(m => {
         // กู้คืนโครงสร้างชื่อคู่ขนาน
         if (m.firstName && !m.firstname) m.firstname = m.firstName;
@@ -629,6 +629,9 @@ function calculateStats() {
 
   if (appState.activeRole === "province" || appState.activeRole === "committee") {
     // --- สิทธิ์จังหวัด / คณะกรรมการ ---
+    const kpiSchoolDevices = document.getElementById("kpi-school-devices");
+    if (kpiSchoolDevices) kpiSchoolDevices.style.display = "none";
+
     document.getElementById("page-title").textContent = appState.activeRole === "committee" ? "ระบบแดชบอร์ดคณะกรรมการ สสมน." : "ระบบแดชบอร์ดภาพรวมจังหวัด";
     document.getElementById("page-subtitle").textContent = "แสดงสถิติสมาชิก เงินสะสมล่วงหน้า และอัตราการมีส่วนร่วมของบุคลากรทั้งจังหวัดน่าน";
     document.getElementById("btn-action-primary").style.display = "inline-flex";
@@ -853,6 +856,29 @@ function calculateStats() {
     }
 
     renderSchoolPositionStats(schoolMembers, currentSchool);
+
+    // แสดงสถิติการใช้งานเครื่อง 10 เครื่อง
+    const kpiSchoolDevices = document.getElementById("kpi-school-devices");
+    if (kpiSchoolDevices) {
+      kpiSchoolDevices.style.display = "flex";
+      const profile = appState.schoolProfiles[appState.activeSchoolId] || {};
+      const devices = profile.devices || [];
+      
+      const countEl = document.getElementById("stat-school-devices-count");
+      const progressEl = document.getElementById("stat-school-devices-progress");
+      
+      if (countEl) countEl.textContent = `${devices.length}/10 เครื่อง`;
+      if (progressEl) {
+        progressEl.style.width = `${devices.length * 10}%`;
+        if (devices.length >= 10) {
+          progressEl.style.background = "var(--color-accent-rose)";
+          if (countEl) countEl.style.color = "var(--color-accent-rose)";
+        } else {
+          progressEl.style.background = "var(--color-accent-amber)";
+          if (countEl) countEl.style.color = "white";
+        }
+      }
+    }
   }
 
   // --- อัปเดตตัวกราฟิกพรีเมียม สรุปการสมัครสมาชิกเป็นสมาชิก/ไม่เป็นสมาชิก ---
