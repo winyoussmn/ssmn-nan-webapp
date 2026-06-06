@@ -154,6 +154,7 @@ function saveStateToLocalStorage() {
   localStorage.setItem("สสมน_NAN_CENTRAL_BANK_BALANCE", appState.centralBankBalance.toString());
   localStorage.setItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE", appState.centralBankUpdateDate);
   localStorage.setItem("สสมน_NAN_CENTRAL_OPERATING_FEE", (appState.centralOperatingFee || 0).toString());
+  localStorage.setItem("สสมน_NAN_COMMITTEE_PASSWORD", appState.committeePassword || "committee1234");
 
   // บันทึกสถานะโหมดทดสอบระบบและการสำรองข้อมูลเดิม
   localStorage.setItem("สสมน_NAN_HAS_DEMO_DATA", appState.hasDemoData ? "true" : "false");
@@ -176,6 +177,26 @@ function saveStateToLocalStorage() {
     localStorage.setItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE", appState.preDemoCentralOperatingFee.toString());
   } else {
     localStorage.removeItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE");
+  }
+  if (appState.preDemoMembers) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_MEMBERS", JSON.stringify(appState.preDemoMembers));
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_MEMBERS");
+  }
+  if (appState.preDemoDeathCases) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_DEATHS", JSON.stringify(appState.preDemoDeathCases));
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_DEATHS");
+  }
+  if (appState.preDemoSchoolInvoices) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_INVOICES", JSON.stringify(appState.preDemoSchoolInvoices));
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_INVOICES");
+  }
+  if (appState.preDemoTransferLogs) {
+    localStorage.setItem("สสมน_NAN_PRE_DEMO_TRANSFERS", JSON.stringify(appState.preDemoTransferLogs));
+  } else {
+    localStorage.removeItem("สสมน_NAN_PRE_DEMO_TRANSFERS");
   }
 
   // ยิงซิงค์ไปยัง Cloudflare D1 Database ในเบื้องหลัง
@@ -255,6 +276,9 @@ function loadStateFromLocalStorage() {
     });
   }
 
+  const cachedCommitteePassword = localStorage.getItem("สสมน_NAN_COMMITTEE_PASSWORD");
+  appState.committeePassword = cachedCommitteePassword || "committee1234";
+
   if (cachedAnnouncements) {
     appState.announcements = JSON.parse(cachedAnnouncements);
   } else {
@@ -296,6 +320,18 @@ function loadStateFromLocalStorage() {
   const cachedPreDemoFee = localStorage.getItem("สสมน_NAN_PRE_DEMO_OPERATING_FEE");
   if (cachedPreDemoFee) appState.preDemoCentralOperatingFee = parseFloat(cachedPreDemoFee);
 
+  const cachedPreDemoMembers = localStorage.getItem("สสมน_NAN_PRE_DEMO_MEMBERS");
+  if (cachedPreDemoMembers) appState.preDemoMembers = JSON.parse(cachedPreDemoMembers);
+
+  const cachedPreDemoDeaths = localStorage.getItem("สสมน_NAN_PRE_DEMO_DEATHS");
+  if (cachedPreDemoDeaths) appState.preDemoDeathCases = JSON.parse(cachedPreDemoDeaths);
+
+  const cachedPreDemoInvoices = localStorage.getItem("สสมน_NAN_PRE_DEMO_INVOICES");
+  if (cachedPreDemoInvoices) appState.preDemoSchoolInvoices = JSON.parse(cachedPreDemoInvoices);
+
+  const cachedPreDemoTransfers = localStorage.getItem("สสมน_NAN_PRE_DEMO_TRANSFERS");
+  if (cachedPreDemoTransfers) appState.preDemoTransferLogs = JSON.parse(cachedPreDemoTransfers);
+
   if (typeof updateDemoButtonsVisibility === "function") {
     updateDemoButtonsVisibility();
   }
@@ -324,7 +360,8 @@ async function syncStateToCloudflare() {
         announcements: appState.announcements,
         centralBankBalance: appState.centralBankBalance,
         centralBankUpdateDate: appState.centralBankUpdateDate,
-        centralOperatingFee: appState.centralOperatingFee
+        centralOperatingFee: appState.centralOperatingFee,
+        committeePassword: appState.committeePassword || "committee1234"
       })
     });
 
@@ -430,6 +467,7 @@ async function loadStateFromCloudflare() {
       appState.centralBankBalance = data.centralBankBalance || 250000;
       appState.centralBankUpdateDate = data.centralBankUpdateDate || "2026-06-01";
       appState.centralOperatingFee = data.centralOperatingFee || 0;
+      appState.committeePassword = data.committeePassword || "committee1234";
       
       // บันทึกทับ LocalStorage เพื่อเป็นระบบสำรองการทำงานแบบออฟไลน์
       localStorage.setItem("สสมน_NAN_MEMBERS", JSON.stringify(appState.members));
@@ -442,6 +480,7 @@ async function loadStateFromCloudflare() {
       localStorage.setItem("สสมน_NAN_CENTRAL_BANK_BALANCE", appState.centralBankBalance.toString());
       localStorage.setItem("สสมน_NAN_CENTRAL_BANK_UPDATE_DATE", appState.centralBankUpdateDate);
       localStorage.setItem("สสมน_NAN_CENTRAL_OPERATING_FEE", appState.centralOperatingFee.toString());
+      localStorage.setItem("สสมน_NAN_COMMITTEE_PASSWORD", appState.committeePassword);
 
       // ประมวลผลและตรวจสอบกำลังคน/สถิติต่างๆ
       ensureSchoolProfilesStats();
@@ -1787,7 +1826,8 @@ document.getElementById("form-member-transfer").addEventListener("submit", funct
     newSchool: newSchool.name,
     oldId: oldMember.id,
     newId: newMemberId,
-    reason: formattedReason
+    reason: formattedReason,
+    isDemo: appState.hasDemoData ? true : false
   };
   
   appState.transferLogs.unshift(provincialLog);
@@ -2004,7 +2044,8 @@ function triggerDeathDeduction(memberId, reportedDate, chargeAmount, cause, docu
     referenceMemberCount: calcInfo.activeMembersCount,
     grossPayout: calcInfo.grossPayout,
     operatingFee: calcInfo.operatingFee,
-    netPayout: calcInfo.netPayout
+    netPayout: calcInfo.netPayout,
+    isDemo: appState.hasDemoData ? true : false
   };
   
   appState.deathCases.unshift(deathCase);
@@ -2041,7 +2082,8 @@ function triggerDeathDeduction(memberId, reportedDate, chargeAmount, cause, docu
       deductionAmount: chargeAmount,
       totalOwed: totalOwed,
       status: totalOwed > 0 ? "unpaid" : "paid", 
-      slipData: null 
+      slipData: null,
+      isDemo: appState.hasDemoData ? true : false
     };
     appState.schoolInvoices.push(invoice);
   });
@@ -3373,6 +3415,34 @@ document.getElementById("btn-login-role-school").addEventListener("click", funct
   selectedLoginRole = "school";
 });
 
+// อุปกรณ์สำหรับการใช้งานระบบและการตรวจจับ Device ID
+function getOrCreateDeviceId() {
+  let devId = localStorage.getItem("สสมน_DEVICE_ID");
+  if (!devId) {
+    devId = "dev-" + Math.random().toString(36).substring(2, 15) + "-" + Date.now();
+    localStorage.setItem("สสมน_DEVICE_ID", devId);
+  }
+  return devId;
+}
+
+function getFriendlyDeviceName() {
+  const ua = navigator.userAgent;
+  let os = "Unknown OS";
+  if (ua.includes("Win")) os = "Windows";
+  else if (ua.includes("Mac")) os = "macOS";
+  else if (ua.includes("Linux")) os = "Linux";
+  else if (ua.includes("Android")) os = "Android";
+  else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+
+  let browser = "Unknown Browser";
+  if (ua.includes("Chrome")) browser = "Chrome";
+  else if (ua.includes("Firefox")) browser = "Firefox";
+  else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+  else if (ua.includes("Edge")) browser = "Edge";
+  
+  return `${os} (${browser})`;
+}
+
 // ตรวจสอบสิทธิ์เข้าระบบและล็อกอิน
 document.getElementById("form-login").addEventListener("submit", function(e) {
   e.preventDefault();
@@ -3390,17 +3460,47 @@ document.getElementById("form-login").addEventListener("submit", function(e) {
       document.getElementById("login-password").focus();
     }
   } else if (selectedLoginRole === "committee") {
-    if (password === "committee1234" || password === "committee123") {
+    const correctPwd = appState.committeePassword || "committee1234";
+    if (password === correctPwd || password === "committee123") {
       appState.activeRole = "committee";
       appState.activeSchoolId = "33"; // ส่วนกลางคือ 33
       loginSuccess();
     } else {
-      alert("❌ รหัสผ่านคณะกรรมการไม่ถูกต้อง กรุณาป้อน committee1234");
+      alert("❌ รหัสผ่านคณะกรรมการไม่ถูกต้อง กรุณาตรวจสอบรหัสผ่านใหม่หรือพิมพ์ committee1234");
       document.getElementById("login-password").focus();
     }
   } else {
     const correctPwd = appState.schoolPasswords[schoolId] || "school1234";
     if (password === correctPwd || password === "school123") {
+      
+      // ตรวจสอบและลงทะเบียนเครื่องอุปกรณ์
+      const devId = getOrCreateDeviceId();
+      const devName = getFriendlyDeviceName();
+      const profile = appState.schoolProfiles[schoolId] || {
+        address: "-", moo: "-", tumbon: "-", amphoe: "เมืองน่าน", phone: "-", fax: "-", director: "-", directorPhone: "-", coordinator: "-", coordinatorPhone: "-"
+      };
+      if (!profile.devices) profile.devices = [];
+      
+      const existingDevIndex = profile.devices.findIndex(d => d.id === devId);
+      if (existingDevIndex !== -1) {
+        profile.devices[existingDevIndex].lastActive = new Date().toISOString();
+        profile.devices[existingDevIndex].name = devName;
+      } else {
+        if (profile.devices.length >= 10) {
+          alert(`❌ ไม่สามารถเข้าสู่ระบบได้เนื่องจากบัญชีโรงเรียนนี้มีการใช้งานครบขีดจำกัด 10 อุปกรณ์แล้ว\n\n(ขณะนี้มีอุปกรณ์อื่นเข้าใช้อยู่ 10 อุปกรณ์)\nกรุณาติดต่อแอดมินจังหวัดเพื่อขอรีเซ็ตหรือล้างข้อมูลอุปกรณ์!`);
+          document.getElementById("login-password").focus();
+          return;
+        }
+        profile.devices.push({
+          id: devId,
+          name: devName,
+          lastActive: new Date().toISOString()
+        });
+      }
+      appState.schoolProfiles[schoolId] = profile;
+      saveStateToLocalStorage();
+      syncStateToCloudflare();
+
       appState.activeRole = "school";
       appState.activeSchoolId = schoolId;
       loginSuccess();
@@ -3769,10 +3869,33 @@ function updateDemoButtonsVisibility() {
 }
 
 function clearDemoDataOnly() {
-  appState.members = (appState.members || []).filter(m => !m.isDemo);
-  appState.deathCases = (appState.deathCases || []).filter(d => !d.isDemo);
-  appState.schoolInvoices = (appState.schoolInvoices || []).filter(i => !i.isDemo);
-  appState.transferLogs = (appState.transferLogs || []).filter(l => !l.isDemo);
+  if (appState.preDemoMembers) {
+    appState.members = JSON.parse(JSON.stringify(appState.preDemoMembers));
+    delete appState.preDemoMembers;
+  } else {
+    appState.members = (appState.members || []).filter(m => !m.isDemo);
+  }
+
+  if (appState.preDemoDeathCases) {
+    appState.deathCases = JSON.parse(JSON.stringify(appState.preDemoDeathCases));
+    delete appState.preDemoDeathCases;
+  } else {
+    appState.deathCases = (appState.deathCases || []).filter(d => !d.isDemo);
+  }
+
+  if (appState.preDemoSchoolInvoices) {
+    appState.schoolInvoices = JSON.parse(JSON.stringify(appState.preDemoSchoolInvoices));
+    delete appState.preDemoSchoolInvoices;
+  } else {
+    appState.schoolInvoices = (appState.schoolInvoices || []).filter(i => !i.isDemo);
+  }
+
+  if (appState.preDemoTransferLogs) {
+    appState.transferLogs = JSON.parse(JSON.stringify(appState.preDemoTransferLogs));
+    delete appState.preDemoTransferLogs;
+  } else {
+    appState.transferLogs = (appState.transferLogs || []).filter(l => !l.isDemo);
+  }
   
   if (appState.preDemoSchoolProfiles) {
     appState.schoolProfiles = JSON.parse(JSON.stringify(appState.preDemoSchoolProfiles));
@@ -3828,6 +3951,10 @@ function generateDemoData() {
   clearDemoDataOnly();
   
   // 2. Backup current school profiles & bank parameters
+  appState.preDemoMembers = JSON.parse(JSON.stringify(appState.members));
+  appState.preDemoDeathCases = JSON.parse(JSON.stringify(appState.deathCases));
+  appState.preDemoSchoolInvoices = JSON.parse(JSON.stringify(appState.schoolInvoices));
+  appState.preDemoTransferLogs = JSON.parse(JSON.stringify(appState.transferLogs));
   appState.preDemoSchoolProfiles = JSON.parse(JSON.stringify(appState.schoolProfiles));
   appState.preDemoCentralBankBalance = appState.centralBankBalance;
   appState.preDemoCentralBankUpdateDate = appState.centralBankUpdateDate;
@@ -4399,6 +4526,9 @@ function initSchoolProfileForm() {
 
   // คำนวณยอดรวมทันทีที่ดึงข้อมูล
   updateSchoolProfileTotals();
+
+  // แสดงรายการอุปกรณ์ใช้งานของโรงเรียน
+  renderSchoolDevicesList(schoolId);
 }
 
 // ผูกฟอร์มบันทึกข้อมูลโรงเรียน
@@ -4416,6 +4546,7 @@ if (schoolProfileForm) {
       return;
     }
     
+    const existingDevices = appState.schoolProfiles[schoolId] ? (appState.schoolProfiles[schoolId].devices || []) : [];
     appState.schoolProfiles[schoolId] = {
       address: document.getElementById("school-profile-address").value.trim(),
       moo: document.getElementById("school-profile-moo").value.trim(),
@@ -4427,6 +4558,7 @@ if (schoolProfileForm) {
       directorPhone: document.getElementById("school-profile-director-phone").value.trim(),
       coordinator: document.getElementById("school-profile-coordinator").value.trim(),
       coordinatorPhone: document.getElementById("school-profile-coordinator-phone").value.trim(),
+      devices: existingDevices,
       
       // บันทึกกำลังคนและนักเรียน
       directorCount: parseInt(document.getElementById("school-profile-director-count").value) || 0,
@@ -4549,13 +4681,18 @@ function renderSchoolsDirectory() {
             <div style="font-weight: 600; color: white;">${profile.coordinator}</div>
             <div style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ: ${profile.coordinatorPhone}</div>
           </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-secondary btn-mini" style="font-family: var(--font-number); display: inline-flex; align-items: center; gap: 4px; border-color: rgba(255,255,255,0.15); font-weight: 600;" onclick="openViewSchoolDevicesModal('${sch.id}')">
+              📱 ${(profile.devices || []).length}/10 เครื่อง
+            </button>
+          </td>
         </tr>
       `;
     }
   });
 
   if (!html) {
-    html = `<tr><td colspan="6" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลสังกัดที่ตรงตามเงื่อนไขการค้นหา</td></tr>`;
+    html = `<tr><td colspan="7" class="text-center" style="color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลสังกัดที่ตรงตามเงื่อนไขการค้นหา</td></tr>`;
   }
   tbody.innerHTML = html;
 }
@@ -5045,6 +5182,15 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
     if (roleLabel) roleLabel.textContent = appState.activeRole === "committee" ? "คณะกรรมการ สสมน." : "แอดมินจังหวัด";
     if (scopeLabel) scopeLabel.textContent = appState.activeRole === "committee" ? "จังหวัดน่าน (สิทธิ์เทียบเท่าจังหวัด)" : "จังหวัดน่าน (ทั้งหมด)";
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
+
+    const btnChangePwd = document.getElementById("btn-change-committee-pwd");
+    if (btnChangePwd) {
+      btnChangePwd.style.display = (appState.activeRole === "committee") ? "block" : "none";
+    }
+    const blockCredentials = document.getElementById("block-province-system-credentials");
+    if (blockCredentials) {
+      blockCredentials.style.display = (appState.activeRole === "province") ? "block" : "none";
+    }
     
     if (certBlockProvince) certBlockProvince.style.display = "block";
     if (profileFormBlock) profileFormBlock.style.display = "none";
@@ -5069,6 +5215,11 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
     if (scopeLabel) scopeLabel.textContent = schName;
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";
     
+    const btnChangePwd = document.getElementById("btn-change-committee-pwd");
+    if (btnChangePwd) btnChangePwd.style.display = "none";
+    const blockCredentials = document.getElementById("block-province-system-credentials");
+    if (blockCredentials) blockCredentials.style.display = "none";
+
     if (certBlockProvince) certBlockProvince.style.display = "none";
     if (profileFormBlock) profileFormBlock.style.display = "block";
     if (directoryBlock) directoryBlock.style.display = "none";
@@ -5955,4 +6106,191 @@ if (formConfirmPayout) {
     }
   });
 }
+
+// ==================== 25. DEVICE MANAGEMENT & COMMITTEE PASSWORD FUNCTIONS ====================
+
+// เรนเดอร์เครื่องอุปกรณ์สำหรับโรงเรียนแอดมิน
+function renderSchoolDevicesList(schoolId) {
+  const tbody = document.getElementById("tbl-body-school-devices");
+  if (!tbody) return;
+
+  const profile = appState.schoolProfiles[schoolId] || {};
+  const devices = profile.devices || [];
+  const currentDevId = getOrCreateDeviceId();
+
+  let html = "";
+  if (devices.length === 0) {
+    html = `<tr><td colspan="5" class="text-center" style="color: var(--color-text-muted);">ไม่มีอุปกรณ์อื่นลงทะเบียนไว้ เข้าล็อกอินเครื่องปัจจุบันเป็นเครื่องแรก</td></tr>`;
+  } else {
+    devices.forEach((dev, idx) => {
+      const isCurrent = dev.id === currentDevId;
+      const formattedDate = dev.lastActive ? dev.lastActive.replace('T', ' ').substring(0, 16) : "-";
+      
+      html += `
+        <tr>
+          <td class="text-center" style="font-family: var(--font-number);">${idx + 1}</td>
+          <td>
+            <div style="font-weight: 600; color: white;">${dev.name || "อุปกรณ์ไม่ระบุชื่อ"}</div>
+            <div style="font-size: 11px; color: var(--color-text-dim); font-family: var(--font-number); margin-top: 2.5px;">ID: ${dev.id}</div>
+          </td>
+          <td style="font-family: var(--font-number);">${formattedDate}</td>
+          <td class="text-center">
+            ${isCurrent ? `<span class="badge badge-success" style="font-size: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.25); color: var(--color-accent-emerald);">🟢 อุปกรณ์ปัจจุบัน</span>` : `<span class="badge" style="font-size: 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--color-text-muted);">พร้อมใช้งาน</span>`}
+          </td>
+          <td class="text-center">
+            ${isCurrent ? `<button class="btn btn-secondary btn-mini" disabled style="opacity: 0.4; cursor: not-allowed;">ลบออก</button>` : `<button class="btn btn-danger btn-mini" onclick="deleteSchoolDevice('${schoolId}', '${dev.id}')">ลบออก</button>`}
+          </td>
+        </tr>
+      `;
+    });
+  }
+  tbody.innerHTML = html;
+}
+
+window.deleteSchoolDevice = function(schoolId, deviceId) {
+  if (!confirm("⚠️ ยืนยันการลบเครื่องอุปกรณ์นี้ใช่หรือไม่?\nหากลบออก อุปกรณ์ดังกล่าวจะไม่สามารถล็อกอินเข้าสู่ระบบได้จนกว่าจะลงทะเบียนใหม่")) {
+    return;
+  }
+  const profile = appState.schoolProfiles[schoolId];
+  if (profile && profile.devices) {
+    profile.devices = profile.devices.filter(d => d.id !== deviceId);
+    saveStateToLocalStorage();
+    syncStateToCloudflare();
+    renderSchoolDevicesList(schoolId);
+  }
+};
+
+// จัดการการดูข้อมูลอุปกรณ์ผ่านแอดมินจังหวัด
+let activeDevicesSchoolId = null;
+
+window.openViewSchoolDevicesModal = function(schoolId) {
+  activeDevicesSchoolId = schoolId;
+  const modal = document.getElementById("modal-view-school-devices");
+  if (!modal) return;
+
+  const sch = SCHOOLS.find(s => s.id === schoolId);
+  const nameEl = document.getElementById("modal-devices-school-name");
+  if (nameEl && sch) {
+    nameEl.textContent = sch.name;
+  }
+
+  const tbody = document.getElementById("tbl-body-modal-school-devices");
+  if (tbody) {
+    const profile = appState.schoolProfiles[schoolId] || {};
+    const devices = profile.devices || [];
+    
+    let html = "";
+    if (devices.length === 0) {
+      html = `<tr><td colspan="3" class="text-center" style="color: var(--color-text-muted); padding: 20px;">ไม่มีข้อมูลอุปกรณ์ล็อกอินลงทะเบียนในระบบ</td></tr>`;
+    } else {
+      devices.forEach((dev, idx) => {
+        const formattedDate = dev.lastActive ? dev.lastActive.replace('T', ' ').substring(0, 16) : "-";
+        html += `
+          <tr>
+            <td class="text-center" style="font-family: var(--font-number);">${idx + 1}</td>
+            <td style="font-weight: 500; color: white;">${dev.name || "อุปกรณ์ไม่ระบุชื่อ"}<br><span style="font-size: 10px; color: var(--color-text-dim);">ID: ${dev.id}</span></td>
+            <td style="font-family: var(--font-number);">${formattedDate}</td>
+          </tr>
+        `;
+      });
+    }
+    tbody.innerHTML = html;
+  }
+
+  modal.classList.add("active");
+};
+
+window.closeViewSchoolDevicesModal = function() {
+  const modal = document.getElementById("modal-view-school-devices");
+  if (modal) modal.classList.remove("active");
+  activeDevicesSchoolId = null;
+};
+
+// ล้างอุปกรณ์ทั้งหมดโดยแอดมินจังหวัด
+const btnClearAllDevices = document.getElementById("btn-modal-clear-all-devices");
+if (btnClearAllDevices) {
+  btnClearAllDevices.addEventListener("click", function() {
+    const schoolId = activeDevicesSchoolId;
+    if (!schoolId) return;
+
+    const sch = SCHOOLS.find(s => s.id === schoolId);
+    if (!confirm(`⚠️ ยืนยันการล้างข้อมูลเครื่องอุปกรณ์ทั้งหมดของสังกัด "${sch ? sch.name : schoolId}" ใช่หรือไม่?\n\n(ผู้ใช้งานแอดมินโรงเรียนจะสามารถเริ่มลงทะเบียนอุปกรณ์ใหม่ได้ทันที)`)) {
+      return;
+    }
+
+    const profile = appState.schoolProfiles[schoolId];
+    if (profile) {
+      profile.devices = [];
+      saveStateToLocalStorage();
+      syncStateToCloudflare();
+      closeViewSchoolDevicesModal();
+      renderSchoolsDirectory();
+      alert("🟢 ล้างข้อมูลอุปกรณ์เรียบร้อยแล้ว!");
+    }
+  });
+}
+
+// เปลี่ยนรหัสผ่านคณะกรรมการ สสมน.
+window.openChangeCommitteePasswordModal = function() {
+  const modal = document.getElementById("modal-change-committee-password");
+  if (modal) {
+    document.getElementById("committee-new-password").value = "";
+    document.getElementById("committee-new-password-confirm").value = "";
+    modal.classList.add("active");
+  }
+};
+
+window.closeChangeCommitteePasswordModal = function() {
+  const modal = document.getElementById("modal-change-committee-password");
+  if (modal) modal.classList.remove("active");
+};
+
+const formChangeCommitteePwd = document.getElementById("form-change-committee-password");
+if (formChangeCommitteePwd) {
+  formChangeCommitteePwd.addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    const newPwd = document.getElementById("committee-new-password").value;
+    const newPwdConfirm = document.getElementById("committee-new-password-confirm").value;
+
+    if (newPwd !== newPwdConfirm) {
+      alert("❌ รหัสผ่านใหม่และรหัสผ่านยืนยันไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง!");
+      return;
+    }
+
+    appState.committeePassword = newPwd;
+    saveStateToLocalStorage();
+    syncStateToCloudflare();
+    closeChangeCommitteePasswordModal();
+    
+    // รีเฟรชส่วนแสดงรหัสผ่านในแอดมินจังหวัดด้วย
+    const maskedEl = document.querySelector(".masked-committee-pwd");
+    if (maskedEl) {
+      maskedEl.textContent = "••••••••";
+      const container = document.getElementById("province-committee-pwd-container");
+      if (container) {
+        const eye = container.querySelector("span:last-child");
+        if (eye) eye.textContent = "👁️";
+      }
+    }
+    
+    alert("🟢 บันทึกการเปลี่ยนแปลงรหัสผ่านคณะกรรมการ สสมน. เรียบร้อยแล้ว!");
+  });
+}
+
+// เปิดแสดงรหัสผ่านคณะกรรมการ สสมน. ในจังหวัด
+window.toggleCommitteePasswordReveal = function(element) {
+  const span = element.querySelector(".masked-committee-pwd");
+  const eye = element.querySelector("span:last-child");
+  if (!span) return;
+
+  const pwd = appState.committeePassword || "committee1234";
+  if (span.textContent === "••••••••") {
+    span.textContent = pwd;
+    if (eye) eye.textContent = "🙈";
+  } else {
+    span.textContent = "••••••••";
+    if (eye) eye.textContent = "👁️";
+  }
+};
 

@@ -139,6 +139,10 @@
           </div>
         </div>
         
+        <button id="btn-change-committee-pwd" class="btn btn-secondary btn-full-width btn-mini" style="margin-top: 8px; display: none; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-amber);" onclick="openChangeCommitteePasswordModal()">
+          🔑 เปลี่ยนรหัสผ่านคณะกรรมการ
+        </button>
+        
         <button id="btn-action-logout" class="btn btn-secondary btn-full-width btn-mini" style="margin-top: 14px; border-color: rgba(244, 63, 94, 0.2); color: var(--color-accent-rose);">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
@@ -1296,6 +1300,28 @@
                   <span>บันทึกการเปลี่ยนแปลงข้อมูลพื้นฐาน</span>
                 </button>
               </form>
+
+              <!-- School Admin View: Registered Devices Widget -->
+              <div class="school-devices-section" style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;">
+                <h4 class="section-title" style="color: #60a5fa; font-size: 14px; margin-bottom: 12px;">📱 อุปกรณ์ที่ลงทะเบียนใช้งานอยู่ (สูงสุด 10 อุปกรณ์)</h4>
+                <p style="font-size: 12.5px; color: var(--color-text-muted); margin-bottom: 14px;">รายการอุปกรณ์ (Web Browsers) ที่เคยลงทะเบียนล็อกอินเข้าสู่ระบบโรงเรียนนี้ ท่านสามารถลบอุปกรณ์ที่ไม่ต้องการออกเพื่อเพิ่มพื้นที่ว่างได้</p>
+                <div class="table-responsive">
+                  <table class="standard-table table-mini" style="font-size: 12.5px; background: rgba(0,0,0,0.15);">
+                    <thead>
+                      <tr>
+                        <th style="width: 50px;" class="text-center">#</th>
+                        <th>รายละเอียดอุปกรณ์ (Device Name)</th>
+                        <th>การเข้าใช้งานล่าสุด (Last Active)</th>
+                        <th style="width: 120px;" class="text-center">สถานะ</th>
+                        <th style="width: 80px;" class="text-center">จัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbl-body-school-devices">
+                      <!-- Populated dynamically via app.js -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1321,6 +1347,23 @@
             <div>
               <h2>ทำเนียบผู้ประสานงาน สสมน. จังหวัดน่าน (Directory Overview) 📖</h2>
               <p>ทำเนียบข้อมูลพื้นฐาน ผู้อำนวยการ และเจ้าหน้าที่ประสานงาน สสมน. ของสังกัดสถานศึกษาทั้ง 33 สังกัด</p>
+            </div>
+          </div>
+
+          <!-- Province Admin: Committee Password & System Credentials Card -->
+          <div id="block-province-system-credentials" class="widget-card glass" style="margin-bottom: 24px; display: none;">
+            <div class="widget-header" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+              <h3>🔐 รหัสผ่านระบบและข้อมูลความปลอดภัย (System Credentials)</h3>
+              <p>ตรวจสอบและประสานงานรหัสผ่านของระบบคณะกรรมการกลาง สสมน. จังหวัดน่าน</p>
+            </div>
+            <div class="widget-body" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap; padding: 16px 20px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="color: var(--color-text-dim); font-size: 13.5px; font-weight: 500;">🔑 รหัสผ่านคณะกรรมการ สสมน.:</span>
+                <span id="province-committee-pwd-container" onclick="toggleCommitteePasswordReveal(this)" style="cursor: pointer; color: var(--color-accent-amber); font-weight: 700; font-family: var(--font-number); font-size: 15px; display: inline-flex; align-items: center; gap: 6px; background: rgba(251, 191, 36, 0.08); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.2);" title="คลิกเพื่อแสดง/ปกปิดรหัสผ่าน">
+                  <span class="masked-committee-pwd">••••••••</span>
+                  <span>👁️</span>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -1364,6 +1407,7 @@
                       <th>ที่ตั้งติดต่อ / เบอร์โทร</th>
                       <th>ชื่อผู้อำนวยการ</th>
                       <th>เจ้าหน้าที่ประสานงาน สสมน.</th>
+                      <th class="text-center" style="width: 130px;">อุปกรณ์ใช้งาน</th>
                     </tr>
                   </thead>
                   <tbody id="tbl-body-schools-directory">
@@ -2253,6 +2297,74 @@
           <button type="submit" class="btn btn-primary">บันทึกยอดเงิน</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CHANGE COMMITTEE PASSWORD -->
+  <div id="modal-change-committee-password" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2>🔑 เปลี่ยนรหัสผ่านคณะกรรมการ สสมน.</h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeChangeCommitteePasswordModal()">&times;</button>
+      </div>
+      <form id="form-change-committee-password" autocomplete="off" class="standard-form">
+        <div class="form-group">
+          <label for="committee-new-password">ระบุรหัสผ่านใหม่: <span class="required">*</span></label>
+          <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="committee-new-password" required placeholder="ระบุรหัสผ่านใหม่..." class="form-control" style="padding-right: 40px; width: 100%;">
+            <span class="password-toggle-icon" onclick="togglePasswordInput('committee-new-password', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="committee-new-password-confirm">ยืนยันรหัสผ่านใหม่อีกครั้ง: <span class="required">*</span></label>
+          <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="committee-new-password-confirm" required placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง..." class="form-control" style="padding-right: 40px; width: 100%;">
+            <span class="password-toggle-icon" onclick="togglePasswordInput('committee-new-password-confirm', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-bottom: 0;">
+          <button type="button" class="btn btn-secondary" onclick="closeChangeCommitteePasswordModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกรหัสผ่าน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW/RESET SCHOOL DEVICES (PROVINCE ADMIN) -->
+  <div id="modal-view-school-devices" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale wide-modal" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 style="display: flex; align-items: center; gap: 8px;">
+          <span>📱 อุปกรณ์เข้าใช้งานสังกัด:</span>
+          <span id="modal-devices-school-name" style="color: var(--color-accent-gold);">โรงเรียน...</span>
+        </h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeViewSchoolDevicesModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
+          แสดงรายการอุปกรณ์ล็อกอินทั้งหมดของสังกัดนี้ (จำกัดไม่เกิน 10 อุปกรณ์) แอดมินจังหวัดสามารถกดล้างสิทธิ์ทั้งหมดเพื่อให้แอดมินโรงเรียนสามารถเข้าใช้บนอุปกรณ์เครื่องใหม่ได้
+        </p>
+        <div class="table-responsive">
+          <table class="standard-table" style="font-size: 13px;">
+            <thead>
+              <tr>
+                <th style="width: 50px;" class="text-center">#</th>
+                <th>รายละเอียดอุปกรณ์</th>
+                <th>เข้าใช้งานล่าสุด</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body-modal-school-devices">
+              <!-- Populated dynamically via app.js -->
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="button" class="btn btn-danger" id="btn-modal-clear-all-devices">
+            🗑️ ล้างข้อมูลอุปกรณ์ทั้งหมด
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="closeViewSchoolDevicesModal()">ปิดหน้าต่าง</button>
+        </div>
+      </div>
     </div>
   </div>
 

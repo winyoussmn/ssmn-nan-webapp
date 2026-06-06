@@ -61,7 +61,8 @@ async function ensureTables(db) {
       activeMembersCount INTEGER,
       retiredTransferredMembersCount INTEGER,
       studentsJune INTEGER,
-      studentsNovember INTEGER
+      studentsNovember INTEGER,
+      devices TEXT
     );`,
     `CREATE TABLE IF NOT EXISTS school_passwords (
       schoolId TEXT PRIMARY KEY,
@@ -135,6 +136,18 @@ async function ensureTables(db) {
     console.error("Migration error (death_cases table columns):", err.message);
   }
 
+  // Self-Healing Column Creator for school_profiles table devices column
+  try {
+    const tableInfo = await db.prepare("PRAGMA table_info(school_profiles)").all();
+    const columns = tableInfo.results.map(r => r.name);
+    
+    if (!columns.includes("devices")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN devices TEXT").run();
+    }
+  } catch (err) {
+    console.error("Migration error (school_profiles table devices column):", err.message);
+  }
+
   // Self-Healing Column Creator for documents table in case it existed
   try {
     const tableInfo = await db.prepare("PRAGMA table_info(documents)").all();
@@ -198,6 +211,12 @@ export async function onRequestGet(context) {
     // แปลงโครงสร้างแถวให้อยู่ในฟอร์มของ appState (Object mappings)
     const schoolProfiles = {};
     profilesRes.results.forEach(p => {
+      let devicesList = [];
+      try {
+        devicesList = p.devices ? JSON.parse(p.devices) : [];
+      } catch (e) {
+        devicesList = [];
+      }
       schoolProfiles[p.schoolId] = {
         address: p.address,
         moo: p.moo,
@@ -217,7 +236,8 @@ export async function onRequestGet(context) {
         activeMembersCount: p.activeMembersCount,
         retiredTransferredMembersCount: p.retiredTransferredMembersCount,
         studentsJune: p.studentsJune,
-        studentsNovember: p.studentsNovember
+        studentsNovember: p.studentsNovember,
+        devices: devicesList
       };
     });
 
@@ -285,7 +305,8 @@ export async function onRequestGet(context) {
       announcements: announcementsRes.results || [],
       centralBankBalance: centralConfig.centralBankBalance !== undefined ? parseFloat(centralConfig.centralBankBalance) : 250000,
       centralBankUpdateDate: centralConfig.centralBankUpdateDate || "2026-06-01",
-      centralOperatingFee: centralConfig.centralOperatingFee !== undefined ? parseFloat(centralConfig.centralOperatingFee) : 0
+      centralOperatingFee: centralConfig.centralOperatingFee !== undefined ? parseFloat(centralConfig.centralOperatingFee) : 0,
+      committeePassword: centralConfig.committeePassword || "committee1234"
     };
 
     return new Response(JSON.stringify(payload), {
@@ -371,14 +392,15 @@ export async function onRequestPost(context) {
           INSERT INTO school_profiles (
             schoolId, address, moo, tumbon, amphoe, phone, fax, director, directorPhone, coordinator, coordinatorPhone,
             directorCount, deputyCount, teacherCount, otherCount, pensionersCount, activeMembersCount, retiredTransferredMembersCount,
-            studentsJune, studentsNovember
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            studentsJune, studentsNovember, devices
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           schoolId, p.address || "", p.moo || "", p.tumbon || "", p.amphoe || "", p.phone || "", p.fax || "",
           p.director || "", p.directorPhone || "", p.coordinator || "", p.coordinatorPhone || "",
           p.directorCount || 0, p.deputyCount || 0, p.teacherCount || 0, p.otherCount || 0,
           p.pensionersCount || 0, p.activeMembersCount || 0, p.retiredTransferredMembersCount || 0,
-          p.studentsJune || 0, p.studentsNovember || 0
+          p.studentsJune || 0, p.studentsNovember || 0,
+          typeof p.devices === "string" ? p.devices : JSON.stringify(p.devices || [])
         ));
       });
     }
@@ -442,6 +464,10 @@ export async function onRequestPost(context) {
     if (data.centralOperatingFee !== undefined) {
       statements.push(db.prepare("INSERT INTO central_config (key, value) VALUES (?, ?)")
         .bind("centralOperatingFee", String(data.centralOperatingFee)));
+    }
+    if (data.committeePassword !== undefined) {
+      statements.push(db.prepare("INSERT INTO central_config (key, value) VALUES (?, ?)")
+        .bind("committeePassword", String(data.committeePassword)));
     }
 
     // รันคิวรีทั้งหมดเป็นก้อนเดียวใน Transaction
