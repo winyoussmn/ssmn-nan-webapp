@@ -3450,10 +3450,19 @@ function switchTab(tabId) {
     if (appState.activeRole === "school") {
       document.getElementById("block-school-profile-editor").style.display = "block";
       document.getElementById("block-province-schools-directory").style.display = "none";
+      const coordDir = document.getElementById("block-school-coordinators-directory");
+      if (coordDir) {
+        coordDir.style.display = "block";
+        renderSchoolCoordinatorsCards();
+      }
       initSchoolProfileForm();
     } else {
       document.getElementById("block-school-profile-editor").style.display = "none";
       document.getElementById("block-province-schools-directory").style.display = "block";
+      const coordDir = document.getElementById("block-school-coordinators-directory");
+      if (coordDir) {
+        coordDir.style.display = "none";
+      }
       renderSchoolsDirectory();
     }
   }
@@ -4383,6 +4392,73 @@ function renderSchoolsDirectory() {
   tbody.innerHTML = html;
 }
 
+// เรนเดอร์ทำเนียบผู้ประสานงาน 33 โรงเรียนแบบการ์ดสีสันสวยงาม (แบบดูงานมีสีสัน) สำหรับแอดมินโรงเรียน
+function renderSchoolCoordinatorsCards() {
+  const grid = document.getElementById("coordinators-cards-grid");
+  if (!grid) return;
+
+  // สีสันพิเศษระดับพรีเมียมตามอำเภอต่างๆ (แบบดูงานมีสีสัน)
+  const amphoeColors = {
+    "เมืองน่าน": { border: "rgba(20, 184, 166, 0.3)", bg: "rgba(20, 184, 166, 0.04)", text: "var(--color-accent-teal)" },
+    "ท่าวังผา": { border: "rgba(16, 185, 129, 0.3)", bg: "rgba(16, 185, 129, 0.04)", text: "var(--color-accent-emerald)" },
+    "ปัว": { border: "rgba(59, 130, 246, 0.3)", bg: "rgba(59, 130, 246, 0.04)", text: "#60a5fa" },
+    "สา": { border: "rgba(168, 85, 247, 0.3)", bg: "rgba(168, 85, 247, 0.04)", text: "#c084fc" },
+    "นาน้อย": { border: "rgba(99, 102, 241, 0.3)", bg: "rgba(99, 102, 241, 0.04)", text: "#818cf8" },
+    "ทุ่งช้าง": { border: "rgba(245, 158, 11, 0.3)", bg: "rgba(245, 158, 11, 0.04)", text: "var(--color-accent-amber)" },
+    "สันติสุข": { border: "rgba(236, 72, 153, 0.3)", bg: "rgba(236, 72, 153, 0.04)", text: "#f472b6" },
+    "แม่จริม": { border: "rgba(239, 68, 68, 0.3)", bg: "rgba(239, 68, 68, 0.04)", text: "var(--color-accent-rose)" },
+    "บ่อเกลือ": { border: "rgba(251, 191, 36, 0.3)", bg: "rgba(251, 191, 36, 0.04)", text: "var(--color-accent-gold)" },
+    "บ้านหลวง": { border: "rgba(14, 165, 233, 0.3)", bg: "rgba(14, 165, 233, 0.04)", text: "#38bdf8" },
+    "นาหมื่น": { border: "rgba(79, 70, 229, 0.3)", bg: "rgba(79, 70, 229, 0.04)", text: "#6366f1" },
+    "เชียงกลาง": { border: "rgba(34, 197, 94, 0.3)", bg: "rgba(34, 197, 94, 0.04)", text: "#4ade80" },
+    "สองแคว": { border: "rgba(234, 179, 8, 0.3)", bg: "rgba(234, 179, 8, 0.04)", text: "#facc15" },
+    "ภูเพียง": { border: "rgba(217, 70, 239, 0.3)", bg: "rgba(217, 70, 239, 0.04)", text: "#e879f9" },
+    "เฉลิมพระเกียรติ": { border: "rgba(244, 63, 94, 0.3)", bg: "rgba(244, 63, 94, 0.04)", text: "#fb7185" }
+  };
+
+  const defaultColor = { border: "rgba(251, 191, 36, 0.25)", bg: "rgba(251, 191, 36, 0.03)", text: "var(--color-accent-gold)" };
+
+  let html = "";
+  SCHOOLS.forEach(sch => {
+    const profile = appState.schoolProfiles[sch.id] || {
+      address: "-", moo: "-", tumbon: "-", amphoe: "เมืองน่าน", phone: "-", fax: "-", director: "-", directorPhone: "-", coordinator: "-", coordinatorPhone: "-"
+    };
+
+    const color = amphoeColors[profile.amphoe] || defaultColor;
+    const coordinatorName = profile.coordinator || "ยังไม่ระบุ";
+    const coordinatorPhone = profile.coordinatorPhone || "-";
+
+    html += `
+      <div class="coordinator-card glass animate-scale" style="padding: 16px; border: 1px solid ${color.border}; background: ${color.bg}; border-radius: var(--radius-lg); position: relative; overflow: hidden; transition: all var(--transition-fast); display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="font-size: 10px; font-weight: 700; color: ${color.text}; letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;">
+            <span>📍 อ.${profile.amphoe}</span>
+            <span class="badge" style="font-size: 9px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.06); color: white;">ID: ${sch.id}</span>
+          </div>
+          <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: white; font-weight: 700; line-height: 1.4;">${sch.name}</h4>
+          
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+            <span style="font-size: 11px; color: var(--color-text-dim); font-weight: 600;">เจ้าหน้าที่ประสานงาน สสมน.:</span>
+            <span style="font-size: 13px; font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">👤 ${coordinatorName}</span>
+            <span style="font-size: 12px; font-family: var(--font-number); color: ${color.text}; font-weight: 700; margin-top: 2px;">
+              📞 <a href="tel:${coordinatorPhone.replace(/-/g, '')}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed ${color.text};">${coordinatorPhone}</a>
+            </span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.06); font-size: 10.5px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 2px;">
+          <div>👑 ผอ: <strong>${profile.director || '-'}</strong></div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>📞 โทรโรงเรียน: ${profile.phone || '-'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  grid.innerHTML = html;
+}
+
 // ผูก Live Search & Filter อำเภอ
 const searchDirInput = document.getElementById("search-schools-directory");
 if (searchDirInput) searchDirInput.addEventListener("input", renderSchoolsDirectory);
@@ -4796,8 +4872,8 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
   const dashboardContact = document.getElementById("block-school-province-contact");
 
   if (appState.activeRole === "province" || appState.activeRole === "committee") {
-    if (sidebarContact) sidebarContact.style.display = "none";
-    if (dashboardContact) dashboardContact.style.display = "none";
+    if (sidebarContact) sidebarContact.style.display = "block";
+    if (dashboardContact) dashboardContact.style.display = "block";
     if (roleLabel) roleLabel.textContent = appState.activeRole === "committee" ? "คณะกรรมการ สสมน." : "แอดมินจังหวัด";
     if (scopeLabel) scopeLabel.textContent = appState.activeRole === "committee" ? "จังหวัดน่าน (สิทธิ์เทียบเท่าจังหวัด)" : "จังหวัดน่าน (ทั้งหมด)";
     if (schoolsMenuLabel) schoolsMenuLabel.textContent = "ข้อมูลพื้นฐานของโรงเรียน";

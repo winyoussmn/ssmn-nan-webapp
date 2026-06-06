@@ -209,14 +209,24 @@
           <span>⚠️</span>
           <span><strong>คำเตือน:</strong> หากกดนำเข้าข้อมูล ข้อมูลที่แก้ไขและเอกสารประกอบที่กรอกไว้ทั้งหมดจะหายทันที!</span>
         </div>
-        <!-- Province Admin Contact Info for School Admin -->
-        <div id="province-admin-contact-sidebar" style="display: none; margin-top: 8px; font-size: 11.5px; color: var(--color-text-muted); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px; border-radius: var(--radius-md); line-height: 1.5;">
-          <div style="font-weight: 700; color: var(--color-accent-amber); margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
-            <span>📞 แอดมินจังหวัด (ศูนย์ประสานงาน)</span>
+        <!-- Province Admin & Committee Contact Info -->
+        <div id="province-admin-contact-sidebar" style="display: none; margin-top: 8px; font-size: 11px; color: var(--color-text-muted); background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px; border-radius: var(--radius-md); line-height: 1.45;">
+          <div style="font-weight: 700; color: var(--color-accent-amber); margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+            <span>📞 ประสานงานส่วนกลาง สสมน.น่าน</span>
           </div>
-          <div style="color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</div>
-          <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 2px;">
-            <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
+          <div style="margin-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 6px;">
+            <div style="font-size: 10px; color: var(--color-text-dim);">แอดมินจังหวัด:</div>
+            <div style="color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</div>
+            <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 1px;">
+              <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</div>
+            <div style="color: white; font-weight: 600;">นายอนันตศักดิ์ ยศอาลัย</div>
+            <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 1px;">
+              <a href="tel:0810351149" style="color: inherit; text-decoration: none;">081-035-1149</a>
+            </div>
           </div>
         </div>
         <div class="footer-system-status">
@@ -281,22 +291,33 @@
       <!-- VIEW 1: DASHBOARD VIEW (Province / School) -->
       <section id="view-panel-dashboard" class="view-panel active">
         
-        <!-- Province Admin Contact Banner (Only for School Admins) -->
+        <!-- Province Admin & Committee Contact Banner (For All Roles) -->
         <div id="block-school-province-contact" class="widget-card glass animate-scale" style="display: none; padding: 16px 20px; background: rgba(20, 184, 166, 0.03); border: 1px solid rgba(20, 184, 166, 0.15); border-left: 4px solid var(--color-accent-teal) !important;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 20px;">📞</span>
               <div>
-                <h4 style="margin: 0 0 2px 0; font-size: 13.5px; color: var(--color-accent-teal); font-weight: 700;">เบอร์โทรศัพท์ติดต่อและประสานงานแอดมินจังหวัด สสมน.น่าน</h4>
-                <p style="margin: 0; font-size: 12px; color: var(--color-text-muted);">หากมีปัญหาเกี่ยวกับสิทธิ์การใช้งาน ข้อมูลสมาชิกค้างระบบ หรือการโอนเงินสะสม สามารถติดต่อแอดมินจังหวัดได้โดยตรง</p>
+                <h4 style="margin: 0 0 2px 0; font-size: 13.5px; color: var(--color-accent-teal); font-weight: 700;">เบอร์โทรศัพท์ติดต่อและประสานงานส่วนกลาง สสมน.น่าน</h4>
+                <p style="margin: 0; font-size: 12px; color: var(--color-text-muted);">หากมีปัญหาเกี่ยวกับระบบ สิทธิ์ใช้งาน ยอดเงินสงเคราะห์ หรือแก้ไขข้อมูลสมาชิก สามารถติดต่อฝ่ายประสานงานได้โดยตรง</p>
               </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
-              <span style="font-size: 12.5px; color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</span>
-              <span style="color: rgba(255,255,255,0.15);">|</span>
-              <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
-                <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
-              </strong>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
+                <span style="font-size: 11.5px; color: var(--color-text-dim);">แอดมินจังหวัด:</span>
+                <span style="font-size: 12.5px; color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</span>
+                <span style="color: rgba(255,255,255,0.15);">|</span>
+                <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
+                  <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
+                </strong>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
+                <span style="font-size: 11.5px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</span>
+                <span style="font-size: 12.5px; color: white; font-weight: 600;">นายอนันตศักดิ์ ยศอาลัย</span>
+                <span style="color: rgba(255,255,255,0.15);">|</span>
+                <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
+                  <a href="tel:0810351149" style="color: inherit; text-decoration: none;">081-035-1149</a>
+                </strong>
+              </div>
             </div>
           </div>
         </div>
@@ -1097,9 +1118,10 @@
               <h2>จัดการข้อมูลพื้นฐานของโรงเรียน 🏫</h2>
               <p>กรอกและปรับปรุงข้อมูลที่ตั้ง ช่องทางการติดต่อ ชื่อผู้บริหาร และเจ้าหน้าที่ประสานงาน สสมน. ให้เป็นปัจจุบัน</p>
             </div>
-            <div class="province-hotline-badge glass" style="background: rgba(251, 191, 36, 0.05); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid rgba(251, 191, 36, 0.2); text-align: right;">
-              <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;">สายตรงแอดมินจังหวัด:</span>
-              <strong style="color: white; font-size: 13px; font-family: var(--font-number); letter-spacing: 0.5px;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง 097-215-1119</strong>
+            <div class="province-hotline-badge glass" style="background: rgba(251, 191, 36, 0.05); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid rgba(251, 191, 36, 0.2); text-align: right; line-height: 1.4;">
+              <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;">ติดต่อประสานงานส่วนกลาง:</span>
+              <div style="color: white; font-size: 11.5px; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง (จังหวัด) <a href="tel:0972151119" style="color: var(--color-accent-teal); text-decoration: none; font-family: var(--font-number);">097-215-1119</a></div>
+              <div style="color: white; font-size: 11.5px; font-weight: 600; margin-top: 2px;">นายอนันตศักดิ์ ยศอาลัย (กก.) <a href="tel:0810351149" style="color: var(--color-accent-teal); text-decoration: none; font-family: var(--font-number);">081-035-1149</a></div>
             </div>
           </div>
 
@@ -1267,6 +1289,21 @@
                 </button>
               </form>
             </div>
+          </div>
+        </div>
+
+        <!-- School Admin View: Colorful Directory of Cooperating Coordinators (แบบดูงานมีสีสัน) -->
+        <div id="block-school-coordinators-directory" style="display: none; margin-top: 32px;">
+          <div class="dashboard-header" style="margin-bottom: 20px;">
+            <div>
+              <h2 style="font-size: 18px; font-weight: 700; color: white;">ทำเนียบผู้ประสานงาน 33 โรงเรียนร่วมเครือข่าย (ดูงานประสานงาน สสมน.น่าน) 🤝</h2>
+              <p style="font-size: 13px; color: var(--color-text-muted);">ข้อมูลติดต่อประสานงานของผู้ประสานงานและผู้อำนวยการของแต่ละสถาบันในเครือข่ายจังหวัดน่าน เพื่อความสะดวกในการสื่อสารประสานงาน</p>
+            </div>
+          </div>
+          
+          <!-- Colorful Cards Grid container -->
+          <div class="coordinators-grid" id="coordinators-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+            <!-- Rendered dynamically via app.js -->
           </div>
         </div>
 
