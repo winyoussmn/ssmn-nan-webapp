@@ -3739,23 +3739,14 @@ function updateDemoButtonsVisibility() {
   const btnGen = document.getElementById("btn-gen-demo-data");
   const warningBox = document.getElementById("demo-warning-box");
 
-  if (!btnCancel) return;
+  // Only Province Admin has permission to see/run the demo data import
+  const isProvinceAdmin = (appState.activeRole === "province");
 
-  if (appState.hasDemoData) {
-    btnCancel.style.display = "flex";
-    btnCancel.style.alignItems = "center";
-    btnCancel.style.justifyContent = "center";
-    btnCancel.style.gap = "6px";
-    
-    if (btnGen) btnGen.style.display = "none";
-    if (warningBox) {
-      warningBox.style.color = "#99f6e4";
-      warningBox.style.backgroundColor = "rgba(20, 184, 166, 0.12)";
-      warningBox.style.borderColor = "rgba(20, 184, 166, 0.3)";
-      warningBox.innerHTML = `<span>💡</span><span><strong>โหมดทดสอบระบบ:</strong> กำลังใช้ข้อมูลทดสอบร่วมกับข้อมูลจริง ท่านสามารถยกเลิกเพื่อลบข้อมูลทดสอบออกได้</span>`;
-    }
-  } else {
-    btnCancel.style.display = "none";
+  if (btnCancel) {
+    btnCancel.style.display = "none"; // Always hide cancel button as requested
+  }
+
+  if (isProvinceAdmin) {
     if (btnGen) {
       btnGen.style.display = "flex";
       btnGen.style.alignItems = "center";
@@ -3763,11 +3754,15 @@ function updateDemoButtonsVisibility() {
       btnGen.style.gap = "6px";
     }
     if (warningBox) {
+      warningBox.style.display = "flex";
       warningBox.style.color = "#fecdd3";
       warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.12)";
       warningBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
-      warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> ท่านสามารถนำเข้าข้อมูลสมมติมาทดลองใช้ระบบ และกด "ยกเลิกข้อมูลทดสอบ" เพื่อลบออกได้ตลอดเวลา โดยไม่กระทบข้อมูลจริงที่กรอกไว้</span>`;
+      warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> ท่านสามารถนำเข้าข้อมูลสมมติมาทดลองใช้ระบบ โดยไม่กระทบข้อมูลจริงที่กรอกไว้</span>`;
     }
+  } else {
+    if (btnGen) btnGen.style.display = "none";
+    if (warningBox) warningBox.style.display = "none";
   }
 }
 
@@ -3819,7 +3814,11 @@ function cancelDemoData() {
 }
 
 function generateDemoData() {
-  if (!confirm("⚠️ นำเข้าข้อมูลทดสอบระบบ:\n\nระบบจะนำเข้าสมาชิกและข้อมูลจำลองอื่นๆ มาให้ท่านทดลองใช้งาน โดยจะคงข้อมูลเดิมที่ท่านกรอกไว้ และท่านสามารถกด 'ยกเลิกข้อมูลทดสอบ' เพื่อย้อนกลับได้ตลอดเวลา\n\nคุณต้องการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?")) {
+  if (appState.activeRole !== "province") {
+    alert("❌ เฉพาะแอดมินจังหวัดเท่านั้นที่สามารถนำเข้าข้อมูลทดสอบระบบได้");
+    return;
+  }
+  if (!confirm("⚠️ นำเข้าข้อมูลทดสอบระบบ:\n\nระบบจะนำเข้าสมาชิกและข้อมูลจำลองอื่นๆ มาให้ท่านทดลองใช้งาน โดยจะคงข้อมูลเดิมที่ท่านกรอกไว้\n\nคุณต้องการนำเข้าข้อมูลทดสอบระบบใช่หรือไม่?")) {
     return;
   }
 
@@ -5098,6 +5097,10 @@ const originalOnRoleSwitched = window.onRoleSwitched || function() {
 
   // อัปเดตแบนเนอร์ตรวจสอบและรับรองข้อมูล สสมน. เสมอเมื่อเปลี่ยนบทบาท
   checkBiAnnualCertificationStatus();
+
+  if (typeof updateDemoButtonsVisibility === "function") {
+    updateDemoButtonsVisibility();
+  }
 };
 
 window.onRoleSwitched = originalOnRoleSwitched;
