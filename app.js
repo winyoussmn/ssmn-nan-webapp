@@ -6118,6 +6118,20 @@ function renderSchoolDevicesList(schoolId) {
   const devices = profile.devices || [];
   const currentDevId = getOrCreateDeviceId();
 
+  const countBadge = document.getElementById("school-device-count-badge");
+  if (countBadge) {
+    countBadge.textContent = `${devices.length}/10 เครื่อง`;
+    if (devices.length >= 10) {
+      countBadge.style.color = "var(--color-accent-rose)";
+      countBadge.style.background = "rgba(244, 63, 94, 0.15)";
+      countBadge.style.borderColor = "rgba(244, 63, 94, 0.25)";
+    } else {
+      countBadge.style.color = "var(--color-accent-amber)";
+      countBadge.style.background = "rgba(251, 191, 36, 0.1)";
+      countBadge.style.borderColor = "rgba(251, 191, 36, 0.2)";
+    }
+  }
+
   let html = "";
   if (devices.length === 0) {
     html = `<tr><td colspan="5" class="text-center" style="color: var(--color-text-muted);">ไม่มีอุปกรณ์อื่นลงทะเบียนไว้ เข้าล็อกอินเครื่องปัจจุบันเป็นเครื่องแรก</td></tr>`;

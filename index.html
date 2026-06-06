@@ -1303,7 +1303,10 @@
 
               <!-- School Admin View: Registered Devices Widget -->
               <div class="school-devices-section" style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;">
-                <h4 class="section-title" style="color: #60a5fa; font-size: 14px; margin-bottom: 12px;">📱 อุปกรณ์ที่ลงทะเบียนใช้งานอยู่ (สูงสุด 10 อุปกรณ์)</h4>
+                <h4 class="section-title" style="color: #60a5fa; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                  <span>📱 อุปกรณ์ที่ลงทะเบียนใช้งานอยู่</span>
+                  <span id="school-device-count-badge" class="badge" style="font-family: var(--font-number); font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm); font-weight: 700; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: var(--color-accent-amber);">0/10 เครื่อง</span>
+                </h4>
                 <p style="font-size: 12.5px; color: var(--color-text-muted); margin-bottom: 14px;">รายการอุปกรณ์ (Web Browsers) ที่เคยลงทะเบียนล็อกอินเข้าสู่ระบบโรงเรียนนี้ ท่านสามารถลบอุปกรณ์ที่ไม่ต้องการออกเพื่อเพิ่มพื้นที่ว่างได้</p>
                 <div class="table-responsive">
                   <table class="standard-table table-mini" style="font-size: 12.5px; background: rgba(0,0,0,0.15);">
