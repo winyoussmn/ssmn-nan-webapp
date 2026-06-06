@@ -5353,6 +5353,10 @@ window.deleteDocument = function(docId) {
 };
 
 window.openAddDocumentModal = function() {
+  if (appState.activeRole === "school") {
+    alert("❌ สิทธิ์แอดมินโรงเรียนไม่สามารถเพิ่มเอกสารดาวน์โหลดได้ (เฉพาะแอดมินจังหวัดหรือคณะกรรมการเท่านั้น)");
+    return;
+  }
   const modal = document.getElementById("modal-add-document");
   if (modal) modal.classList.add("active");
 };
@@ -5369,6 +5373,10 @@ const formAddDoc = document.getElementById("form-add-document");
 if (formAddDoc) {
   formAddDoc.addEventListener("submit", function(e) {
     e.preventDefault();
+    if (appState.activeRole === "school") {
+      alert("❌ สิทธิ์แอดมินโรงเรียนไม่สามารถเพิ่มเอกสารดาวน์โหลดได้");
+      return;
+    }
     const title = document.getElementById("doc-upload-title").value.trim();
     const desc = document.getElementById("doc-upload-desc").value.trim();
     const category = document.getElementById("doc-upload-category").value;
