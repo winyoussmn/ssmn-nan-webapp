@@ -16,7 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.4">
+  <link rel="stylesheet" href="style.css?v=2.5">
 </head>
 <body>
 
@@ -799,10 +799,14 @@
               <label for="filter-member-position" class="sr-only">ตำแหน่ง:</label>
               <select id="filter-member-position" class="filter-select">
                 <option value="all">ทุกตำแหน่งงาน</option>
-                <option value="ผอ.">ผู้อำนวยการ (ผอ.)</option>
+                <option value="ผอ.">ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)</option>
                 <option value="รอง ผอ.">รองผู้อำนวยการ (รอง ผอ.)</option>
                 <option value="ครู">ข้าราชการครู</option>
+                <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
                 <option value="ข้าราชการบำนาญ">ข้าราชการบำนาญ</option>
+                <option value="นักภารโรง">นักภารโรง</option>
+                <option value="แม่บ้าน">แม่บ้าน</option>
+                <option value="พนักงานบริการ">พนักงานบริการ</option>
                 <option value="บุคลากรอื่น ๆ">บุคลากรอื่น ๆ</option>
               </select>
             </div>
@@ -1248,8 +1252,8 @@
 
                 <div class="form-row" style="margin-bottom: 14px;">
                   <div class="form-group col-3">
-                    <label for="school-profile-director-count">จำนวน ผอ.: <span class="required">*</span></label>
-                    <input type="number" id="school-profile-director-count" required min="0" placeholder="ระบุจำนวน ผอ." class="form-control" style="font-family: var(--font-number);">
+                    <label for="school-profile-director-count">จำนวน ผอ. หรือ รก.ผอ.: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-director-count" required min="0" placeholder="ระบุจำนวน ผอ. หรือ รก.ผอ." class="form-control" style="font-family: var(--font-number);">
                   </div>
                   <div class="form-group col-3">
                     <label for="school-profile-deputy-count">จำนวน รอง ผอ.: <span class="required">*</span></label>
@@ -1260,15 +1264,30 @@
                     <input type="number" id="school-profile-teacher-count" required min="0" placeholder="ระบุจำนวน ครู" class="form-control" style="font-family: var(--font-number);">
                   </div>
                   <div class="form-group col-3">
-                    <label for="school-profile-other-count">จำนวน บุคลากรทางการศึกษา: <span class="required">*</span></label>
-                    <input type="number" id="school-profile-other-count" required min="0" placeholder="ระบุจำนวนบุคลากรทางการศึกษา" class="form-control" style="font-family: var(--font-number);">
+                    <label for="school-profile-temp-teacher-count">จำนวน ครูอัตราจ้าง: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-temp-teacher-count" required min="0" placeholder="ระบุจำนวน ครูอัตราจ้าง" class="form-control" style="font-family: var(--font-number);">
                   </div>
                 </div>
                 
                 <div class="form-row" style="margin-bottom: 14px;">
                   <div class="form-group col-4">
-                    <label for="school-profile-pensioners-count">จำนวนข้าราชการบำนาญในสังกัด: <span class="required">*</span></label>
-                    <input type="number" id="school-profile-pensioners-count" required min="0" placeholder="ระบุจำนวนข้าราชการบำนาญ" class="form-control" style="font-family: var(--font-number);">
+                    <label for="school-profile-other-count">จำนวน นักภารโรง: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-other-count" required min="0" placeholder="ระบุจำนวน นักภารโรง" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-4">
+                    <label for="school-profile-maid-count">จำนวน แม่บ้าน: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-maid-count" required min="0" placeholder="ระบุจำนวน แม่บ้าน" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                  <div class="form-group col-4">
+                    <label for="school-profile-service-count">จำนวน พนักงานบริการ: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-service-count" required min="0" placeholder="ระบุจำนวน พนักงานบริการ" class="form-control" style="font-family: var(--font-number);">
+                  </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 14px;">
+                  <div class="form-group col-4">
+                    <label for="school-profile-pensioners-count">จำนวน ข้าราชการและลูกจ้างบำนาญในสังกัด: <span class="required">*</span></label>
+                    <input type="number" id="school-profile-pensioners-count" required min="0" placeholder="ระบุจำนวนข้าราชการและลูกจ้างบำนาญ" class="form-control" style="font-family: var(--font-number);">
                   </div>
                   <div class="form-group col-4">
                     <label for="school-profile-active-members-count">สมาชิก สสมน. ปฏิบัติราชการปัจจุบัน: <span class="required">*</span></label>
@@ -1533,10 +1552,14 @@
             <label for="member-position">ตำแหน่งงาน: <span class="required">*</span></label>
             <select id="member-position" required class="form-control">
               <option value="" disabled selected>-- เลือกตำแหน่ง --</option>
-              <option value="ผอ.">ผู้อำนวยการ (ผอ.)</option>
+              <option value="ผอ.">ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)</option>
               <option value="รอง ผอ.">รองผู้อำนวยการ (รอง ผอ.)</option>
               <option value="ครู">ข้าราชการครู</option>
+              <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
               <option value="ข้าราชการบำนาญ">ข้าราชการบำนาญ</option>
+              <option value="นักภารโรง">นักภารโรง</option>
+              <option value="แม่บ้าน">แม่บ้าน</option>
+              <option value="พนักงานบริการ">พนักงานบริการ</option>
               <option value="บุคลากรอื่น ๆ">บุคลากรอื่น ๆ</option>
             </select>
           </div>

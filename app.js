@@ -50,10 +50,18 @@ function getSchoolPersonnel(schoolId) {
       director: parseInt(profile.directorCount) || 0,
       deputy: parseInt(profile.deputyCount) || 0,
       teacher: parseInt(profile.teacherCount) || 0,
-      other: parseInt(profile.otherCount) || 0
+      tempTeacher: parseInt(profile.tempTeacherCount) || 0,
+      other: parseInt(profile.otherCount) || 0,
+      maid: parseInt(profile.maidCount) || 0,
+      service: parseInt(profile.serviceCount) || 0
     };
   }
-  return sch ? { ...sch.totalPersonnel } : { director: 0, deputy: 0, teacher: 0, other: 0 };
+  return sch ? { 
+    ...sch.totalPersonnel,
+    tempTeacher: 0,
+    maid: 0,
+    service: 0
+  } : { director: 0, deputy: 0, teacher: 0, tempTeacher: 0, other: 0, maid: 0, service: 0 };
 }
 
 const DEFAULT_SCHOOL_PROFILES = {
@@ -646,7 +654,7 @@ function calculateStats() {
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
         const p = getSchoolPersonnel(s.id);
-        totalProvincePersonnel += p.director + p.deputy + p.teacher + p.other;
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
       }
     });
 
@@ -767,7 +775,7 @@ function calculateStats() {
       schoolPersonnelTotal = schoolMembers.length;
     } else {
       const p = getSchoolPersonnel(appState.activeSchoolId);
-      schoolPersonnelTotal = p.director + p.deputy + p.teacher + p.other;
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
     }
 
     const schoolMembershipRatio = schoolPersonnelTotal > 0 ? Math.round((schoolMembers.length / schoolPersonnelTotal) * 100) : 0;
@@ -913,7 +921,7 @@ function calculateStats() {
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
         const p = getSchoolPersonnel(s.id);
-        totalProvincePersonnel += p.director + p.deputy + p.teacher + p.other;
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
       }
     });
     const activePensioners = activeMembers.filter(m => m.schoolId === "33").length;
@@ -933,7 +941,7 @@ function calculateStats() {
       schoolPersonnelTotal = schoolMembers.length;
     } else {
       const p = getSchoolPersonnel(appState.activeSchoolId);
-      schoolPersonnelTotal = p.director + p.deputy + p.teacher + p.other;
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
     }
 
     currentTotal = schoolPersonnelTotal;
@@ -999,9 +1007,13 @@ function calculateStats() {
 function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
   const container = document.getElementById("widget-position-stats");
   const roles = [
-    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ.)", dbKey: "director" },
+    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)", dbKey: "director" },
     { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
     { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
+    { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
+    { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
+    { key: "พนักงานบริการ", label: "พนักงานบริการ", dbKey: "service" },
     { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
   ];
   
@@ -1091,9 +1103,13 @@ function renderSchoolPositionStats(schoolMembers, school) {
   }
 
   const roles = [
-    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ.)", dbKey: "director" },
+    { key: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)", dbKey: "director" },
     { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
     { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
+    { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
+    { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
+    { key: "พนักงานบริการ", label: "พนักงานบริการ", dbKey: "service" },
     { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
   ];
   
@@ -4385,9 +4401,12 @@ function ensureSchoolProfilesStats() {
     if (profile.directorCount === undefined) profile.directorCount = sch.totalPersonnel.director;
     if (profile.deputyCount === undefined) profile.deputyCount = sch.totalPersonnel.deputy;
     if (profile.teacherCount === undefined) profile.teacherCount = sch.totalPersonnel.teacher;
+    if (profile.tempTeacherCount === undefined) profile.tempTeacherCount = 0;
     if (profile.otherCount === undefined) profile.otherCount = sch.totalPersonnel.other;
+    if (profile.maidCount === undefined) profile.maidCount = 0;
+    if (profile.serviceCount === undefined) profile.serviceCount = 0;
 
-    const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + profile.otherCount;
+    const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + (profile.tempTeacherCount || 0) + profile.otherCount + (profile.maidCount || 0) + (profile.serviceCount || 0);
 
     // คำนวณเชื่อมโยงโดยตรงจากฐานข้อมูลจริง
     const dbActive = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position !== 'ข้าราชการบำนาญ').length;
@@ -4416,13 +4435,16 @@ function updateSchoolProfileTotals() {
   const director = parseInt(document.getElementById("school-profile-director-count")?.value) || 0;
   const deputy = parseInt(document.getElementById("school-profile-deputy-count")?.value) || 0;
   const teacher = parseInt(document.getElementById("school-profile-teacher-count")?.value) || 0;
+  const tempTeacher = parseInt(document.getElementById("school-profile-temp-teacher-count")?.value) || 0;
   const other = parseInt(document.getElementById("school-profile-other-count")?.value) || 0;
+  const maid = parseInt(document.getElementById("school-profile-maid-count")?.value) || 0;
+  const service = parseInt(document.getElementById("school-profile-service-count")?.value) || 0;
   
   const pensioners = parseInt(document.getElementById("school-profile-pensioners-count")?.value) || 0;
   const active = parseInt(document.getElementById("school-profile-active-members-count")?.value) || 0;
   const retired = parseInt(document.getElementById("school-profile-retired-transferred-members-count")?.value) || 0;
 
-  const totalP = director + deputy + teacher + other;
+  const totalP = director + deputy + teacher + tempTeacher + other + maid + service;
   const totalM = active + retired;
 
   const lblTotalP = document.getElementById("lbl-profile-total-personnel");
@@ -4445,6 +4467,13 @@ function initSchoolProfileForm() {
   if (lblName) {
     const sch = SCHOOLS.find(s => s.id === schoolId);
     lblName.textContent = sch ? `${schoolId} - ${sch.name}` : `รหัสสังกัด ${schoolId}`;
+    if (schoolId === "10") {
+      lblName.style.color = "var(--color-accent-red)";
+      lblName.style.fontWeight = "800";
+    } else {
+      lblName.style.color = "var(--color-accent-gold)";
+      lblName.style.fontWeight = "700";
+    }
   }
 
   // เติมข้อมูลในฟิลด์
@@ -4472,15 +4501,27 @@ function initSchoolProfileForm() {
   if (document.getElementById("school-profile-teacher-count")) {
     document.getElementById("school-profile-teacher-count").value = profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher;
   }
+  if (document.getElementById("school-profile-temp-teacher-count")) {
+    document.getElementById("school-profile-temp-teacher-count").value = profile.tempTeacherCount !== undefined ? profile.tempTeacherCount : 0;
+  }
   if (document.getElementById("school-profile-other-count")) {
     document.getElementById("school-profile-other-count").value = profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other;
+  }
+  if (document.getElementById("school-profile-maid-count")) {
+    document.getElementById("school-profile-maid-count").value = profile.maidCount !== undefined ? profile.maidCount : 0;
+  }
+  if (document.getElementById("school-profile-service-count")) {
+    document.getElementById("school-profile-service-count").value = profile.serviceCount !== undefined ? profile.serviceCount : 0;
   }
 
   // คำนวณค่าเริ่มต้นย้อนกลับหากไม่มีในประวัติตามสัดส่วนกำลังคน
   const currentTotalP = (profile.directorCount !== undefined ? profile.directorCount : defaultPersonnel.director) +
                        (profile.deputyCount !== undefined ? profile.deputyCount : defaultPersonnel.deputy) +
                        (profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher) +
-                       (profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other);
+                       (profile.tempTeacherCount !== undefined ? profile.tempTeacherCount : 0) +
+                       (profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other) +
+                       (profile.maidCount !== undefined ? profile.maidCount : 0) +
+                       (profile.serviceCount !== undefined ? profile.serviceCount : 0);
 
   if (document.getElementById("school-profile-pensioners-count")) {
     document.getElementById("school-profile-pensioners-count").value = profile.pensionersCount !== undefined ? profile.pensionersCount : Math.round(currentTotalP * 0.15);
@@ -4616,7 +4657,10 @@ if (schoolProfileForm) {
       directorCount: parseInt(document.getElementById("school-profile-director-count").value) || 0,
       deputyCount: parseInt(document.getElementById("school-profile-deputy-count").value) || 0,
       teacherCount: parseInt(document.getElementById("school-profile-teacher-count").value) || 0,
+      tempTeacherCount: parseInt(document.getElementById("school-profile-temp-teacher-count").value) || 0,
       otherCount: parseInt(document.getElementById("school-profile-other-count").value) || 0,
+      maidCount: parseInt(document.getElementById("school-profile-maid-count").value) || 0,
+      serviceCount: parseInt(document.getElementById("school-profile-service-count").value) || 0,
       pensionersCount: parseInt(document.getElementById("school-profile-pensioners-count").value) || 0,
       activeMembersCount: parseInt(document.getElementById("school-profile-active-members-count").value) || 0,
       retiredTransferredMembersCount: parseInt(document.getElementById("school-profile-retired-transferred-members-count").value) || 0,
@@ -4636,7 +4680,10 @@ if (schoolProfileForm) {
     "school-profile-director-count",
     "school-profile-deputy-count",
     "school-profile-teacher-count",
+    "school-profile-temp-teacher-count",
     "school-profile-other-count",
+    "school-profile-maid-count",
+    "school-profile-service-count",
     "school-profile-pensioners-count",
     "school-profile-active-members-count",
     "school-profile-retired-transferred-members-count"
@@ -4720,7 +4767,7 @@ function renderSchoolsDirectory() {
               ` : ""}
             </div>
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
-              <span style="font-weight: 500;">👥 บุคลากร: ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | บุคลากรทางการศึกษา ${personnel.other} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
+              <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | นักภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | พนักงานบริการ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
               <span style="color: #60a5fa; font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
                 <span>💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
