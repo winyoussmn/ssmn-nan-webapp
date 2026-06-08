@@ -1450,7 +1450,7 @@ function renderMembersDirectory() {
 
       html += `
         <tr class="${rowClass}">
-          <td class="font-weight-bold text-currency text-warning">${member.id}</td>
+          <td class="font-weight-bold text-currency text-member-id">${member.id}</td>
           <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
           <td>${member.position}</td>
           <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
@@ -1515,7 +1515,7 @@ function renderMembersDirectory() {
 
         rowsHtml += `
           <tr class="${rowClass}">
-            <td class="font-weight-bold text-currency text-warning">${member.id}</td>
+            <td class="font-weight-bold text-currency text-member-id">${member.id}</td>
             <td class="font-weight-bold">${member.title || ''}${member.firstname} ${member.lastname}</td>
             <td>${member.position}</td>
             <td class="text-currency" style="cursor: pointer; white-space: nowrap;" onclick="toggleCitizenIdReveal(this, '${member.citizenId}')" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
@@ -1896,7 +1896,7 @@ function renderTransferLogsTimeline() {
         </div>
         <div class="transfer-log-content">
           <h5>${log.memberName}</h5>
-          <p>ย้ายสังกัดจาก <strong>${log.oldSchool}</strong> รหัสเดิม <span class="text-warning font-weight-bold">${log.oldId}</span></p>
+          <p>ย้ายสังกัดจาก <strong>${log.oldSchool}</strong> รหัสเดิม <span class="text-member-id font-weight-bold">${log.oldId}</span></p>
           <p>ไปยัง <strong>${log.newSchool}</strong> รับรหัสใหม่ <span class="text-success font-weight-bold">${log.newId}</span></p>
           <p class="field-help-text" style="margin-top:2px;">เหตุผล: ${log.reason}</p>
         </div>
@@ -5059,7 +5059,7 @@ window.certifySchoolRound = function(round) {
     
     html += `
       <tr>
-        <td class="font-weight-bold text-warning">${m.id}</td>
+        <td class="font-weight-bold text-member-id">${m.id}</td>
         <td class="font-weight-bold">${m.title || ""}${m.firstname} ${m.lastname}</td>
         <td>${m.position}</td>
         <td class="text-currency">${maskCitizenId(m.citizenId)}</td>

@@ -112,6 +112,7 @@ body {
 .text-success { color: var(--color-accent-emerald) !important; }
 .text-danger { color: var(--color-accent-rose) !important; }
 .text-warning { color: var(--color-accent-gold) !important; }
+.text-member-id { color: var(--color-accent-green) !important; font-weight: 700; }
 .font-weight-bold { font-weight: 700; }
 .no-padding { padding: 0 !important; }
 
@@ -119,6 +120,7 @@ body {
 .text-currency {
   font-family: var(--font-number);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ==================== 3. APP CONTAINER & SIDEBAR ==================== */
@@ -283,7 +285,7 @@ body {
   border: none;
   color: var(--color-text-muted);
   font-family: var(--font-main);
-  font-size: 16.5px;
+  font-size: 15px;
   font-weight: 600;
   text-align: left;
   padding: 12px 16px;
@@ -291,6 +293,9 @@ body {
   cursor: pointer;
   transition: all var(--transition-fast);
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item svg {
@@ -597,20 +602,24 @@ body {
 }
 
 .kpi-title {
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kpi-number {
-  font-size: 34px;
+  font-size: 28px;
   font-family: var(--font-number);
   font-weight: 800;
   color: var(--color-text-main);
   line-height: 1;
   margin: 4px 0 2px 0;
+  white-space: nowrap;
 }
 
 .kpi-trend {
@@ -1087,7 +1096,7 @@ body {
 .col-3 { flex: 0 0 calc(25% - 12px); }
 
 .standard-form label {
-  font-size: 15.5px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-muted);
 }
@@ -1102,7 +1111,7 @@ body {
   border: 1px solid rgba(15, 23, 42, 0.12);
   color: var(--color-text-main);
   font-family: var(--font-main);
-  font-size: 16.5px;
+  font-size: 15px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
