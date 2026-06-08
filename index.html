@@ -16,7 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.3">
 </head>
 <body>
 
@@ -27,12 +27,12 @@
         <div class="logo-icon logo-large">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L2 22h20L12 2z" fill="url(#login-brand-grad)" opacity="0.9"/>
-            <path d="M12 6L5 20h14L12 6z" fill="#047857"/>
+            <path d="M12 6L5 20h14L12 6z" fill="#1e3a8a"/>
             <circle cx="12" cy="14" r="3" fill="#fbbf24"/>
             <defs>
               <linearGradient id="login-brand-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#b45309"/>
-                <stop offset="1" stop-color="#d97706"/>
+                <stop stop-color="#ea580c"/>
+                <stop offset="1" stop-color="#f97316"/>
               </linearGradient>
             </defs>
           </svg>
@@ -105,12 +105,12 @@
         <div class="logo-icon">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 2L2 22h20L12 2z" fill="url(#brand-grad)" opacity="0.9"/>
-            <path d="M12 6L5 20h14L12 6z" fill="#047857"/>
+            <path d="M12 6L5 20h14L12 6z" fill="#1e3a8a"/>
             <circle cx="12" cy="14" r="3" fill="#fbbf24"/>
             <defs>
               <linearGradient id="brand-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#b45309"/>
-                <stop offset="1" stop-color="#d97706"/>
+                <stop stop-color="#ea580c"/>
+                <stop offset="1" stop-color="#f97316"/>
               </linearGradient>
             </defs>
           </svg>
@@ -217,26 +217,26 @@
           </svg>
           <span style="color: #fda4af; font-weight: 600;">ยกเลิกข้อมูลทดสอบระบบ</span>
         </button>
-        <div id="demo-warning-box" style="font-size: 10.5px; color: #fecdd3; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); padding: 8px; border-radius: 6px; line-height: 1.45; display: flex; align-items: start; gap: 5.5px; margin-top: 4px; transition: all 0.3s ease;">
+        <div id="demo-warning-box" style="font-size: 13px; color: var(--color-accent-rose); background: rgba(190, 18, 60, 0.05); border: 1px solid rgba(190, 18, 60, 0.15); padding: 8px; border-radius: 6px; line-height: 1.45; display: flex; align-items: start; gap: 5.5px; margin-top: 4px; transition: all 0.3s ease;">
           <span>💡</span>
           <span><strong>ทดสอบระบบ:</strong> แอดมินจังหวัดสามารถนำเข้าข้อมูลสมมติมาทดลองใช้งานระบบ โดยไม่กระทบต่อข้อมูลจริงที่มีอยู่ในระบบ</span>
         </div>
         <!-- Province Admin & Committee Contact Info -->
-        <div id="province-admin-contact-sidebar" style="display: none; margin-top: 8px; font-size: 11px; color: var(--color-text-muted); background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); padding: 10px; border-radius: var(--radius-md); line-height: 1.45;">
+        <div id="province-admin-contact-sidebar" style="display: none; margin-top: 8px; font-size: 13px; color: var(--color-text-muted); background: rgba(15, 23, 42, 0.02); border: 1px solid rgba(15, 23, 42, 0.06); padding: 10px; border-radius: var(--radius-md); line-height: 1.45;">
           <div style="font-weight: 700; color: var(--color-accent-amber); margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
             <span>📞 ประสานงานส่วนกลาง สสมน.น่าน</span>
           </div>
-          <div style="margin-bottom: 6px; border-bottom: 1px dashed rgba(255,255,255,0.08); padding-bottom: 6px;">
-            <div style="font-size: 10px; color: var(--color-text-dim);">แอดมินจังหวัด:</div>
-            <div style="color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</div>
-            <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 1px;">
+          <div style="margin-bottom: 6px; border-bottom: 1px dashed rgba(15, 23, 42, 0.08); padding-bottom: 6px;">
+            <div style="font-size: 12.5px; color: var(--color-text-dim);">แอดมินจังหวัด:</div>
+            <div style="color: var(--color-text-main); font-weight: 700;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</div>
+            <div style="font-family: var(--font-number); color: var(--color-accent-blue); font-weight: 700; margin-top: 1px;">
               <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
             </div>
           </div>
           <div>
-            <div style="font-size: 10px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</div>
-            <div style="color: white; font-weight: 600;">นายอนันตศักดิ์ ยศอาลัย</div>
-            <div style="font-family: var(--font-number); color: var(--color-accent-teal); font-weight: 700; margin-top: 1px;">
+            <div style="font-size: 12.5px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</div>
+            <div style="color: var(--color-text-main); font-weight: 700;">นายอนันตศักดิ์ ยศอาลัย</div>
+            <div style="font-family: var(--font-number); color: var(--color-accent-blue); font-weight: 700; margin-top: 1px;">
               <a href="tel:0810351149" style="color: inherit; text-decoration: none;">081-035-1149</a>
             </div>
           </div>
@@ -304,29 +304,29 @@
       <section id="view-panel-dashboard" class="view-panel active">
         
         <!-- Province Admin & Committee Contact Banner (For All Roles) -->
-        <div id="block-school-province-contact" class="widget-card glass animate-scale" style="display: none; padding: 16px 20px; background: rgba(20, 184, 166, 0.03); border: 1px solid rgba(20, 184, 166, 0.15); border-left: 4px solid var(--color-accent-teal) !important;">
+        <div id="block-school-province-contact" class="widget-card glass animate-scale" style="display: none; padding: 16px 20px; background: linear-gradient(135deg, rgba(234, 88, 12, 0.06) 0%, rgba(219, 39, 119, 0.06) 100%); border: 1.5px solid rgba(37, 84, 192, 0.25); border-left: 5px solid var(--color-accent-teal) !important; box-shadow: 0 4px 20px rgba(37, 84, 192, 0.04);">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
             <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 20px;">📞</span>
+              <span style="font-size: 22px;">📞</span>
               <div>
-                <h4 style="margin: 0 0 2px 0; font-size: 13.5px; color: var(--color-accent-teal); font-weight: 700;">เบอร์โทรศัพท์ติดต่อและประสานงานส่วนกลาง สสมน.น่าน</h4>
-                <p style="margin: 0; font-size: 12px; color: var(--color-text-muted);">หากมีปัญหาเกี่ยวกับระบบ สิทธิ์ใช้งาน ยอดเงินสงเคราะห์ หรือแก้ไขข้อมูลสมาชิก สามารถติดต่อฝ่ายประสานงานได้โดยตรง</p>
+                <h4 style="margin: 0 0 2px 0; font-size: 15.5px; color: #ea580c; font-weight: 700;">เบอร์โทรศัพท์ติดต่อและประสานงานส่วนกลาง สสมน.น่าน</h4>
+                <p style="margin: 0; font-size: 14px; color: var(--color-text-muted);">หากมีปัญหาเกี่ยวกับระบบ สิทธิ์ใช้งาน ยอดเงินสงเคราะห์ หรือแก้ไขข้อมูลสมาชิก สามารถติดต่อฝ่ายประสานงานได้โดยตรง</p>
               </div>
             </div>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-              <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
-                <span style="font-size: 11.5px; color: var(--color-text-dim);">แอดมินจังหวัด:</span>
-                <span style="font-size: 12.5px; color: white; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</span>
-                <span style="color: rgba(255,255,255,0.15);">|</span>
-                <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
+              <div class="province-hotline-badge" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-md);">
+                <span style="font-size: 13px; color: var(--color-text-dim);">แอดมินจังหวัด:</span>
+                <span style="font-size: 14px; color: var(--color-text-main); font-weight: 700;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง</span>
+                <span style="color: rgba(15, 23, 42, 0.15);">|</span>
+                <strong style="font-size: 15px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
                   <a href="tel:0972151119" style="color: inherit; text-decoration: none;">097-215-1119</a>
                 </strong>
               </div>
-              <div style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.03); padding: 8px 14px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);">
-                <span style="font-size: 11.5px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</span>
-                <span style="font-size: 12.5px; color: white; font-weight: 600;">นายอนันตศักดิ์ ยศอาลัย</span>
-                <span style="color: rgba(255,255,255,0.15);">|</span>
-                <strong style="font-size: 13.5px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
+              <div class="province-hotline-badge" style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-md);">
+                <span style="font-size: 13px; color: var(--color-text-dim);">คณะกรรมการ สสมน.:</span>
+                <span style="font-size: 14px; color: var(--color-text-main); font-weight: 700;">นายอนันตศักดิ์ ยศอาลัย</span>
+                <span style="color: rgba(15, 23, 42, 0.15);">|</span>
+                <strong style="font-size: 15px; color: var(--color-accent-gold); font-family: var(--font-number); letter-spacing: 0.5px;">
                   <a href="tel:0810351149" style="color: inherit; text-decoration: none;">081-035-1149</a>
                 </strong>
               </div>
@@ -335,9 +335,9 @@
         </div>
 
         <!-- Bi-Annual Member Verification Alert Panel -->
-        <div id="panel-certification-alert" class="certification-alert-banner glass animate-scale" style="display: none; padding: 16px; border-radius: var(--radius-lg); background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.2); justify-content: space-between; align-items: center; gap: 16px;">
+        <div id="panel-certification-alert" class="certification-alert-banner glass animate-scale" style="display: none; padding: 16px; border-radius: var(--radius-lg); background: rgba(190, 18, 60, 0.03); border: 1px solid rgba(190, 18, 60, 0.15); justify-content: space-between; align-items: center; gap: 16px;">
           <div class="cert-alert-content" style="display: flex; gap: 14px; align-items: flex-start;">
-            <div class="cert-alert-icon" style="background: rgba(244, 63, 94, 0.1); padding: 8px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+            <div class="cert-alert-icon" style="background: rgba(190, 18, 60, 0.08); padding: 8px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-rose)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                 <line x1="12" y1="9" x2="12" y2="13"></line>
@@ -345,71 +345,71 @@
               </svg>
             </div>
             <div class="cert-alert-text">
-              <h4 style="color: var(--color-accent-rose); margin: 0 0 4px 0; font-size: 14.5px; font-weight: 700;">⚠️ กำหนดรอบรับรองความถูกต้องของข้อมูลสมาชิกครึ่งปี สสมน.</h4>
-              <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0; line-height: 1.45;" id="lbl-cert-alert-message">กรุณาตรวจสอบรายชื่อสมาชิก สสมน. ในสังกัดให้ถูกต้องตรงตามปัจจุบัน แล้วกดยืนยันการรับรองข้อมูล</p>
+              <h4 style="color: var(--color-accent-rose); margin: 0 0 4px 0; font-size: 15.5px; font-weight: 700;">⚠️ กำหนดรอบรับรองความถูกต้องของข้อมูลสมาชิกครึ่งปี สสมน.</h4>
+              <p style="font-size: 14px; color: var(--color-text-muted); margin: 0; line-height: 1.45;" id="lbl-cert-alert-message">กรุณาตรวจสอบรายชื่อสมาชิก สสมน. ในสังกัดให้ถูกต้องตรงตามปัจจุบัน แล้วกดยืนยันการรับรองข้อมูล</p>
             </div>
           </div>
           <div class="cert-alert-actions" style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
-            <button id="btn-cert-simulate" onclick="toggleSimulateReviewDate()" class="btn btn-secondary btn-mini" style="font-size: 11px; padding: 6px 12px; border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); color: white; cursor: pointer; border-radius: var(--radius-sm);" title="จำลองสลับวันที่ทดสอบระบบรับรอง (30 มิ.ย. / 30 ธ.ค.)">
+            <button id="btn-cert-simulate" onclick="toggleSimulateReviewDate()" class="btn btn-secondary btn-mini" style="font-size: 13px; padding: 6px 12px; border-color: rgba(15, 23, 42, 0.15); background: #ffffff; color: var(--color-text-main); cursor: pointer; border-radius: var(--radius-sm);" title="จำลองสลับวันที่ทดสอบระบบรับรอง (30 มิ.ย. / 30 ธ.ค.)">
               🧪 จำลองวันรับรอง
             </button>
-            <button id="btn-certify-school-data" onclick="certifySchoolData()" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2); cursor: pointer; border-radius: var(--radius-sm);">
+            <button id="btn-certify-school-data" onclick="certifySchoolData()" class="btn btn-danger btn-mini" style="font-size: 13px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(190, 18, 60, 0.15); cursor: pointer; border-radius: var(--radius-sm);">
               ✍️ กดยืนยันรับรองข้อมูล
             </button>
           </div>
         </div>
 
         <!-- System Condolences & Payout Announcements Bulletin Board (Round 4) -->
-        <div id="block-system-announcements" class="widget-card glass animate-scale" style="display: block; border-left: 4px solid var(--color-accent-gold) !important; background: rgba(251, 191, 36, 0.02) !important;">
-          <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div id="block-system-announcements" class="widget-card glass animate-scale" style="display: block; border-left: 4px solid var(--color-accent-gold) !important; background: rgba(217, 119, 6, 0.02) !important;">
+          <div class="widget-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">🕯️</span>
-              <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: white;">กระดานประกาศด่วนฌาปนกิจและสงเคราะห์ สสมน. ส่วนกลาง จังหวัดน่าน</h3>
+              <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: var(--color-text-main);">กระดานประกาศด่วนฌาปนกิจและสงเคราะห์ สสมน. ส่วนกลาง จังหวัดน่าน</h3>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-              <button id="btn-add-announcement-trigger" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;" onclick="openAddAnnouncementModal()">
+              <button id="btn-add-announcement-trigger" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(217, 119, 6, 0.2); color: var(--color-accent-gold); font-size:13px;" onclick="openAddAnnouncementModal()">
                 📢 เขียนประกาศใหม่
               </button>
-              <span class="badge" style="background: rgba(251, 191, 36, 0.1); color: var(--color-accent-gold); font-size: 10.5px; padding: 2px 8px; font-weight: 600; border-radius: 4px;">ประชาสัมพันธ์</span>
+              <span class="badge" style="background: rgba(217, 119, 6, 0.08); color: var(--color-accent-gold); font-size: 12.5px; padding: 2px 8px; font-weight: 600; border-radius: 4px;">ประชาสัมพันธ์</span>
             </div>
           </div>
           <div class="widget-body" id="system-announcements-list-container" style="display: flex; flex-direction: column; gap: 10px;">
             <!-- Rendered dynamically from app.js -->
-            <div style="font-size: 12.5px; color: var(--color-text-dim); text-align: center; padding: 10px 0;">ไม่มีประกาศแจ้งเตือนการฌาปนกิจศพใหม่รอบปัจจุบัน</div>
+            <div style="font-size: 14.5px; color: var(--color-text-dim); text-align: center; padding: 10px 0;">ไม่มีประกาศแจ้งเตือนการฌาปนกิจศพใหม่รอบปัจจุบัน</div>
           </div>
         </div>
 
         <!-- Central Fund Liquidity Analyser Widget -->
-        <div id="block-province-liquidity-analyser" class="widget-card glass full-width-widget animate-scale" style="display: none; padding: 20px; background: rgba(255,255,255,0.015); border: 1px solid rgba(255,255,255,0.06);">
-          <div class="widget-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div id="block-province-liquidity-analyser" class="widget-card glass full-width-widget animate-scale" style="display: none; padding: 20px; background: rgba(15, 23, 42, 0.015); border: 1px solid rgba(15, 23, 42, 0.06);">
+          <div class="widget-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.06); padding-bottom: 10px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <span style="font-size: 16px;">🏦</span>
-              <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: white;">ระบบตรวจสอบและวิเคราะห์สภาพคล่องกองทุนส่วนกลาง สสมน.น่าน (บันทึกอัปเดตทุกวันที่ 5 ของเดือน)</h3>
+              <h3 style="margin: 0; font-size: 15.5px; font-weight: 700; color: var(--color-text-main);">ระบบตรวจสอบและวิเคราะห์สภาพคล่องกองทุนส่วนกลาง สสมน.น่าน (บันทึกอัปเดตทุกวันที่ 5 ของเดือน)</h3>
             </div>
-            <button id="btn-update-bank-balance" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(251, 191, 36, 0.25); color: var(--color-accent-gold); font-size:11.5px;" onclick="openUpdateBankBalanceModal()">
+            <button id="btn-update-bank-balance" class="btn btn-secondary btn-mini" style="display: none; padding: 4px 10px; border-color: rgba(217, 119, 6, 0.2); color: var(--color-accent-gold); font-size:13px;" onclick="openUpdateBankBalanceModal()">
               ✍️ ปรับปรุงยอดเงินบัญชี
             </button>
           </div>
           <div class="widget-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
-              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินคงเหลือในบัญชีธนาคารส่วนกลาง</div>
-              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: white; margin-top: 4px;" id="lbl-central-bank-balance">฿250,000.00</div>
-              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-central-bank-update-date">อัปเดตล่าสุด: -</div>
+            <div class="liquidity-item glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินคงเหลือในบัญชีธนาคารส่วนกลาง</div>
+              <div style="font-family: var(--font-number); font-size: 22px; font-weight: 800; color: var(--color-text-main); margin-top: 4px;" id="lbl-central-bank-balance">฿250,000.00</div>
+              <div style="font-size: 12.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-central-bank-update-date">อัปเดตล่าสุด: -</div>
             </div>
-            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
-              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินสงเคราะห์ค้างจ่ายทายาทสะสม</div>
-              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: var(--color-accent-amber); margin-top: 4px;" id="lbl-total-unpaid-payouts">฿0.00</div>
-              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-unpaid-payouts-cases">ค้างชำระ: 0 เคส</div>
+            <div class="liquidity-item glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 600;">ยอดเงินสงเคราะห์ค้างจ่ายทายาทสะสม</div>
+              <div style="font-family: var(--font-number); font-size: 22px; font-weight: 800; color: var(--color-accent-amber); margin-top: 4px;" id="lbl-total-unpaid-payouts">฿0.00</div>
+              <div style="font-size: 12.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-unpaid-payouts-cases">ค้างชำระ: 0 เคส</div>
             </div>
             <!-- หักค่าดำเนินการสะสมร้อยละ 5 -->
-            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px;">
-              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600;">ยอดหักค่าดำเนินการสะสม (ร้อยละ 5)</div>
-              <div style="font-family: var(--font-number); font-size: 20px; font-weight: 800; color: var(--color-accent-gold); margin-top: 4px;" id="lbl-total-fees-deducted">฿0.00</div>
-              <div style="font-size: 10.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-fees-cases">จากกรณีมรณกรรมทั้งหมด</div>
+            <div class="liquidity-item glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.03); border-radius: var(--radius-md); padding: 12px 16px;">
+              <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 600;">ยอดหักค่าดำเนินการสะสม (ร้อยละ 5)</div>
+              <div style="font-family: var(--font-number); font-size: 22px; font-weight: 800; color: var(--color-accent-gold); margin-top: 4px;" id="lbl-total-fees-deducted">฿0.00</div>
+              <div style="font-size: 12.5px; color: var(--color-text-dim); margin-top: 2px;" id="lbl-total-fees-cases">จากกรณีมรณกรรมทั้งหมด</div>
             </div>
-            <div class="liquidity-item glass" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: var(--radius-md); padding: 12px 16px; display: flex; flex-direction: column; justify-content: center;">
-              <div style="font-size: 11px; color: var(--color-text-muted); font-weight: 600; margin-bottom: 4px;">การประเมินสภาพคล่องการเบิกจ่าย</div>
-              <div style="font-size: 13.5px; font-weight: 700;" id="lbl-liquidity-status-badge">กำลังประมวลผล...</div>
+            <div class="liquidity-item glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.03); border-radius: var(--radius-md); padding: 12px 16px; display: flex; flex-direction: column; justify-content: center;">
+              <div style="font-size: 13px; color: var(--color-text-muted); font-weight: 600; margin-bottom: 4px;">การประเมินสภาพคล่องการเบิกจ่าย</div>
+              <div style="font-size: 15px; font-weight: 700;" id="lbl-liquidity-status-badge">กำลังประมวลผล...</div>
             </div>
           </div>
         </div>
@@ -461,21 +461,21 @@
               <span class="kpi-title" id="lbl-funds-title">ยอดกองทุนสะสมล่วงหน้า</span>
               <span class="kpi-number text-currency" id="stat-funds-total">฿0.00</span>
               <span class="kpi-trend" id="stat-funds-subtitle">ชำระแรกเข้า (50 บาท) ครบถ้วน</span>
-              <div id="stat-funds-breakdown" style="font-size: 11px; margin-top: 6px; display: flex; gap: 8px; color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 6px; flex-wrap: wrap;">
+              <div id="stat-funds-breakdown" style="font-size: 12.5px; margin-top: 6px; display: flex; gap: 8px; color: var(--color-text-muted); border-top: 1px solid rgba(15, 23, 42, 0.06); padding-top: 6px; flex-wrap: wrap;">
                 <span style="color: var(--color-accent-emerald); font-weight: 500;">📈 ฝากสะสม: <span id="stat-funds-total-deposits">฿0.00</span></span>
                 <span style="color: var(--color-accent-rose); font-weight: 500;">📉 หักสะสม: <span id="stat-funds-total-charges">฿0.00</span></span>
               </div>
               <!-- Membership Fee Summary Breakdown -->
-              <div id="stat-fees-breakdown" style="font-size: 11px; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; color: var(--color-text-muted); border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 8px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.75);">
+              <div id="stat-fees-breakdown" style="font-size: 12.5px; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; color: var(--color-text-muted); border-top: 1px solid rgba(15, 23, 42, 0.06); padding-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; color: var(--color-text-muted);">
                   <span>🆕 ค่าสมัครสมาชิกใหม่ (50฿):</span>
                   <span style="color: var(--color-accent-emerald); font-weight: 600;"><span id="stat-fees-new-total">฿0.00</span> (<span id="stat-fees-new-count">0</span> คน)</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,0.75);">
+                <div style="display: flex; justify-content: space-between; align-items: center; color: var(--color-text-dim);">
                   <span>👴 ค่าสมัครสมาชิกเก่า (ยกเว้น):</span>
-                  <span style="color: rgba(255,255,255,0.5); font-weight: 500;"><span id="stat-fees-old-total">฿0.00</span> (<span id="stat-fees-old-count">0</span> คน)</span>
+                  <span style="color: var(--color-text-dim); font-weight: 500;"><span id="stat-fees-old-total">฿0.00</span> (<span id="stat-fees-old-count">0</span> คน)</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 700; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 4px; margin-top: 2px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; color: var(--color-text-main); font-weight: 700; border-top: 1px dashed rgba(15, 23, 42, 0.1); padding-top: 4px; margin-top: 2px;">
                   <span>💰 ยอดค่าสมัครรวมทั้งหมด:</span>
                   <span style="color: var(--color-accent-gold);"><span id="stat-fees-grand-total">฿0.00</span> (<span id="stat-fees-all-count">0</span> คน)</span>
                 </div>
@@ -484,7 +484,7 @@
           </div>
           
           <!-- KPI 4: Pending Actions / Arrears Warning -->
-          <div class="kpi-card glass warning-alert-card" id="kpi-alerts-panel">
+          <div class="kpi-card glass warning-alert-card" id="kpi-alerts-panel" style="display: none;">
             <div class="kpi-icon icon-danger">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
@@ -519,9 +519,9 @@
         </div>
 
         <!-- Beautiful Membership Status Graphic Widget -->
-        <div class="widget-card glass full-width-widget" style="padding: 24px; background: linear-gradient(135deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.6) 100%); margin-bottom: 8px;">
+        <div class="widget-card glass full-width-widget" style="padding: 24px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(241, 245, 249, 0.75) 100%); margin-bottom: 8px;">
           <div class="widget-header" style="border-bottom: none; padding-bottom: 0;">
-            <h3 id="membership-graphics-title" style="font-size: 17px; color: var(--color-accent-gold); display: flex; align-items: center; gap: 8px;">
+            <h3 id="membership-graphics-title" style="font-size: 18.5px; color: var(--color-accent-gold); display: flex; align-items: center; gap: 8px;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
@@ -538,62 +538,63 @@
               <div class="membership-donut-wrapper" style="position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center;">
                 <svg width="140" height="140" viewBox="0 0 140 140" style="transform: rotate(-90deg);">
                   <!-- Background Circle -->
-                  <circle cx="70" cy="70" r="58" fill="transparent" stroke="rgba(255, 255, 255, 0.05)" stroke-width="12"></circle>
+                  <circle cx="70" cy="70" r="58" fill="transparent" stroke="rgba(15, 23, 42, 0.05)" stroke-width="12"></circle>
                   <!-- Active Members Circle -->
                   <circle id="visual-members-ring" cx="70" cy="70" r="58" fill="transparent" stroke="url(#grad-members)" stroke-width="12" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" style="transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
                   <defs>
-                    <linearGradient id="grad-members" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#10b981" />
-                      <stop offset="100%" stop-color="#059669" />
+                     <linearGradient id="grad-members" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#1e3a8a" />
+                      <stop offset="100%" stop-color="#3754c0" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                  <span id="visual-members-percent" style="font-family: var(--font-number); font-size: 26px; font-weight: 800; color: var(--color-accent-emerald); line-height: 1;">0%</span>
-                  <span style="font-size: 10px; color: var(--color-text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase;">เป็นสมาชิก สสมน.</span>
+                  <span id="visual-members-percent" style="font-family: var(--font-number); font-size: 28px; font-weight: 800; color: var(--color-accent-emerald); line-height: 1;">0%</span>
+                  <span style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px; font-weight: 600; text-transform: uppercase;">เป็นสมาชิก สสมน.</span>
                 </div>
               </div>
 
               <!-- Bar breakdown and statistics details -->
+              <div class="membership-donut-wrapper" style="display: none;"></div>
               <div class="membership-details-bars" style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 16px;">
                 <!-- Members Bar -->
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                    <span style="font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14.5px;">
+                    <span style="font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; gap: 6px;">
                       <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent-emerald); display: inline-block;"></span>
                       เป็นสมาชิก สสมน. (Members)
                     </span>
                     <span style="font-family: var(--font-number); font-weight: 700; color: var(--color-accent-emerald);"><span id="visual-members-count">0</span> คน</span>
                   </div>
-                  <div class="progress-bar-container" style="height: 14px; background: rgba(0,0,0,0.4); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); margin: 0;">
-                    <div id="visual-members-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-pine); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);"></div>
+                  <div class="progress-bar-container" style="height: 14px; background: rgba(15, 23, 42, 0.08); border-radius: 7px; overflow: hidden; border: 1px solid rgba(15, 23, 42, 0.04); margin: 0;">
+                    <div id="visual-members-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-pine); box-shadow: 0 0 10px rgba(4, 120, 87, 0.2);"></div>
                   </div>
                 </div>
 
                 <!-- Non-members Bar -->
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-                    <span style="font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; font-size: 14.5px;">
+                    <span style="font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; gap: 6px;">
                       <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent-amber); display: inline-block;"></span>
                       ยังไม่สมัครสิทธิ์ สสมน. (Non-members)
                     </span>
                     <span style="font-family: var(--font-number); font-weight: 700; color: var(--color-accent-gold);"><span id="visual-nonmembers-count">0</span> คน</span>
                   </div>
-                  <div class="progress-bar-container" style="height: 14px; background: rgba(0,0,0,0.4); border-radius: 7px; overflow: hidden; border: 1px solid rgba(255,255,255,0.03); margin: 0;">
-                    <div id="visual-nonmembers-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-teak); box-shadow: 0 0 10px rgba(217, 119, 6, 0.4);"></div>
+                  <div class="progress-bar-container" style="height: 14px; background: rgba(15, 23, 42, 0.08); border-radius: 7px; overflow: hidden; border: 1px solid rgba(15, 23, 42, 0.04); margin: 0;">
+                    <div id="visual-nonmembers-bar" class="progress-bar-fill" style="width: 0%; height: 100%; border-radius: 7px; background: var(--grad-teak); box-shadow: 0 0 10px rgba(217, 119, 6, 0.2);</div>
                   </div>
                 </div>
               </div>
 
               <!-- Graphic summary cards -->
               <div class="membership-summary-brief" style="display: flex; gap: 16px;">
-                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
-                  <span style="font-size: 10px; color: var(--color-text-muted); font-weight: 600;">บุคลากรทั้งหมด</span>
-                  <span id="visual-total-count" style="font-family: var(--font-number); font-size: 22px; font-weight: 800; color: white; margin-top: 4px;">0</span>
+                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(15, 23, 42, 0.06); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
+                  <span style="font-size: 12.5px; color: var(--color-text-muted); font-weight: 600;">บุคลากรทั้งหมด</span>
+                  <span id="visual-total-count" style="font-family: var(--font-number); font-size: 24px; font-weight: 800; color: var(--color-text-main); margin-top: 4px;">0</span>
                 </div>
-                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
-                  <span style="font-size: 10px; color: var(--color-text-muted); font-weight: 600;">ความมั่นคงสมาชิกรวม</span>
-                  <span id="visual-status-indicator" style="font-size: 12px; font-weight: 700; color: var(--color-accent-emerald); margin-top: 8px; text-align: center;">พร้อมใช้งาน</span>
+                <div class="brief-kpi glass" style="padding: 12px 18px; border-radius: var(--radius-md); border: 1px solid rgba(15, 23, 42, 0.06); display: flex; flex-direction: column; align-items: center; min-width: 110px;">
+                  <span style="font-size: 12.5px; color: var(--color-text-muted); font-weight: 600;">ความมั่นคงสมาชิกรวม</span>
+                  <span id="visual-status-indicator" style="font-size: 13.5px; font-weight: 700; color: var(--color-accent-emerald); margin-top: 8px; text-align: center;">พร้อมใช้งาน</span>
                 </div>
               </div>
 
@@ -663,31 +664,31 @@
             <div class="widget-body" style="display: flex; flex-direction: column; gap: 16px;">
               
               <!-- Round 1 -->
-              <div class="cert-round-card glass" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
+              <div class="cert-round-card glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <strong style="color: white; font-size: 13.5px;">ครั้งที่ 1 (สิ้นสุดวันที่ 30 มิถุนายน)</strong>
-                  <span id="lbl-school-cert-r1-status" class="badge badge-danger-outline" style="font-size: 11px;">🔴 ค้างการรับรอง</span>
+                  <strong style="color: var(--color-text-main); font-size: 14.5px;">ครั้งที่ 1 (สิ้นสุดวันที่ 30 มิถุนายน)</strong>
+                  <span id="lbl-school-cert-r1-status" class="badge badge-danger-outline" style="font-size: 13px;">🔴 ค้างการรับรอง</span>
                 </div>
-                <div style="font-size: 12px; color: var(--color-text-muted);" id="lbl-school-cert-r1-info">
+                <div style="font-size: 13.5px; color: var(--color-text-muted);" id="lbl-school-cert-r1-info">
                   ผู้รับรอง: - <br>
                   วันที่รับรอง: -
                 </div>
-                <button type="button" id="btn-school-certify-r1" onclick="certifySchoolRound(1)" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
+                <button type="button" id="btn-school-certify-r1" onclick="certifySchoolRound(1)" class="btn btn-danger btn-mini" style="font-size: 13px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
                   ✍️ กดยืนยันรับรองข้อมูลครั้งที่ 1
                 </button>
               </div>
 
               <!-- Round 2 -->
-              <div class="cert-round-card glass" style="background: rgba(255, 255, 255, 0.01); border: 1px solid rgba(255, 255, 255, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
+              <div class="cert-round-card glass" style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.06); padding: 14px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <strong style="color: white; font-size: 13.5px;">ครั้งที่ 2 (สิ้นสุดวันที่ 30 ธันวาคม)</strong>
-                  <span id="lbl-school-cert-r2-status" class="badge badge-danger-outline" style="font-size: 11px;">🔴 ค้างการรับรอง</span>
+                  <strong style="color: var(--color-text-main); font-size: 14.5px;">ครั้งที่ 2 (สิ้นสุดวันที่ 30 ธันวาคม)</strong>
+                  <span id="lbl-school-cert-r2-status" class="badge badge-danger-outline" style="font-size: 13px;">🔴 ค้างการรับรอง</span>
                 </div>
-                <div style="font-size: 12px; color: var(--color-text-muted);" id="lbl-school-cert-r2-info">
+                <div style="font-size: 13.5px; color: var(--color-text-muted);" id="lbl-school-cert-r2-info">
                   ผู้รับรอง: - <br>
                   วันที่รับรอง: -
                 </div>
-                <button type="button" id="btn-school-certify-r2" onclick="certifySchoolRound(2)" class="btn btn-danger btn-mini" style="font-size: 11px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
+                <button type="button" id="btn-school-certify-r2" onclick="certifySchoolRound(2)" class="btn btn-danger btn-mini" style="font-size: 13px; padding: 6px 14px; background: var(--color-accent-rose); border-color: var(--color-accent-rose); color: white; font-weight: 700; width: fit-content; cursor: pointer; border-radius: var(--radius-sm);">
                   ✍️ กดยืนยันรับรองข้อมูลครั้งที่ 2
                 </button>
               </div>
@@ -747,15 +748,15 @@
                 <p>ติดตามประวัติการกดยืนยันความถูกต้องของข้อมูลสมาชิกในแต่ละรอบครึ่งปี (รอบที่ 1: 30 มิ.ย. / รอบที่ 2: 30 ธ.ค.)</p>
               </div>
               <div class="widget-actions">
-                <span class="matrix-legend" style="display: flex; gap: 12px; font-size: 12px; color: var(--color-text-muted);">
-                  <span class="legend-item" style="display: flex; align-items: center; gap: 4px;"><span class="legend-dot status-dot-green" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-teal);"></span> ได้รับการรับรองแล้ว</span>
+                <span class="matrix-legend" style="display: flex; gap: 12px; font-size: 14px; color: var(--color-text-muted);">
+                  <span class="legend-item" style="display: flex; align-items: center; gap: 4px;"><span class="legend-dot status-dot-green" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-emerald);"></span> ได้รับการรับรองแล้ว</span>
                   <span class="legend-item" style="display: flex; align-items: center; gap: 4px;"><span class="legend-dot status-dot-red" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-rose);"></span> ค้างการรับรอง</span>
                 </span>
               </div>
             </div>
             <div class="widget-body no-padding">
               <div class="table-responsive">
-                <table class="standard-table" style="font-size: 13px;">
+                <table class="standard-table" style="font-size: 15px;">
                   <thead>
                     <tr>
                       <th class="text-center" style="width: 60px;">รหัส</th>
@@ -941,19 +942,19 @@
                   </div>
 
                   <!-- Death supporting documents -->
-                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(251, 191, 36, 0.02); border-color:rgba(251, 191, 36, 0.12); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <h5 style="color:var(--color-accent-gold); font-size:12px; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต (ระบบส่วนกลาง):</h5>
+                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(217, 119, 6, 0.02); border-color:rgba(217, 119, 6, 0.15); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+                    <h5 style="color:var(--color-accent-amber); font-size:14px; font-weight:700; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต (ระบบส่วนกลาง):</h5>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-cert-province" style="font-size:11px;">1. ไฟล์ใบมรณบัตร:</label>
-                      <input type="file" id="death-doc-cert-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-cert-province" style="font-size:13px;">1. ไฟล์ใบมรณบัตร:</label>
+                      <input type="file" id="death-doc-cert-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-id-province" style="font-size:11px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย:</label>
-                      <input type="file" id="death-doc-id-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-id-province" style="font-size:13px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย:</label>
+                      <input type="file" id="death-doc-id-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-house-province" style="font-size:11px;">3. สำเนาทะเบียนบ้านผู้ตาย:</label>
-                      <input type="file" id="death-doc-house-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-house-province" style="font-size:13px;">3. สำเนาทะเบียนบ้านผู้ตาย:</label>
+                      <input type="file" id="death-doc-house-province" accept="image/*" class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                   </div>
                   
@@ -1001,19 +1002,19 @@
                   </div>
 
                   <!-- File Attachments for Death Verification -->
-                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(251, 191, 36, 0.03); border-color:rgba(251, 191, 36, 0.15); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <h5 style="color:var(--color-accent-gold); font-size:12.5px; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต: <span class="required">*</span></h5>
+                  <div class="transfer-alert-warning glass" style="margin-bottom:0; background:rgba(217, 119, 6, 0.03); border-color:rgba(217, 119, 6, 0.15); padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+                    <h5 style="color:var(--color-accent-amber); font-size:14.5px; font-weight:700; margin-bottom:2px;">แนบเอกสารหลักฐานประกอบการเสียชีวิต: <span class="required">*</span></h5>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-cert" style="font-size:11px;">1. ไฟล์ใบมรณบัตร: <span class="required">*</span></label>
-                      <input type="file" id="death-doc-cert" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-cert" style="font-size:13px;">1. ไฟล์ใบมรณบัตร: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-cert" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-id" style="font-size:11px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย: <span class="required">*</span></label>
-                      <input type="file" id="death-doc-id" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-id" style="font-size:13px;">2. สำเนาบัตรประจำตัวประชาชนผู้ตาย: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-id" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                     <div class="form-group" style="gap:4px;">
-                      <label for="death-doc-house" style="font-size:11px;">3. สำเนาทะเบียนบ้านผู้ตาย: <span class="required">*</span></label>
-                      <input type="file" id="death-doc-house" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:11.5px; padding:6px;">
+                      <label for="death-doc-house" style="font-size:13px;">3. สำเนาทะเบียนบ้านผู้ตาย: <span class="required">*</span></label>
+                      <input type="file" id="death-doc-house" accept="image/*" required class="form-control file-input-control input-mini" style="font-size:13.5px; padding:8px;">
                     </div>
                   </div>
 
@@ -1147,10 +1148,10 @@
               <h2>จัดการข้อมูลพื้นฐานของโรงเรียน 🏫</h2>
               <p>กรอกและปรับปรุงข้อมูลที่ตั้ง ช่องทางการติดต่อ ชื่อผู้บริหาร และเจ้าหน้าที่ประสานงาน สสมน. ให้เป็นปัจจุบัน</p>
             </div>
-            <div class="province-hotline-badge glass" style="background: rgba(251, 191, 36, 0.05); padding: 8px 16px; border-radius: var(--radius-md); border: 1px solid rgba(251, 191, 36, 0.2); text-align: right; line-height: 1.4;">
-              <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;">ติดต่อประสานงานส่วนกลาง:</span>
-              <div style="color: white; font-size: 11.5px; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง (จังหวัด) <a href="tel:0972151119" style="color: var(--color-accent-teal); text-decoration: none; font-family: var(--font-number);">097-215-1119</a></div>
-              <div style="color: white; font-size: 11.5px; font-weight: 600; margin-top: 2px;">นายอนันตศักดิ์ ยศอาลัย (กก.) <a href="tel:0810351149" style="color: var(--color-accent-teal); text-decoration: none; font-family: var(--font-number);">081-035-1149</a></div>
+            <div class="province-hotline-badge glass" style="background: rgba(217, 119, 6, 0.03); padding: 10px 18px; border-radius: var(--radius-md); border: 1px solid rgba(217, 119, 6, 0.15); text-align: right; line-height: 1.45;">
+              <span style="color: var(--color-accent-amber); font-weight: 700; font-size: 13px; display: block; margin-bottom: 4px;">ติดต่อประสานงานส่วนกลาง:</span>
+              <div style="color: var(--color-text-main); font-size: 13.5px; font-weight: 600;">ว่าที่ร้อยโทวิญญู ศรีบุญเรือง (จังหวัด) <a href="tel:0972151119" style="color: var(--color-accent-emerald); text-decoration: none; font-family: var(--font-number); font-weight: 700;">097-215-1119</a></div>
+              <div style="color: var(--color-text-main); font-size: 13.5px; font-weight: 600; margin-top: 4px;">นายอนันตศักดิ์ ยศอาลัย (กก.) <a href="tel:0810351149" style="color: var(--color-accent-emerald); text-decoration: none; font-family: var(--font-number); font-weight: 700;">081-035-1149</a></div>
             </div>
           </div>
 
@@ -1161,7 +1162,7 @@
             </div>
             <div class="widget-body">
               <form id="form-school-profile" class="standard-form">
-                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 12px;">📍 ที่ตั้งและข้อมูลติดต่อ</h4>
+                <h4 class="section-title" style="color: var(--color-accent-amber); font-size: 15.5px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 6px; margin-bottom: 12px;">📍 ที่ตั้งและข้อมูลติดต่อ</h4>
                 <div class="form-row">
                   <div class="form-group col-3">
                     <label for="school-profile-address">ตั้งอยู่เลขที่:</label>
@@ -1208,7 +1209,7 @@
                   </div>
                 </div>
 
-                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">👥 บุคลากรผู้รับผิดชอบ</h4>
+                <h4 class="section-title" style="color: var(--color-accent-amber); font-size: 15.5px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">👥 บุคลากรผู้รับผิดชอบ</h4>
                 <div class="form-row">
                   <div class="form-group col-6">
                     <label for="school-profile-director">ชื่อ-สกุล ของผู้อำนวยการโรงเรียน: <span class="required">*</span></label>
@@ -1231,17 +1232,17 @@
                   </div>
                 </div>
 
-                <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">📊 ข้อมูลกำลังคนและจำนวนนักเรียน (School Statistics)</h4>
+                <h4 class="section-title" style="color: var(--color-accent-amber); font-size: 15.5px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">📊 ข้อมูลกำลังคนและจำนวนนักเรียน (School Statistics)</h4>
                 
                 <!-- สรุปผลรวมครู/บุคลากร และสมาชิก สสมน. -->
-                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px; display: flex; gap: 24px; justify-content: space-around; flex-wrap: wrap;">
+                <div style="background: rgba(15, 23, 42, 0.01); border: 1px solid rgba(15, 23, 42, 0.06); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; display: flex; gap: 24px; justify-content: space-around; flex-wrap: wrap;">
                   <div>
-                    <span style="font-size: 12px; color: var(--color-text-muted);">👥 รวมครูและบุคลากรทั้งหมด:</span>
-                    <strong style="color: white; font-family: var(--font-number); margin-left: 6px; font-size: 15px;" id="lbl-profile-total-personnel">0 คน</strong>
+                    <span style="font-size: 14px; color: var(--color-text-muted);">👥 รวมครูและบุคลากรทั้งหมด:</span>
+                    <strong style="color: var(--color-text-main); font-family: var(--font-number); margin-left: 6px; font-size: 17px;" id="lbl-profile-total-personnel">0 คน</strong>
                   </div>
                   <div>
-                    <span style="font-size: 12px; color: var(--color-text-muted);">💳 รวมสมาชิก สสมน. ทั้งหมด:</span>
-                    <strong style="color: var(--color-accent-gold); font-family: var(--font-number); margin-left: 6px; font-size: 15px;" id="lbl-profile-total-members">0 คน</strong>
+                    <span style="font-size: 14px; color: var(--color-text-muted);">💳 รวมสมาชิก สสมน. ทั้งหมด:</span>
+                    <strong style="color: var(--color-accent-amber); font-family: var(--font-number); margin-left: 6px; font-size: 17px;" id="lbl-profile-total-members">0 คน</strong>
                   </div>
                 </div>
 
@@ -1290,7 +1291,7 @@
                   </div>
                 </div>
 
-                <h4 class="section-title" style="color: var(--color-accent-rose); font-size: 14px; border-bottom: 1px solid rgba(244,63,94,0.15); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">🔑 ความปลอดภัย: รหัสผ่านเข้าสู่ระบบสังกัดโรงเรียน</h4>
+                <h4 class="section-title" style="color: var(--color-accent-rose); font-size: 15.5px; border-bottom: 1px solid rgba(244,63,94,0.15); padding-bottom: 6px; margin-top: 20px; margin-bottom: 12px;">🔑 ความปลอดภัย: รหัสผ่านเข้าสู่ระบบสังกัดโรงเรียน</h4>
                 <div class="form-row">
                   <div class="form-group col-6">
                     <label for="school-profile-password">ระบุรหัสผ่านเข้าใช้งานสังกัดใหม่: <span class="required">*</span></label>
@@ -1319,14 +1320,14 @@
               </form>
 
               <!-- School Admin View: Registered Devices Widget -->
-              <div class="school-devices-section" style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;">
-                <h4 class="section-title" style="color: #60a5fa; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+              <div class="school-devices-section" style="margin-top: 32px; border-top: 1px solid rgba(15, 23, 42, 0.08); padding-top: 24px;">
+                <h4 class="section-title" style="color: var(--color-accent-blue); font-size: 15.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                   <span>📱 อุปกรณ์ที่ลงทะเบียนใช้งานอยู่</span>
-                  <span id="school-device-count-badge" class="badge" style="font-family: var(--font-number); font-size: 11px; padding: 2px 8px; border-radius: var(--radius-sm); font-weight: 700; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); color: var(--color-accent-amber);">0/10 เครื่อง</span>
+                  <span id="school-device-count-badge" class="badge" style="font-family: var(--font-number); font-size: 13px; padding: 2px 8px; border-radius: var(--radius-sm); font-weight: 700; background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.2); color: var(--color-accent-amber);">0/10 เครื่อง</span>
                 </h4>
-                <p style="font-size: 12.5px; color: var(--color-text-muted); margin-bottom: 14px;">รายการอุปกรณ์ (Web Browsers) ที่เคยลงทะเบียนล็อกอินเข้าสู่ระบบโรงเรียนนี้ ท่านสามารถลบอุปกรณ์ที่ไม่ต้องการออกเพื่อเพิ่มพื้นที่ว่างได้</p>
+                <p style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 14px;">รายการอุปกรณ์ (Web Browsers) ที่เคยลงทะเบียนล็อกอินเข้าสู่ระบบโรงเรียนนี้ ท่านสามารถลบอุปกรณ์ที่ไม่ต้องการออกเพื่อเพิ่มพื้นที่ว่างได้</p>
                 <div class="table-responsive">
-                  <table class="standard-table table-mini" style="font-size: 12.5px; background: rgba(0,0,0,0.15);">
+                  <table class="standard-table table-mini" style="font-size: 14.5px; background: rgba(15, 23, 42, 0.03);">
                     <thead>
                       <tr>
                         <th style="width: 50px;" class="text-center">#</th>
@@ -1350,8 +1351,8 @@
         <div id="block-school-coordinators-directory" style="display: none; margin-top: 32px;">
           <div class="dashboard-header" style="margin-bottom: 20px;">
             <div>
-              <h2 style="font-size: 18px; font-weight: 700; color: white;">ทำเนียบผู้ประสานงาน 33 โรงเรียนร่วมเครือข่าย (ดูงานประสานงาน สสมน.น่าน) 🤝</h2>
-              <p style="font-size: 13px; color: var(--color-text-muted);">ข้อมูลติดต่อประสานงานของผู้ประสานงานและผู้อำนวยการของแต่ละสถาบันในเครือข่ายจังหวัดน่าน เพื่อความสะดวกในการสื่อสารประสานงาน</p>
+              <h2 style="font-size: 20px; font-weight: 700; color: var(--color-text-main);">ทำเนียบผู้ประสานงาน 33 โรงเรียนร่วมเครือข่าย (ดูงานประสานงาน สสมน.น่าน) 🤝</h2>
+              <p style="font-size: 14.5px; color: var(--color-text-muted);">ข้อมูลติดต่อประสานงานของผู้ประสานงานและผู้อำนวยการของแต่ละสถาบันในเครือข่ายจังหวัดน่าน เพื่อความสะดวกในการสื่อสารประสานงาน</p>
             </div>
           </div>
           
@@ -1372,14 +1373,14 @@
 
           <!-- Province Admin: Committee Password & System Credentials Card -->
           <div id="block-province-system-credentials" class="widget-card glass" style="margin-bottom: 24px; display: none;">
-            <div class="widget-header" style="padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div class="widget-header" style="padding-bottom: 12px; border-bottom: 1px solid rgba(15, 23, 42, 0.06);">
               <h3>🔐 รหัสผ่านระบบและข้อมูลความปลอดภัย (System Credentials)</h3>
               <p>ตรวจสอบและประสานงานรหัสผ่านของระบบคณะกรรมการกลาง สสมน. จังหวัดน่าน</p>
             </div>
             <div class="widget-body" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap; padding: 16px 20px;">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color: var(--color-text-dim); font-size: 13.5px; font-weight: 500;">🔑 รหัสผ่านคณะกรรมการ สสมน.:</span>
-                <span id="province-committee-pwd-container" onclick="toggleCommitteePasswordReveal(this)" style="cursor: pointer; color: var(--color-accent-amber); font-weight: 700; font-family: var(--font-number); font-size: 15px; display: inline-flex; align-items: center; gap: 6px; background: rgba(251, 191, 36, 0.08); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.2);" title="คลิกเพื่อแสดง/ปกปิดรหัสผ่าน">
+                <span style="color: var(--color-text-dim); font-size: 15px; font-weight: 500;">🔑 รหัสผ่านคณะกรรมการ สสมน.:</span>
+                <span id="province-committee-pwd-container" onclick="toggleCommitteePasswordReveal(this)" style="cursor: pointer; color: var(--color-accent-amber); font-weight: 700; font-family: var(--font-number); font-size: 16.5px; display: inline-flex; align-items: center; gap: 6px; background: rgba(217, 119, 6, 0.08); padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(217, 119, 6, 0.2);" title="คลิกเพื่อแสดง/ปกปิดรหัสผ่าน">
                   <span class="masked-committee-pwd">••••••••</span>
                   <span>👁️</span>
                 </span>
@@ -1394,8 +1395,8 @@
                 <p>พิมพ์เพื่อค้นหาชื่อโรงเรียน ผู้ประสานงาน ผอ. หรือกรองคัดแยกตามอำเภอของจังหวัดน่าน</p>
               </div>
               <div class="widget-actions" style="display: flex; gap: 12px;">
-                <input type="text" id="search-schools-directory" placeholder="🔍 พิมพ์คำค้นหา..." class="filter-select search-input-custom" style="width: 220px; font-size: 13px; padding: 6px 12px; border-radius:var(--radius-md);">
-                <select id="filter-schools-amphoe" class="filter-select" style="font-size: 13px;">
+                <input type="text" id="search-schools-directory" placeholder="🔍 พิมพ์คำค้นหา..." class="filter-select search-input-custom" style="width: 220px; font-size: 14.5px; padding: 6px 12px; border-radius:var(--radius-md);">
+                <select id="filter-schools-amphoe" class="filter-select" style="font-size: 14.5px;">
                   <option value="">-- กรองรายอำเภอ (ทั้งหมด) --</option>
                   <option value="เมืองน่าน">อำเภอเมืองน่าน</option>
                   <option value="ปัว">อำเภอปัว</option>
@@ -1708,7 +1709,7 @@
                 <span class="info-label">เลขประจำตัวประชาชน:</span>
                 <span class="info-value text-currency" id="view-profile-citizen-container" style="cursor: pointer; display: inline-flex; align-items: center;" onclick="toggleCitizenIdReveal(this)" title="คลิกเพื่อแสดง/ปกปิดเลขบัตรประชาชน">
                   <span class="masked-cid" id="view-profile-citizen">-</span>
-                  <span style="margin-left: 4px; font-size: 11px; color: var(--color-text-muted);">👁️</span>
+                  <span style="margin-left: 4px; font-size: 13px; color: var(--color-text-muted);">👁️</span>
                 </span>
               </div>
               <div class="info-item">
@@ -1729,7 +1730,7 @@
             <h4 class="section-title" style="margin-top:12px;">ผู้รับผลประโยชน์ (Beneficiary)</h4>
             <div class="profile-info-grid" style="background:rgba(217, 119, 6, 0.03); border-color:rgba(217, 119, 6, 0.15);">
               <div class="info-item info-full-row">
-                <span class="info-label" style="color:var(--color-accent-gold)">ชื่อ - นามสกุล:</span>
+                <span class="info-label" style="color:var(--color-accent-amber); font-weight: 700;">ชื่อ - นามสกุล:</span>
                 <span class="info-value" id="view-profile-beneficiary-name">ไม่ระบุ</span>
               </div>
               <div class="info-item">
@@ -1749,8 +1750,8 @@
             </div>
             
             <!-- Manage/Adjust Balance box (Active for both roles for their school members) -->
-            <div class="topup-action-box glass" id="block-topup-section" style="margin-top:12px; background: rgba(251, 191, 36, 0.02); border-color: rgba(251, 191, 36, 0.15);">
-              <h5 style="color: white; font-size: 13.5px; font-weight: 700; margin-bottom: 10px;">💵 จัดการเงินสะสมล่วงหน้า (เพิ่ม / ลด)</h5>
+            <div class="topup-action-box glass" id="block-topup-section" style="margin-top:12px; background: rgba(217, 119, 6, 0.02); border-color: rgba(217, 119, 6, 0.15);">
+              <h5 style="color: var(--color-text-main); font-size: 15px; font-weight: 700; margin-bottom: 10px;">💵 จัดการเงินสะสมล่วงหน้า (เพิ่ม / ลด)</h5>
               <form id="form-profile-topup" class="standard-form" style="display: flex; flex-direction: column; gap: 10px;">
                 <input type="hidden" id="topup-member-row-index">
                 
@@ -1774,7 +1775,7 @@
                   ดำเนินการปรับปรุงเงินสะสม
                 </button>
               </form>
-              <p class="field-help-text" id="topup-help-text" style="margin-top: 6px; font-size: 11px; color: var(--color-text-dim);">
+              <p class="field-help-text" id="topup-help-text" style="margin-top: 6px; font-size: 13px; color: var(--color-text-dim);">
                 * ป้อนยอดเงินเพื่อปรับปรุงยอดเงินสะสมล่วงหน้าของสมาชิกในสมุดคู่ฝากและประวัติบัญชี
               </p>
             </div>
@@ -1910,20 +1911,20 @@
       </div>
       
       <div class="modal-scroll-body" style="padding: 20px; overflow-y: auto; flex: 1;">
-        <div style="background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
-          <h4 style="color: var(--color-accent-amber); margin: 0 0 6px 0; font-size: 14px;">⚠️ คำชี้แจงในการรับรองข้อมูลครึ่งปี:</h4>
-          <p style="font-size: 12.5px; color: var(--color-text-muted); margin: 0; line-height: 1.5;">
+        <div style="background: rgba(217, 119, 6, 0.03); border: 1px solid rgba(217, 119, 6, 0.15); padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
+          <h4 style="color: var(--color-accent-amber); margin: 0 0 6px 0; font-size: 15.5px; font-weight: 700;">⚠️ คำชี้แจงในการรับรองข้อมูลครึ่งปี:</h4>
+          <p style="font-size: 14px; color: var(--color-text-muted); margin: 0; line-height: 1.5;">
             กรุณาตรวจสอบรายชื่อและจำนวนสมาชิก สสมน. ในสังกัดของท่านด้านล่างนี้ หากพบว่าข้อมูลไม่ถูกต้อง เช่น มีสมาชิกที่ย้ายออกหรือเกษียณแล้ว หรือมีสมาชิกตกหล่น ให้กดปุ่ม <strong>"ไม่ถูกต้อง (กลับไปแก้ไข)"</strong> เพื่อจัดการรายชื่อให้เรียบร้อยก่อนทำการกดรับรอง
           </p>
         </div>
 
         <div style="margin-bottom: 16px;">
-          <strong style="font-size: 14px; color: white; display: block; margin-bottom: 8px;">
-            📊 จำนวนสมาชิก สสมน. ในสังกัดปัจจุบันทั้งหมด: <span id="lbl-cert-review-total-count" style="color: var(--color-accent-gold); font-size: 16px;">0</span> คน
+          <strong style="font-size: 15.5px; color: var(--color-text-main); display: block; margin-bottom: 8px;">
+            📊 จำนวนสมาชิก สสมน. ในสังกัดปัจจุบันทั้งหมด: <span id="lbl-cert-review-total-count" style="color: var(--color-accent-amber); font-size: 17.5px; font-weight: 700;">0</span> คน
           </strong>
           
-          <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-sm); background: rgba(0,0,0,0.2);">
-            <table class="premium-data-table" style="width: 100%; font-size: 12.5px; margin: 0;">
+          <div style="max-height: 250px; overflow-y: auto; border: 1px solid rgba(15, 23, 42, 0.08); border-radius: var(--radius-sm); background: rgba(15, 23, 42, 0.02);">
+            <table class="premium-data-table" style="width: 100%; font-size: 14.5px; margin: 0;">
               <thead>
                 <tr>
                   <th>รหัสสมาชิก</th>
@@ -1941,10 +1942,10 @@
           </div>
         </div>
 
-        <form id="form-school-certify-submit" autocomplete="off" class="standard-form" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">
+        <form id="form-school-certify-submit" autocomplete="off" class="standard-form" style="border-top: 1px solid rgba(15, 23, 42, 0.08); padding-top: 16px;">
           <input type="hidden" id="cert-review-round-input">
           
-          <h4 class="section-title" style="color: var(--color-accent-gold); font-size: 14px; margin-bottom: 12px;">✍️ ข้อมูลผู้ทำการยืนยันและรับรองความถูกต้อง</h4>
+          <h4 class="section-title" style="color: var(--color-accent-amber); font-size: 15.5px; margin-bottom: 12px;">✍️ ข้อมูลผู้ทำการยืนยันและรับรองความถูกต้อง</h4>
           
           <div class="form-row">
             <div class="form-group col-6">
@@ -1957,7 +1958,7 @@
             </div>
           </div>
           
-          <p style="font-size: 11.5px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.4;">
+          <p style="font-size: 13px; color: var(--color-text-dim); margin-top: 4px; line-height: 1.4;">
             * ข้อมูลผู้รับรองและเวลาบันทึกจะถูกบันทึกเข้าระบบส่งเชื่อมโยงโดยตรงไปยังส่วนกลางจังหวัดน่าน เพื่อเป็นหลักฐานรับรองการตรวจสอบประวัติประจำรอบปี
           </p>
 
@@ -2027,7 +2028,7 @@
 
         <div class="form-group">
           <label for="doc-upload-file">เลือกไฟล์แนบ หรือจำลองลิงก์ไฟล์: </label>
-          <input type="file" id="doc-upload-file" class="form-control file-input-control input-mini" style="font-size: 12px; padding: 6px;">
+          <input type="file" id="doc-upload-file" class="form-control file-input-control input-mini" style="font-size: 13.5px; padding: 8px;">
           <input type="text" id="doc-upload-link" placeholder="หรือกรอกลิงก์จำลอง เช่น file_application.pdf" class="form-control" style="margin-top: 8px;">
         </div>
 
@@ -2196,13 +2197,13 @@
       </div>
       <div class="standard-form">
         <div class="slip-summary-alert glass" id="import-summary-success-block" style="background:rgba(16, 185, 129, 0.04); border-color:rgba(16, 185, 129, 0.2);">
-          <h4 class="text-success font-weight-bold" style="font-size:16px;">นำเข้าข้อมูลสำเร็จสมบูรณ์!</h4>
-          <p style="margin-top:6px; font-size:13.5px;" id="lbl-import-total-success">จำนวนสมาชิกที่นำเข้าเข้าระบบสำเร็จ: 0 ราย</p>
+          <h4 class="text-success font-weight-bold" style="font-size:17.5px;">นำเข้าข้อมูลสำเร็จสมบูรณ์!</h4>
+          <p style="margin-top:6px; font-size:15px;" id="lbl-import-total-success">จำนวนสมาชิกที่นำเข้าเข้าระบบสำเร็จ: 0 ราย</p>
         </div>
         
         <div id="import-summary-errors-block" style="display:none; max-height:200px; overflow-y:auto; padding:12px; background:rgba(244, 63, 94, 0.05); border:1px solid rgba(244, 63, 94, 0.15); border-radius:var(--radius-md);">
-          <h5 class="text-danger font-weight-bold" style="font-size:12.5px; margin-bottom:6px;">⚠️ แถวที่มีข้อมูลผิดพลาดและถูกข้ามการนำเข้า:</h5>
-          <ul id="import-errors-list" style="list-style:none; padding-left:0; font-size:12px; color:var(--color-text-muted);">
+          <h5 class="text-danger font-weight-bold" style="font-size:14px; margin-bottom:6px;">⚠️ แถวที่มีข้อมูลผิดพลาดและถูกข้ามการนำเข้า:</h5>
+          <ul id="import-errors-list" style="list-style:none; padding-left:0; font-size:13.5px; color:var(--color-text-muted);">
             <!-- List of row errors populated dynamically -->
           </ul>
         </div>
@@ -2260,10 +2261,10 @@
       </div>
       <form id="form-confirm-payout" autocomplete="off" class="standard-form">
         <input type="hidden" id="payout-case-id">
-        <div class="slip-summary-alert glass" style="background:rgba(251, 191, 36, 0.03); border-color:rgba(251, 191, 36, 0.15); margin-bottom:16px; padding:12px;">
-          <div style="font-size:12.5px; color:var(--color-text-dim);">ผู้เสียชีวิต: <strong id="payout-deceased-name" style="color:white;">-</strong></div>
-          <div style="font-size:12.5px; color:var(--color-text-dim); margin-top:4px;">ผู้รับผลประโยชน์: <strong id="payout-beneficiary-name" style="color:white;">-</strong></div>
-          <div style="font-size:13.5px; color:var(--color-text-dim); margin-top:4px; font-weight:700;">ยอดเงินสุทธิที่ต้องจ่าย: <span id="payout-net-amount" style="color:var(--color-accent-emerald);">฿0.00</span></div>
+        <div class="slip-summary-alert glass" style="background:rgba(217, 119, 6, 0.02); border-color:rgba(217, 119, 6, 0.15); margin-bottom:16px; padding:12px;">
+          <div style="font-size:14px; color:var(--color-text-dim);">ผู้เสียชีวิต: <strong id="payout-deceased-name" style="color:var(--color-text-main); font-size: 15px;">-</strong></div>
+          <div style="font-size:14px; color:var(--color-text-dim); margin-top:4px;">ผู้รับผลประโยชน์: <strong id="payout-beneficiary-name" style="color:var(--color-text-main); font-size: 15px;">-</strong></div>
+          <div style="font-size:15px; color:var(--color-text-dim); margin-top:4px; font-weight:700;">ยอดเงินสุทธิที่ต้องจ่าย: <span id="payout-net-amount" style="color:var(--color-accent-emerald); font-size:16.5px; font-weight:800;">฿0.00</span></div>
         </div>
         <div class="form-group">
           <label for="payout-date">วันที่โอนเงินให้ทายาท: <span class="required">*</span></label>
@@ -2280,7 +2281,7 @@
             <button type="button" class="btn btn-secondary btn-icon-text" onclick="document.getElementById('payout-slip-file').click()">
               📸 อัปโหลดสลิป
             </button>
-            <span id="lbl-payout-slip-filename" style="font-size: 12.5px; color: var(--color-text-muted);">ยังไม่ได้อัปโหลดหลักฐาน</span>
+            <span id="lbl-payout-slip-filename" style="font-size: 14px; color: var(--color-text-muted);">ยังไม่ได้อัปโหลดหลักฐาน</span>
           </div>
           <input type="hidden" id="payout-slip-uri" required>
         </div>
@@ -2302,11 +2303,11 @@
       <form id="form-update-bank-balance" autocomplete="off" class="standard-form">
         <div class="form-group">
           <label for="bank-balance-amount">ระบุยอดเงินคงเหลือในบัญชีธนาคารส่วนกลาง (บาท): <span class="required">*</span></label>
-          <input type="number" id="bank-balance-amount" required min="0" step="0.01" placeholder="ระบุยอดเงินคงเหลือล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:16px;">
+          <input type="number" id="bank-balance-amount" required min="0" step="0.01" placeholder="ระบุยอดเงินคงเหลือล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:17.5px;">
         </div>
         <div class="form-group" style="margin-top: 12px;">
           <label for="bank-operating-fee">ยอดเงินหักค่าดำเนินการสะสมร้อยละ 5 (บาท): <span class="required">*</span></label>
-          <input type="number" id="bank-operating-fee" required min="0" step="0.01" placeholder="ระบุยอดเงินหักค่าดำเนินการสะสมล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:16px;">
+          <input type="number" id="bank-operating-fee" required min="0" step="0.01" placeholder="ระบุยอดเงินหักค่าดำเนินการสะสมล่าสุด..." class="form-control" style="font-family: var(--font-number); font-size:17.5px;">
         </div>
         <div class="form-group" style="margin-top: 12px;">
           <label for="bank-balance-date">วันที่ระบุอัปเดตยอดบัญชี (แนะนำทุกวันที่ 5 ของเดือน): <span class="required">*</span></label>
@@ -2350,22 +2351,56 @@
     </div>
   </div>
 
+  <!-- MODAL: CHANGE SCHOOL PASSWORD (PROVINCE ADMIN) -->
+  <div id="modal-change-school-password" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content glass animate-scale">
+      <div class="modal-header">
+        <h2 style="display: flex; align-items: center; gap: 8px;">
+          <span>🔑 เปลี่ยนรหัสผ่านสังกัด:</span>
+          <span id="modal-change-pwd-school-name" style="color: var(--color-accent-amber);">โรงเรียน...</span>
+        </h2>
+        <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeChangeSchoolPasswordModal()">&times;</button>
+      </div>
+      <form id="form-change-school-password" autocomplete="off" class="standard-form">
+        <input type="hidden" id="change-pwd-school-id">
+        <div class="form-group">
+          <label for="school-new-password">ระบุรหัสผ่านใหม่: <span class="required">*</span></label>
+          <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="school-new-password" required placeholder="ระบุรหัสผ่านใหม่..." class="form-control" style="padding-right: 40px; width: 100%;">
+            <span class="password-toggle-icon" onclick="togglePasswordInput('school-new-password', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="school-new-password-confirm">ยืนยันรหัสผ่านใหม่อีกครั้ง: <span class="required">*</span></label>
+          <div class="password-input-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+            <input type="password" id="school-new-password-confirm" required placeholder="ยืนยันรหัสผ่านใหม่อีกครั้ง..." class="form-control" style="padding-right: 40px; width: 100%;">
+            <span class="password-toggle-icon" onclick="togglePasswordInput('school-new-password-confirm', this)" style="position: absolute; right: 12px; cursor: pointer; font-size: 16px; user-select: none;">👁️</span>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-bottom: 0;">
+          <button type="button" class="btn btn-secondary" onclick="closeChangeSchoolPasswordModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary">บันทึกรหัสผ่าน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: VIEW/RESET SCHOOL DEVICES (PROVINCE ADMIN) -->
   <div id="modal-view-school-devices" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content glass animate-scale wide-modal" style="max-width: 680px;">
       <div class="modal-header">
         <h2 style="display: flex; align-items: center; gap: 8px;">
           <span>📱 อุปกรณ์เข้าใช้งานสังกัด:</span>
-          <span id="modal-devices-school-name" style="color: var(--color-accent-gold);">โรงเรียน...</span>
+          <span id="modal-devices-school-name" style="color: var(--color-accent-amber);">โรงเรียน...</span>
         </h2>
         <button class="btn-close-modal" aria-label="ปิดกล่อง" onclick="closeViewSchoolDevicesModal()">&times;</button>
       </div>
       <div class="modal-body" style="padding: 20px;">
-        <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
+        <p style="font-size: 14.5px; color: var(--color-text-muted); margin-bottom: 16px;">
           แสดงรายการอุปกรณ์ล็อกอินทั้งหมดของสังกัดนี้ (จำกัดไม่เกิน 10 อุปกรณ์) แอดมินจังหวัดสามารถกดล้างสิทธิ์ทั้งหมดเพื่อให้แอดมินโรงเรียนสามารถเข้าใช้บนอุปกรณ์เครื่องใหม่ได้
         </p>
         <div class="table-responsive">
-          <table class="standard-table" style="font-size: 13px;">
+          <table class="standard-table" style="font-size: 15px;">
             <thead>
               <tr>
                 <th style="width: 50px;" class="text-center">#</th>

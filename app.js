@@ -721,10 +721,15 @@ function calculateStats() {
     document.getElementById("badge-pending-slips").textContent = pendingSlipsCount + pendingDeathsCount;
     document.getElementById("badge-pending-slips").style.display = (pendingSlipsCount + pendingDeathsCount) > 0 ? "flex" : "none";
     
-    if (pendingSlipsCount > 0 || pendingDeathsCount > 0) {
-      document.getElementById("kpi-alerts-panel").classList.add("alert-active");
-    } else {
-      document.getElementById("kpi-alerts-panel").classList.remove("alert-active");
+    const kpiPanel = document.getElementById("kpi-alerts-panel");
+    if (kpiPanel) {
+      if (pendingSlipsCount > 0 || pendingDeathsCount > 0) {
+        kpiPanel.style.display = "flex";
+        kpiPanel.classList.add("alert-active");
+      } else {
+        kpiPanel.style.display = "none";
+        kpiPanel.classList.remove("alert-active");
+      }
     }
 
     document.getElementById("provincial-school-filter-wrapper").style.display = "block";
@@ -835,10 +840,15 @@ function calculateStats() {
     document.getElementById("badge-pending-slips").textContent = totalSchoolAlerts;
     document.getElementById("badge-pending-slips").style.display = totalSchoolAlerts > 0 ? "flex" : "none";
 
-    if (totalSchoolAlerts > 0 || schoolArrears > 0) {
-      document.getElementById("kpi-alerts-panel").classList.add("alert-active");
-    } else {
-      document.getElementById("kpi-alerts-panel").classList.remove("alert-active");
+    const schoolKpiPanel = document.getElementById("kpi-alerts-panel");
+    if (schoolKpiPanel) {
+      if (totalSchoolAlerts > 0 || schoolArrears > 0) {
+        schoolKpiPanel.style.display = "flex";
+        schoolKpiPanel.classList.add("alert-active");
+      } else {
+        schoolKpiPanel.style.display = "none";
+        schoolKpiPanel.classList.remove("alert-active");
+      }
     }
 
     document.getElementById("provincial-school-filter-wrapper").style.display = "none";
@@ -3866,8 +3876,8 @@ function updateDemoButtonsVisibility() {
       if (btnGen) btnGen.style.display = "none";
       if (warningBox) {
         warningBox.style.display = "flex";
-        warningBox.style.color = "#a7f3d0"; // emerald light
-        warningBox.style.backgroundColor = "rgba(16, 185, 129, 0.12)";
+        warningBox.style.color = "#065f46"; // dark green for high contrast readability
+        warningBox.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
         warningBox.style.borderColor = "rgba(16, 185, 129, 0.3)";
         warningBox.innerHTML = `<span>⚠️</span><span><strong>โหมดทดสอบระบบ:</strong> ระบบกำลังรันในโหมดข้อมูลทดสอบระบบ ท่านสามารถกดปุ่มยกเลิกด้านบนเพื่อย้อนกลับคืนข้อมูลจริงที่เคยกรอกไว้ได้</span>`;
       }
@@ -3881,8 +3891,8 @@ function updateDemoButtonsVisibility() {
       }
       if (warningBox) {
         warningBox.style.display = "flex";
-        warningBox.style.color = "#fecdd3"; // rose light
-        warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.12)";
+        warningBox.style.color = "#991b1b"; // dark red for high contrast readability
+        warningBox.style.backgroundColor = "rgba(244, 63, 94, 0.1)";
         warningBox.style.borderColor = "rgba(244, 63, 94, 0.3)";
         warningBox.innerHTML = `<span>💡</span><span><strong>ทดสอบระบบ:</strong> แอดมินจังหวัดสามารถนำเข้าข้อมูลสมมติมาทดลองใช้งานระบบ โดยไม่กระทบต่อข้อมูลจริงที่มีอยู่ในระบบ</span>`;
       }
@@ -3926,18 +3936,34 @@ function clearDemoDataOnly() {
   if (appState.preDemoSchoolProfiles) {
     appState.schoolProfiles = JSON.parse(JSON.stringify(appState.preDemoSchoolProfiles));
     delete appState.preDemoSchoolProfiles;
+  } else {
+    appState.schoolProfiles = JSON.parse(JSON.stringify(DEFAULT_SCHOOL_PROFILES));
   }
+
   if (appState.preDemoCentralBankBalance !== undefined) {
     appState.centralBankBalance = appState.preDemoCentralBankBalance;
     delete appState.preDemoCentralBankBalance;
+  } else {
+    appState.centralBankBalance = 250000;
   }
+
   if (appState.preDemoCentralBankUpdateDate !== undefined) {
     appState.centralBankUpdateDate = appState.preDemoCentralBankUpdateDate;
     delete appState.preDemoCentralBankUpdateDate;
+  } else {
+    appState.centralBankUpdateDate = "2026-06-01";
   }
+
   if (appState.preDemoCentralOperatingFee !== undefined) {
     appState.centralOperatingFee = appState.preDemoCentralOperatingFee;
     delete appState.preDemoCentralOperatingFee;
+  } else {
+    appState.centralOperatingFee = 0;
+  }
+
+  // Recalculate school profile statistics for the remaining real members
+  if (typeof ensureSchoolProfilesStats === "function") {
+    ensureSchoolProfilesStats();
   }
 }
 
@@ -4684,6 +4710,14 @@ function renderSchoolsDirectory() {
                 <span class="masked-school-pwd">••••••••</span>
                 <span>👁️</span>
               </span>
+              <button class="btn btn-secondary btn-mini" onclick="openChangeSchoolPasswordModal('${sch.id}', '${sch.name}')" style="margin-left: 10px; padding: 2px 6px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 3px; font-family: inherit;" title="เปลี่ยนรหัสผ่านสำหรับสังกัดนี้">
+                <span>🔑</span><span>เปลี่ยนรหัส</span>
+              </button>
+              ${(appState.schoolPasswords[sch.id] && appState.schoolPasswords[sch.id] !== "school1234") ? `
+                <span style="font-size: 10px; margin-left: 6px; padding: 2px 6px; background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 4px; color: var(--color-accent-amber); font-weight: 600; display: inline-flex; align-items: center; gap: 3px;">
+                  🔑 รหัสผ่านกำหนดเอง
+                </span>
+              ` : ""}
             </div>
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
               <span style="font-weight: 500;">👥 บุคลากร: ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | บุคลากรทางการศึกษา ${personnel.other} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
@@ -4864,7 +4898,8 @@ function checkBiAnnualCertificationStatus() {
 
   // หากเป็นสิทธิ์แอดมินโรงเรียน
   if (appState.activeRole === "school") {
-    alertBanner.style.display = info.isActive ? "flex" : "none";
+    const activeMembersCount = (appState.members || []).filter(m => m.schoolId === appState.activeSchoolId && m.status === "active").length;
+    alertBanner.style.display = (info.isActive && activeMembersCount > 0) ? "flex" : "none";
     
     // ตรวจสอบว่าเคยรับรองไปหรือยัง
     const certRecord = appState.certifications[key] && appState.certifications[key][appState.activeSchoolId];
@@ -4891,7 +4926,8 @@ function checkBiAnnualCertificationStatus() {
   } 
   // หากเป็นสิทธิ์แอดมินจังหวัด / คณะกรรมการ
   else if (appState.activeRole === "province" || appState.activeRole === "committee") {
-    alertBanner.style.display = info.isActive ? "flex" : "none";
+    const activeMembersCount = (appState.members || []).filter(m => m.status === "active").length;
+    alertBanner.style.display = (info.isActive && activeMembersCount > 0) ? "flex" : "none";
     
     const btnCertify = document.getElementById("btn-certify-school-data");
     if (btnCertify) {
@@ -6333,4 +6369,50 @@ window.toggleCommitteePasswordReveal = function(element) {
     if (eye) eye.textContent = "👁️";
   }
 };
+
+// เปลี่ยนรหัสผ่านสังกัดโรงเรียน (Province Admin)
+window.openChangeSchoolPasswordModal = function(schoolId, schoolName) {
+  const modal = document.getElementById("modal-change-school-password");
+  if (modal) {
+    document.getElementById("change-pwd-school-id").value = schoolId;
+    document.getElementById("modal-change-pwd-school-name").textContent = schoolName;
+    document.getElementById("school-new-password").value = "";
+    document.getElementById("school-new-password-confirm").value = "";
+    modal.classList.add("active");
+  }
+};
+
+window.closeChangeSchoolPasswordModal = function() {
+  const modal = document.getElementById("modal-change-school-password");
+  if (modal) modal.classList.remove("active");
+};
+
+const formChangeSchoolPwd = document.getElementById("form-change-school-password");
+if (formChangeSchoolPwd) {
+  formChangeSchoolPwd.addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    const schoolId = document.getElementById("change-pwd-school-id").value;
+    const newPwd = document.getElementById("school-new-password").value;
+    const newPwdConfirm = document.getElementById("school-new-password-confirm").value;
+
+    if (newPwd.length < 4) {
+      alert("❌ รหัสผ่านต้องมีความยาวอย่างน้อย 4 ตัวอักษร");
+      return;
+    }
+
+    if (newPwd !== newPwdConfirm) {
+      alert("❌ รหัสผ่านใหม่และรหัสผ่านยืนยันไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง!");
+      return;
+    }
+
+    appState.schoolPasswords[schoolId] = newPwd;
+    saveStateToLocalStorage();
+    syncStateToCloudflare();
+    closeChangeSchoolPasswordModal();
+    renderSchoolsDirectory();
+    
+    alert(`🟢 บันทึกการเปลี่ยนแปลงรหัสผ่านสังกัดรหัส "${schoolId}" เรียบร้อยแล้ว!`);
+  });
+}
 
