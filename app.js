@@ -1360,6 +1360,29 @@ function renderMembersDirectory() {
     );
   }
 
+  // เรียงลำดับสมาชิกตามโครงสร้างตำแหน่งและความเหมาะสมทางการบริหาร
+  const POSITION_PRIORITY = {
+    "ผอ.": 1,
+    "รอง ผอ.": 2,
+    "ครู": 3,
+    "พนักงานราชการ": 4,
+    "ครูอัตราจ้าง": 5,
+    "ธุรการโรงเรียน": 6,
+    "นักการภารโรง": 7,
+    "แม่บ้าน": 8,
+    "เจ้าหน้าที่": 9,
+    "ข้าราชการบำนาญ": 10,
+    "บุคลากรอื่น ๆ": 11
+  };
+
+  filtered.sort((a, b) => {
+    const prioA = POSITION_PRIORITY[a.position] || 99;
+    const prioB = POSITION_PRIORITY[b.position] || 99;
+    if (prioA !== prioB) return prioA - prioB;
+    // หากตำแหน่งเดียวกัน ให้เรียงตามหมายเลขสมาชิก
+    return a.id.localeCompare(b.id, undefined, { numeric: true });
+  });
+
   resultCounter.textContent = filtered.length;
   
   if (appState.activeRole === "school") {
