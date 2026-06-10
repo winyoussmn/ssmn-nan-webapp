@@ -4772,10 +4772,10 @@ function renderSchoolsDirectory() {
         <tr>
           <td class="text-center" style="font-family: var(--font-number); font-weight: 600; color: var(--color-accent-amber);">${sch.id}</td>
           <td>
-            <div style="font-weight: 600; color: white;">${sch.name}</div>
+            <div style="font-weight: 600; color: var(--color-text-main);">${sch.name}</div>
             <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
               <span>เบอร์แฟกซ์: ${profile.fax || '-'}</span>
-              <span style="color: rgba(255,255,255,0.15);">|</span>
+              <span style="color: rgba(15, 23, 42, 0.15);">|</span>
               <span style="color: var(--color-text-dim);">รหัสผ่านระบบ: </span>
               <span onclick="toggleSchoolPasswordReveal(this, '${sch.id}')" style="cursor: pointer; color: var(--color-accent-amber); font-weight: 600; font-family: var(--font-number); display: inline-flex; align-items: center; gap: 4px;" title="คลิกเพื่อแสดง/ปกปิดรหัสผ่าน">
                 <span class="masked-school-pwd">••••••••</span>
@@ -4793,7 +4793,7 @@ function renderSchoolsDirectory() {
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
               <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | พนักงานราชการ ${personnel.govTeacher || 0} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | ธุรการโรงเรียน ${personnel.adminStaff || 0} | นักภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | เจ้าหน้าที่ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
-              <span style="color: #60a5fa; font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span style="color: var(--color-accent-teal); font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
                 <span>💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
                 ${hasMembersInDB ? `<span style="color: var(--color-accent-emerald); font-size: 10px; font-weight: 600; margin-left: 2px; padding: 1.5px 6px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 4px; display: inline-flex; align-items: center; gap: 3.5px;"><span style="width: 4.5px; height: 4.5px; border-radius: 50%; background: var(--color-accent-emerald);"></span>เชื่อมโยงระบบแล้ว</span>` : ""}
               </span>
@@ -4801,19 +4801,19 @@ function renderSchoolsDirectory() {
           </td>
           <td><span class="badge badge-success-outline" style="font-size:11px;">อ.${profile.amphoe}</span></td>
           <td>
-            <div style="font-size: 12.5px; color: white; line-height: 1.45;">${addressStr}</div>
+            <div style="font-size: 12.5px; color: var(--color-text-main); line-height: 1.45;">${addressStr}</div>
             <div style="font-size: 12px; color: var(--color-accent-gold); font-family: var(--font-number); margin-top: 3px; font-weight: 600;">📞 โทร: ${profile.phone}</div>
           </td>
           <td>
-            <div style="font-weight: 500; color: rgba(255,255,255,0.85);">${profile.director}</div>
+            <div style="font-weight: 500; color: var(--color-text-main);">${profile.director}</div>
             <div style="font-size: 11px; color: var(--color-text-dim); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ ผอ.: ${profile.directorPhone || '-'}</div>
           </td>
           <td>
-            <div style="font-weight: 600; color: white;">${profile.coordinator}</div>
+            <div style="font-weight: 600; color: var(--color-text-main);">${profile.coordinator}</div>
             <div style="font-size: 12px; color: var(--color-text-muted); font-family: var(--font-number); margin-top: 2px;">📱 มือถือ: ${profile.coordinatorPhone}</div>
           </td>
           <td class="text-center">
-            <button type="button" class="btn btn-secondary btn-mini" style="font-family: var(--font-number); display: inline-flex; align-items: center; gap: 4px; border-color: rgba(255,255,255,0.15); font-weight: 600;" onclick="openViewSchoolDevicesModal('${sch.id}')">
+            <button type="button" class="btn btn-secondary btn-mini" style="font-family: var(--font-number); display: inline-flex; align-items: center; gap: 4px; border-color: rgba(15, 23, 42, 0.15); font-weight: 600;" onclick="openViewSchoolDevicesModal('${sch.id}')">
               📱 ${(profile.devices || []).length}/10 เครื่อง
             </button>
           </td>

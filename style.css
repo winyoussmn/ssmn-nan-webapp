@@ -858,6 +858,18 @@ body {
   color: var(--color-accent-emerald);
 }
 
+.badge-success-outline {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  color: var(--color-accent-emerald);
+}
+
+.badge-danger-outline {
+  background: rgba(190, 18, 60, 0.08);
+  border: 1px solid rgba(190, 18, 60, 0.15);
+  color: var(--color-accent-rose);
+}
+
 .badge-transferred {
   background: rgba(29, 78, 216, 0.08);
   border: 1px solid rgba(29, 78, 216, 0.15);
