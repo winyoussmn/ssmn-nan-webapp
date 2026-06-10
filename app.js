@@ -50,7 +50,9 @@ function getSchoolPersonnel(schoolId) {
       director: parseInt(profile.directorCount) || 0,
       deputy: parseInt(profile.deputyCount) || 0,
       teacher: parseInt(profile.teacherCount) || 0,
+      govTeacher: parseInt(profile.govTeacherCount) || 0,
       tempTeacher: parseInt(profile.tempTeacherCount) || 0,
+      adminStaff: parseInt(profile.adminStaffCount) || 0,
       other: parseInt(profile.otherCount) || 0,
       maid: parseInt(profile.maidCount) || 0,
       service: parseInt(profile.serviceCount) || 0
@@ -58,10 +60,12 @@ function getSchoolPersonnel(schoolId) {
   }
   return sch ? { 
     ...sch.totalPersonnel,
+    govTeacher: 0,
     tempTeacher: 0,
+    adminStaff: 0,
     maid: 0,
     service: 0
-  } : { director: 0, deputy: 0, teacher: 0, tempTeacher: 0, other: 0, maid: 0, service: 0 };
+  } : { director: 0, deputy: 0, teacher: 0, govTeacher: 0, tempTeacher: 0, adminStaff: 0, other: 0, maid: 0, service: 0 };
 }
 
 const DEFAULT_SCHOOL_PROFILES = {
@@ -654,7 +658,7 @@ function calculateStats() {
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
         const p = getSchoolPersonnel(s.id);
-        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.govTeacher || 0) + (p.tempTeacher || 0) + (p.adminStaff || 0) + p.other + (p.maid || 0) + (p.service || 0);
       }
     });
 
@@ -775,7 +779,7 @@ function calculateStats() {
       schoolPersonnelTotal = schoolMembers.length;
     } else {
       const p = getSchoolPersonnel(appState.activeSchoolId);
-      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.govTeacher || 0) + (p.tempTeacher || 0) + (p.adminStaff || 0) + p.other + (p.maid || 0) + (p.service || 0);
     }
 
     const schoolMembershipRatio = schoolPersonnelTotal > 0 ? Math.round((schoolMembers.length / schoolPersonnelTotal) * 100) : 0;
@@ -921,7 +925,7 @@ function calculateStats() {
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
         const p = getSchoolPersonnel(s.id);
-        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
+        totalProvincePersonnel += p.director + p.deputy + p.teacher + (p.govTeacher || 0) + (p.tempTeacher || 0) + (p.adminStaff || 0) + p.other + (p.maid || 0) + (p.service || 0);
       }
     });
     const activePensioners = activeMembers.filter(m => m.schoolId === "33").length;
@@ -941,7 +945,7 @@ function calculateStats() {
       schoolPersonnelTotal = schoolMembers.length;
     } else {
       const p = getSchoolPersonnel(appState.activeSchoolId);
-      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.tempTeacher || 0) + p.other + (p.maid || 0) + (p.service || 0);
+      schoolPersonnelTotal = p.director + p.deputy + p.teacher + (p.govTeacher || 0) + (p.tempTeacher || 0) + (p.adminStaff || 0) + p.other + (p.maid || 0) + (p.service || 0);
     }
 
     currentTotal = schoolPersonnelTotal;
@@ -1010,7 +1014,9 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
     { key: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)", dbKey: "director" },
     { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
     { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "พนักงานราชการ", label: "พนักงานราชการ", dbKey: "govTeacher" },
     { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
+    { key: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน", dbKey: "adminStaff" },
     { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "พนักงานบริการ", label: "พนักงานบริการ", dbKey: "service" },
@@ -1106,7 +1112,9 @@ function renderSchoolPositionStats(schoolMembers, school) {
     { key: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)", dbKey: "director" },
     { key: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)", dbKey: "deputy" },
     { key: "ครู", label: "ข้าราชการครู", dbKey: "teacher" },
+    { key: "พนักงานราชการ", label: "พนักงานราชการ", dbKey: "govTeacher" },
     { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
+    { key: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน", dbKey: "adminStaff" },
     { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "พนักงานบริการ", label: "พนักงานบริการ", dbKey: "service" },
@@ -1156,7 +1164,7 @@ function renderSchoolRankingsTable() {
       totalWorking = schoolMembersCount; 
     } else {
       const p = getSchoolPersonnel(school.id);
-      totalWorking = p.director + p.deputy + p.teacher + p.other;
+      totalWorking = p.director + p.deputy + p.teacher + (p.govTeacher || 0) + (p.tempTeacher || 0) + (p.adminStaff || 0) + p.other + (p.maid || 0) + (p.service || 0);
     }
 
     const ratio = totalWorking > 0 ? Math.round((schoolMembersCount / totalWorking) * 100) : 0;
@@ -4401,12 +4409,14 @@ function ensureSchoolProfilesStats() {
     if (profile.directorCount === undefined) profile.directorCount = sch.totalPersonnel.director;
     if (profile.deputyCount === undefined) profile.deputyCount = sch.totalPersonnel.deputy;
     if (profile.teacherCount === undefined) profile.teacherCount = sch.totalPersonnel.teacher;
+    if (profile.govTeacherCount === undefined) profile.govTeacherCount = 0;
     if (profile.tempTeacherCount === undefined) profile.tempTeacherCount = 0;
+    if (profile.adminStaffCount === undefined) profile.adminStaffCount = 0;
     if (profile.otherCount === undefined) profile.otherCount = sch.totalPersonnel.other;
     if (profile.maidCount === undefined) profile.maidCount = 0;
     if (profile.serviceCount === undefined) profile.serviceCount = 0;
 
-    const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + (profile.tempTeacherCount || 0) + profile.otherCount + (profile.maidCount || 0) + (profile.serviceCount || 0);
+    const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + (profile.govTeacherCount || 0) + (profile.tempTeacherCount || 0) + (profile.adminStaffCount || 0) + profile.otherCount + (profile.maidCount || 0) + (profile.serviceCount || 0);
 
     // คำนวณเชื่อมโยงโดยตรงจากฐานข้อมูลจริง
     const dbActive = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position !== 'ข้าราชการบำนาญ').length;
@@ -4435,7 +4445,9 @@ function updateSchoolProfileTotals() {
   const director = parseInt(document.getElementById("school-profile-director-count")?.value) || 0;
   const deputy = parseInt(document.getElementById("school-profile-deputy-count")?.value) || 0;
   const teacher = parseInt(document.getElementById("school-profile-teacher-count")?.value) || 0;
+  const govTeacher = parseInt(document.getElementById("school-profile-gov-teacher-count")?.value) || 0;
   const tempTeacher = parseInt(document.getElementById("school-profile-temp-teacher-count")?.value) || 0;
+  const adminStaff = parseInt(document.getElementById("school-profile-admin-staff-count")?.value) || 0;
   const other = parseInt(document.getElementById("school-profile-other-count")?.value) || 0;
   const maid = parseInt(document.getElementById("school-profile-maid-count")?.value) || 0;
   const service = parseInt(document.getElementById("school-profile-service-count")?.value) || 0;
@@ -4444,7 +4456,7 @@ function updateSchoolProfileTotals() {
   const active = parseInt(document.getElementById("school-profile-active-members-count")?.value) || 0;
   const retired = parseInt(document.getElementById("school-profile-retired-transferred-members-count")?.value) || 0;
 
-  const totalP = director + deputy + teacher + tempTeacher + other + maid + service;
+  const totalP = director + deputy + teacher + govTeacher + tempTeacher + adminStaff + other + maid + service;
   const totalM = active + retired;
 
   const lblTotalP = document.getElementById("lbl-profile-total-personnel");
@@ -4501,8 +4513,14 @@ function initSchoolProfileForm() {
   if (document.getElementById("school-profile-teacher-count")) {
     document.getElementById("school-profile-teacher-count").value = profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher;
   }
+  if (document.getElementById("school-profile-gov-teacher-count")) {
+    document.getElementById("school-profile-gov-teacher-count").value = profile.govTeacherCount !== undefined ? profile.govTeacherCount : 0;
+  }
   if (document.getElementById("school-profile-temp-teacher-count")) {
     document.getElementById("school-profile-temp-teacher-count").value = profile.tempTeacherCount !== undefined ? profile.tempTeacherCount : 0;
+  }
+  if (document.getElementById("school-profile-admin-staff-count")) {
+    document.getElementById("school-profile-admin-staff-count").value = profile.adminStaffCount !== undefined ? profile.adminStaffCount : 0;
   }
   if (document.getElementById("school-profile-other-count")) {
     document.getElementById("school-profile-other-count").value = profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other;
@@ -4518,7 +4536,9 @@ function initSchoolProfileForm() {
   const currentTotalP = (profile.directorCount !== undefined ? profile.directorCount : defaultPersonnel.director) +
                        (profile.deputyCount !== undefined ? profile.deputyCount : defaultPersonnel.deputy) +
                        (profile.teacherCount !== undefined ? profile.teacherCount : defaultPersonnel.teacher) +
+                       (profile.govTeacherCount !== undefined ? profile.govTeacherCount : 0) +
                        (profile.tempTeacherCount !== undefined ? profile.tempTeacherCount : 0) +
+                       (profile.adminStaffCount !== undefined ? profile.adminStaffCount : 0) +
                        (profile.otherCount !== undefined ? profile.otherCount : defaultPersonnel.other) +
                        (profile.maidCount !== undefined ? profile.maidCount : 0) +
                        (profile.serviceCount !== undefined ? profile.serviceCount : 0);
@@ -4657,7 +4677,9 @@ if (schoolProfileForm) {
       directorCount: parseInt(document.getElementById("school-profile-director-count").value) || 0,
       deputyCount: parseInt(document.getElementById("school-profile-deputy-count").value) || 0,
       teacherCount: parseInt(document.getElementById("school-profile-teacher-count").value) || 0,
+      govTeacherCount: parseInt(document.getElementById("school-profile-gov-teacher-count").value) || 0,
       tempTeacherCount: parseInt(document.getElementById("school-profile-temp-teacher-count").value) || 0,
+      adminStaffCount: parseInt(document.getElementById("school-profile-admin-staff-count").value) || 0,
       otherCount: parseInt(document.getElementById("school-profile-other-count").value) || 0,
       maidCount: parseInt(document.getElementById("school-profile-maid-count").value) || 0,
       serviceCount: parseInt(document.getElementById("school-profile-service-count").value) || 0,
@@ -4680,7 +4702,9 @@ if (schoolProfileForm) {
     "school-profile-director-count",
     "school-profile-deputy-count",
     "school-profile-teacher-count",
+    "school-profile-gov-teacher-count",
     "school-profile-temp-teacher-count",
+    "school-profile-admin-staff-count",
     "school-profile-other-count",
     "school-profile-maid-count",
     "school-profile-service-count",
@@ -4728,7 +4752,7 @@ function renderSchoolsDirectory() {
       const addressStr = `เลขที่ ${profile.address || '-'} ม.${profile.moo || '-'} ต.${profile.tumbon || '-'} อ.${profile.amphoe || '-'}`;
       
       const personnel = getSchoolPersonnel(sch.id);
-      const totalP = personnel.director + personnel.deputy + personnel.teacher + personnel.other;
+      const totalP = personnel.director + personnel.deputy + personnel.teacher + (personnel.govTeacher || 0) + (personnel.tempTeacher || 0) + (personnel.adminStaff || 0) + personnel.other + (personnel.maid || 0) + (personnel.service || 0);
       const juneStudents = profile.studentsJune !== undefined ? profile.studentsJune.toLocaleString() : "0";
       const novStudents = profile.studentsNovember !== undefined ? profile.studentsNovember.toLocaleString() : "0";
 
@@ -4767,7 +4791,7 @@ function renderSchoolsDirectory() {
               ` : ""}
             </div>
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
-              <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | นักภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | พนักงานบริการ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
+              <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | พนักงานราชการ ${personnel.govTeacher || 0} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | ธุรการโรงเรียน ${personnel.adminStaff || 0} | นักภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | พนักงานบริการ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
               <span style="color: #60a5fa; font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
                 <span>💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>

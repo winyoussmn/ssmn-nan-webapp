@@ -56,7 +56,12 @@ async function ensureTables(db) {
       directorCount INTEGER,
       deputyCount INTEGER,
       teacherCount INTEGER,
+      govTeacherCount INTEGER,
+      tempTeacherCount INTEGER,
+      adminStaffCount INTEGER,
       otherCount INTEGER,
+      maidCount INTEGER,
+      serviceCount INTEGER,
       pensionersCount INTEGER,
       activeMembersCount INTEGER,
       retiredTransferredMembersCount INTEGER,
@@ -136,7 +141,7 @@ async function ensureTables(db) {
     console.error("Migration error (death_cases table columns):", err.message);
   }
 
-  // Self-Healing Column Creator for school_profiles table devices column
+  // Self-Healing Column Creator for school_profiles table devices and new personnel columns
   try {
     const tableInfo = await db.prepare("PRAGMA table_info(school_profiles)").all();
     const columns = tableInfo.results.map(r => r.name);
@@ -144,8 +149,23 @@ async function ensureTables(db) {
     if (!columns.includes("devices")) {
       await db.prepare("ALTER TABLE school_profiles ADD COLUMN devices TEXT").run();
     }
+    if (!columns.includes("govTeacherCount")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN govTeacherCount INTEGER DEFAULT 0").run();
+    }
+    if (!columns.includes("tempTeacherCount")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN tempTeacherCount INTEGER DEFAULT 0").run();
+    }
+    if (!columns.includes("adminStaffCount")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN adminStaffCount INTEGER DEFAULT 0").run();
+    }
+    if (!columns.includes("maidCount")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN maidCount INTEGER DEFAULT 0").run();
+    }
+    if (!columns.includes("serviceCount")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN serviceCount INTEGER DEFAULT 0").run();
+    }
   } catch (err) {
-    console.error("Migration error (school_profiles table devices column):", err.message);
+    console.error("Migration error (school_profiles table columns):", err.message);
   }
 
   // Self-Healing Column Creator for documents table in case it existed
@@ -231,7 +251,12 @@ export async function onRequestGet(context) {
         directorCount: p.directorCount,
         deputyCount: p.deputyCount,
         teacherCount: p.teacherCount,
+        govTeacherCount: p.govTeacherCount,
+        tempTeacherCount: p.tempTeacherCount,
+        adminStaffCount: p.adminStaffCount,
         otherCount: p.otherCount,
+        maidCount: p.maidCount,
+        serviceCount: p.serviceCount,
         pensionersCount: p.pensionersCount,
         activeMembersCount: p.activeMembersCount,
         retiredTransferredMembersCount: p.retiredTransferredMembersCount,
@@ -391,13 +416,15 @@ export async function onRequestPost(context) {
         statements.push(db.prepare(`
           INSERT INTO school_profiles (
             schoolId, address, moo, tumbon, amphoe, phone, fax, director, directorPhone, coordinator, coordinatorPhone,
-            directorCount, deputyCount, teacherCount, otherCount, pensionersCount, activeMembersCount, retiredTransferredMembersCount,
+            directorCount, deputyCount, teacherCount, govTeacherCount, tempTeacherCount, adminStaffCount, otherCount,
+            maidCount, serviceCount, pensionersCount, activeMembersCount, retiredTransferredMembersCount,
             studentsJune, studentsNovember, devices
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           schoolId, p.address || "", p.moo || "", p.tumbon || "", p.amphoe || "", p.phone || "", p.fax || "",
           p.director || "", p.directorPhone || "", p.coordinator || "", p.coordinatorPhone || "",
-          p.directorCount || 0, p.deputyCount || 0, p.teacherCount || 0, p.otherCount || 0,
+          p.directorCount || 0, p.deputyCount || 0, p.teacherCount || 0, p.govTeacherCount || 0, p.tempTeacherCount || 0,
+          p.adminStaffCount || 0, p.otherCount || 0, p.maidCount || 0, p.serviceCount || 0,
           p.pensionersCount || 0, p.activeMembersCount || 0, p.retiredTransferredMembersCount || 0,
           p.studentsJune || 0, p.studentsNovember || 0,
           typeof p.devices === "string" ? p.devices : JSON.stringify(p.devices || [])

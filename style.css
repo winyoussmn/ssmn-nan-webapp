@@ -2107,6 +2107,10 @@ body {
     border-right: none;
     padding-right: 0;
   }
+
+  .col-3 {
+    flex: 0 0 calc(50% - 8px);
+  }
 }
 
 @media screen and (max-width: 600px) {
@@ -2115,7 +2119,7 @@ body {
     gap: 16px;
   }
   
-  .col-6, .col-4 {
+  .col-6, .col-4, .col-3 {
     flex: 0 0 100%;
   }
   
