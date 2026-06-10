@@ -600,7 +600,7 @@ function generateMemberId(schoolId, position) {
     } else if (pos.includes("ครู") || pos === "teacher") {
       positionCode = "3";
     } else {
-      positionCode = "4"; // บุคลากรอื่น ๆ
+      positionCode = "4"; // นักการเกษียณ / บุคลากรอื่น ๆ
     }
   }
 
@@ -1020,12 +1020,17 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
     { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
-    { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
+    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "other" }
   ];
   
   let html = "";
   roles.forEach(role => {
-    const membersCount = activeMembers.filter(m => m.position === role.key).length;
+    const membersCount = activeMembers.filter(m => {
+      if (role.key === "นักการเกษียณ") {
+        return m.position === "นักการเกษียณ" || m.position === "บุคลากรอื่น ๆ";
+      }
+      return m.position === role.key;
+    }).length;
     let totalWorking = 0;
     SCHOOLS.forEach(s => {
       if (s.id !== "33") {
@@ -1118,12 +1123,17 @@ function renderSchoolPositionStats(schoolMembers, school) {
     { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
-    { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
+    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "other" }
   ];
   
   let html = "";
   roles.forEach(role => {
-    const membersCount = schoolMembers.filter(m => m.position === role.key).length;
+    const membersCount = schoolMembers.filter(m => {
+      if (role.key === "นักการเกษียณ") {
+        return m.position === "นักการเกษียณ" || m.position === "บุคลากรอื่น ๆ";
+      }
+      return m.position === role.key;
+    }).length;
     const totalWorking = getSchoolPersonnel(school.id)[role.dbKey];
     const percentage = totalWorking > 0 ? Math.round((membersCount / totalWorking) * 100) : 0;
     const nonMembers = totalWorking - membersCount < 0 ? 0 : totalWorking - membersCount;
@@ -1372,7 +1382,7 @@ function renderMembersDirectory() {
     "แม่บ้าน": 8,
     "เจ้าหน้าที่": 9,
     "ข้าราชการบำนาญ": 10,
-    "บุคลากรอื่น ๆ": 11
+    "นักการเกษียณ": 11
   };
 
   filtered.sort((a, b) => {
@@ -1706,7 +1716,7 @@ function renderUnregisteredPersonnel(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักการภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง", "นักการเกษียณ"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
@@ -1824,7 +1834,7 @@ window.exportUnregisteredToExcel = function(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักการภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง", "นักการเกษียณ"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
