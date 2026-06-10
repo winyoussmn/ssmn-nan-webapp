@@ -1653,11 +1653,11 @@ function renderMembersDirectory() {
       });
 
       foldersHtml += `
-        <details class="school-group-details glass" style="margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; background: rgba(15, 23, 42, 0.2);">
-          <summary style="padding: 14px 18px; font-weight: 700; color: var(--color-accent-gold); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; background: rgba(30, 41, 59, 0.4); outline: none;">
+        <details class="school-group-details glass" style="margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; background: rgba(15, 23, 42, 0.25);">
+          <summary style="padding: 14px 18px; font-weight: 700; color: #ffffff; cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; background: rgba(30, 41, 59, 0.7); outline: none;">
             <span style="font-size: 16px;">📁</span>
-            <span style="font-size: 14px; flex-grow: 1;">รหัส ${sch.id} - ${sch.name} (${schoolMembers.length} คน)</span>
-            <span style="font-size: 11px; color: var(--color-text-dim);">คลิกเพื่อ เปิด/ปิด รายชื่อ</span>
+            <span style="font-size: 14px; flex-grow: 1; color: #ffffff;">รหัส ${sch.id} - ${sch.name} <span style="color: #fbd38d;">(${schoolMembers.length} คน)</span></span>
+            <span style="font-size: 11px; color: #e2e8f0;">คลิกเพื่อ เปิด/ปิด รายชื่อ</span>
           </summary>
           <div style="padding: 0; background: rgba(15, 23, 42, 0.1); border-top: 1px solid rgba(255,255,255,0.05); overflow-x: auto;">
             <table class="premium-data-table" style="margin: 0; border: none; border-radius: 0;">
