@@ -67,7 +67,8 @@ async function ensureTables(db) {
       retiredTransferredMembersCount INTEGER,
       studentsJune INTEGER,
       studentsNovember INTEGER,
-      devices TEXT
+      devices TEXT,
+      unregisteredNames TEXT
     );`,
     `CREATE TABLE IF NOT EXISTS school_passwords (
       schoolId TEXT PRIMARY KEY,
@@ -163,6 +164,9 @@ async function ensureTables(db) {
     }
     if (!columns.includes("serviceCount")) {
       await db.prepare("ALTER TABLE school_profiles ADD COLUMN serviceCount INTEGER DEFAULT 0").run();
+    }
+    if (!columns.includes("unregisteredNames")) {
+      await db.prepare("ALTER TABLE school_profiles ADD COLUMN unregisteredNames TEXT").run();
     }
   } catch (err) {
     console.error("Migration error (school_profiles table columns):", err.message);
@@ -262,7 +266,8 @@ export async function onRequestGet(context) {
         retiredTransferredMembersCount: p.retiredTransferredMembersCount,
         studentsJune: p.studentsJune,
         studentsNovember: p.studentsNovember,
-        devices: devicesList
+        devices: devicesList,
+        unregisteredNames: p.unregisteredNames ? JSON.parse(p.unregisteredNames) : []
       };
     });
 
@@ -418,8 +423,8 @@ export async function onRequestPost(context) {
             schoolId, address, moo, tumbon, amphoe, phone, fax, director, directorPhone, coordinator, coordinatorPhone,
             directorCount, deputyCount, teacherCount, govTeacherCount, tempTeacherCount, adminStaffCount, otherCount,
             maidCount, serviceCount, pensionersCount, activeMembersCount, retiredTransferredMembersCount,
-            studentsJune, studentsNovember, devices
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            studentsJune, studentsNovember, devices, unregisteredNames
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
           schoolId, p.address || "", p.moo || "", p.tumbon || "", p.amphoe || "", p.phone || "", p.fax || "",
           p.director || "", p.directorPhone || "", p.coordinator || "", p.coordinatorPhone || "",
@@ -427,7 +432,8 @@ export async function onRequestPost(context) {
           p.adminStaffCount || 0, p.otherCount || 0, p.maidCount || 0, p.serviceCount || 0,
           p.pensionersCount || 0, p.activeMembersCount || 0, p.retiredTransferredMembersCount || 0,
           p.studentsJune || 0, p.studentsNovember || 0,
-          typeof p.devices === "string" ? p.devices : JSON.stringify(p.devices || [])
+          typeof p.devices === "string" ? p.devices : JSON.stringify(p.devices || []),
+          typeof p.unregisteredNames === "string" ? p.unregisteredNames : JSON.stringify(p.unregisteredNames || [])
         ));
       });
     }

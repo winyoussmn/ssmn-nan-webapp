@@ -1690,6 +1690,8 @@ function renderUnregisteredPersonnel(schoolId) {
 
   // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active"
   const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  const profile = appState.schoolProfiles[schoolId] || {};
+  const importedNames = profile.unregisteredNames || [];
   
   let unregisteredList = [];
   
@@ -1699,12 +1701,18 @@ function renderUnregisteredPersonnel(schoolId) {
     const unregisteredCount = totalRequired - registeredCount;
     
     if (unregisteredCount > 0) {
+      const importedForPos = importedNames.filter(item => item.position === pos.positionName);
       for (let i = 0; i < unregisteredCount; i++) {
-        const mockPerson = getDeterministicMockName(schoolId, pos.positionName, i);
+        let person = null;
+        if (i < importedForPos.length) {
+          person = importedForPos[i];
+        } else {
+          person = getDeterministicMockName(schoolId, pos.positionName, i);
+        }
         unregisteredList.push({
-          title: mockPerson.title,
-          firstname: mockPerson.firstname,
-          lastname: mockPerson.lastname,
+          title: person.title || "นาย",
+          firstname: person.firstname || "",
+          lastname: person.lastname || "",
           position: pos.positionName,
           positionLabel: pos.label
         });
@@ -1724,7 +1732,13 @@ function renderUnregisteredPersonnel(schoolId) {
 
   let html = "";
   unregisteredList.forEach((person, idx) => {
-    const clickHandler = `openAddMemberModalWithPreset('${person.title}', '${person.firstname}', '${person.lastname}', '${person.position}')`;
+    // ป้องกันการทำงานเพี้ยนจากตัวอักษรพิเศษหรือ Single Quote
+    const safeTitle = person.title.replace(/'/g, "\\'");
+    const safeFirstname = person.firstname.replace(/'/g, "\\'");
+    const safeLastname = person.lastname.replace(/'/g, "\\'");
+    const safePosition = person.position.replace(/'/g, "\\'");
+    
+    const clickHandler = `openAddMemberModalWithPreset('${safeTitle}', '${safeFirstname}', '${safeLastname}', '${safePosition}')`;
     
     html += `
       <tr>
@@ -1752,6 +1766,199 @@ function renderUnregisteredPersonnel(schoolId) {
   tbody.innerHTML = html;
   block.style.display = "block";
 }
+
+// ฟังก์ชันส่งออกรายชื่อบุคลากรที่ยังไม่ได้สมัครสมาชิกเป็นไฟล์ Excel (.xlsx)
+window.exportUnregisteredToExcel = function(schoolId) {
+  if (!schoolId || schoolId === "all") {
+    alert("กรุณาเลือกสังกัดโรงเรียนก่อนดำเนินการ");
+    return;
+  }
+  
+  const sch = SCHOOLS.find(s => s.id === schoolId);
+  if (!sch) {
+    alert("ไม่พบข้อมูลโรงเรียน");
+    return;
+  }
+
+  const p = getSchoolPersonnel(schoolId);
+  const positionMapping = [
+    { key: "director", positionName: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
+    { key: "deputy", positionName: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)" },
+    { key: "teacher", positionName: "ครู", label: "ข้าราชการครู" },
+    { key: "govTeacher", positionName: "พนักงานราชการ", label: "พนักงานราชการ" },
+    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง" },
+    { key: "adminStaff", positionName: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน" },
+    { key: "other", positionName: "นักภารโรง", label: "นักภารโรง" },
+    { key: "maid", positionName: "แม่บ้าน", label: "แม่บ้าน" },
+    { key: "service", positionName: "เจ้าหน้าที่", label: "เจ้าหน้าที่" }
+  ];
+
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  const profile = appState.schoolProfiles[schoolId] || {};
+  const importedNames = profile.unregisteredNames || [];
+  
+  let unregisteredList = [];
+  
+  positionMapping.forEach(pos => {
+    const totalRequired = p[pos.key] || 0;
+    const registeredCount = activeMembers.filter(m => m.position === pos.positionName).length;
+    const unregisteredCount = totalRequired - registeredCount;
+    
+    if (unregisteredCount > 0) {
+      const importedForPos = importedNames.filter(item => item.position === pos.positionName);
+      for (let i = 0; i < unregisteredCount; i++) {
+        let person = null;
+        if (i < importedForPos.length) {
+          person = importedForPos[i];
+        } else {
+          person = getDeterministicMockName(schoolId, pos.positionName, i);
+        }
+        unregisteredList.push({
+          title: person.title || "นาย",
+          firstname: person.firstname || "",
+          lastname: person.lastname || "",
+          position: pos.positionName,
+          positionLabel: pos.label
+        });
+      }
+    }
+  });
+
+  if (unregisteredList.length === 0) {
+    alert("ไม่มีรายชื่อบุคลากรที่ยังไม่ได้สมัครสมาชิกของสังกัดนี้");
+    return;
+  }
+
+  // สร้างข้อมูลสำหรับแปลงเป็นแผ่นงาน Excel
+  const data = unregisteredList.map((item, idx) => ({
+    "ลำดับ": idx + 1,
+    "คำนำหน้าชื่อ": item.title,
+    "ชื่อ": item.firstname,
+    "นามสกุล": item.lastname,
+    "ตำแหน่ง": item.position,
+    "คำอธิบายตำแหน่ง": item.positionLabel
+  }));
+
+  try {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "รายชื่อผู้เตรียมสมัคร");
+
+    // กำหนดความกว้างคอลัมน์ให้เหมาะสมสวยงาม
+    worksheet["!cols"] = [
+      { wch: 8 },  // ลำดับ
+      { wch: 15 }, // คำนำหน้าชื่อ
+      { wch: 25 }, // ชื่อ
+      { wch: 25 }, // นามสกุล
+      { wch: 20 }, // ตำแหน่ง
+      { wch: 30 }  // คำอธิบายตำแหน่ง
+    ];
+
+    const filename = `Unregistered_Personnel_${sch.name.replace(/\s+/g, '_')}.xlsx`;
+    XLSX.writeFile(workbook, filename);
+  } catch (err) {
+    console.error(err);
+    alert("เกิดข้อผิดพลาดในการส่งออกไฟล์ Excel: " + err.message);
+  }
+};
+
+// ฟังก์ชันนำเข้ารายชื่อบุคลากรจากไฟล์ Excel
+window.importUnregisteredFromExcel = function(e, schoolId) {
+  if (!schoolId || schoolId === "all") {
+    alert("กรุณาเลือกสังกัดโรงเรียนก่อนดำเนินการ");
+    return;
+  }
+
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async function(evt) {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet);
+
+      if (json.length === 0) {
+        alert("ไม่พบข้อมูลบุคลากรในไฟล์ Excel");
+        return;
+      }
+
+      const importedNames = [];
+      json.forEach(row => {
+        const title = row["คำนำหน้าชื่อ"] || row["Title"] || "";
+        const firstname = row["ชื่อ"] || row["Firstname"] || row["First Name"] || "";
+        const lastname = row["นามสกุล"] || row["Lastname"] || row["Last Name"] || "";
+        const position = row["ตำแหน่ง"] || row["Position"] || "";
+
+        if (firstname && position) {
+          importedNames.push({
+            title: title.toString().trim(),
+            firstname: firstname.toString().trim(),
+            lastname: lastname.toString().trim(),
+            position: position.toString().trim()
+          });
+        }
+      });
+
+      if (importedNames.length === 0) {
+        alert("ไม่สามารถนำเข้าข้อมูลได้ เนื่องจากไม่มีข้อมูลชื่อและตำแหน่งที่ถูกต้อง\nกรุณาใช้ไฟล์ที่ส่งออกจากระบบนี้เพื่อกรอกข้อมูล");
+        return;
+      }
+
+      if (!appState.schoolProfiles[schoolId]) {
+        appState.schoolProfiles[schoolId] = {};
+      }
+      appState.schoolProfiles[schoolId].unregisteredNames = importedNames;
+
+      // บันทึกลงใน LocalStorage ก่อน
+      localStorage.setItem("สสมน_NAN_PROFILES", JSON.stringify(appState.schoolProfiles));
+      
+      // แสดงผลใหม่ทันทีเพื่อความรวดเร็วทางประสาทสัมผัสของผู้ใช้
+      renderUnregisteredPersonnel(schoolId);
+      
+      // เรียกซิงค์ข้อมูลขึ้น Cloudflare D1
+      await syncStateToCloudflare();
+      
+      alert(`นำเข้าข้อมูลบุคลากรจำนวน ${importedNames.length} ราย สำเร็จเรียบร้อยแล้ว`);
+    } catch (err) {
+      console.error(err);
+      alert("เกิดข้อผิดพลาดในการอ่านไฟล์ Excel: " + err.message);
+    } finally {
+      // รีเซ็ตค่าอินพุตเพื่อให้เลือกไฟล์ซ้ำได้
+      e.target.value = "";
+    }
+  };
+  reader.readAsArrayBuffer(file);
+};
+
+// ลงทะเบียนการดักจับเหตุการณ์สำหรับปุ่ม นำเข้า/ส่งออก Excel ของบุคลากรที่ยังไม่ได้สมัครสมาชิก
+document.addEventListener("click", function(e) {
+  const exportBtn = e.target.closest("#btn-export-unregistered");
+  if (exportBtn) {
+    e.preventDefault();
+    const schoolFilter = (appState.activeRole === "province" || appState.activeRole === "committee") ? 
+      document.getElementById("filter-member-school").value : appState.activeSchoolId;
+    exportUnregisteredToExcel(schoolFilter);
+  }
+
+  const importTrigger = e.target.closest("#btn-import-unregistered-trigger");
+  if (importTrigger) {
+    e.preventDefault();
+    const fileInput = document.getElementById("import-unregistered-file");
+    if (fileInput) fileInput.click();
+  }
+});
+
+document.addEventListener("change", function(e) {
+  if (e.target.id === "import-unregistered-file") {
+    const schoolFilter = (appState.activeRole === "province" || appState.activeRole === "committee") ? 
+      document.getElementById("filter-member-school").value : appState.activeSchoolId;
+    importUnregisteredFromExcel(e, schoolFilter);
+  }
+});
 
 // ยื่นสมัครหรือลงทะเบียนสมาชิกใหม่พร้อมอัปโหลดไฟล์ประกอบการสมัคร
 document.getElementById("form-member").addEventListener("submit", async function(e) {
