@@ -4693,8 +4693,10 @@ if (schoolProfileForm) {
     appState.schoolPasswords[schoolId] = pwd;
 
     saveStateToLocalStorage();
+    syncStateToCloudflare();
     alert("🟢 บันทึกการปรับปรุงข้อมูลพื้นฐานและรหัสผ่านของโรงเรียนสำเร็จ!\nข้อมูล ผอ. และผู้ประสานงาน สสมน. ได้รับการอัปเดตลงทำเนียบภาพรวมจังหวัดเรียบร้อย");
     renderSchoolsDirectory();
+    renderSchoolCoordinatorsCards();
   });
 
   // ผูกปุ่มคำนวณยอดรวมแบบ Real-time เมื่อมีการป้อนตัวเลข
@@ -4833,26 +4835,26 @@ function renderSchoolCoordinatorsCards() {
   const grid = document.getElementById("coordinators-cards-grid");
   if (!grid) return;
 
-  // สีสันพิเศษระดับพรีเมียมตามอำเภอต่างๆ (แบบดูงานมีสีสัน)
+  // สีสันพิเศษระดับพรีเมียมตามอำเภอต่างๆ (แบบดูงานมีสีสัน) - ใช้สีเข้มเพื่อให้อ่านง่ายบนพื้นหลังสว่าง
   const amphoeColors = {
-    "เมืองน่าน": { border: "rgba(20, 184, 166, 0.3)", bg: "rgba(20, 184, 166, 0.04)", text: "var(--color-accent-teal)" },
-    "ท่าวังผา": { border: "rgba(16, 185, 129, 0.3)", bg: "rgba(16, 185, 129, 0.04)", text: "var(--color-accent-emerald)" },
-    "ปัว": { border: "rgba(59, 130, 246, 0.3)", bg: "rgba(59, 130, 246, 0.04)", text: "#60a5fa" },
-    "สา": { border: "rgba(168, 85, 247, 0.3)", bg: "rgba(168, 85, 247, 0.04)", text: "#c084fc" },
-    "นาน้อย": { border: "rgba(99, 102, 241, 0.3)", bg: "rgba(99, 102, 241, 0.04)", text: "#818cf8" },
-    "ทุ่งช้าง": { border: "rgba(245, 158, 11, 0.3)", bg: "rgba(245, 158, 11, 0.04)", text: "var(--color-accent-amber)" },
-    "สันติสุข": { border: "rgba(236, 72, 153, 0.3)", bg: "rgba(236, 72, 153, 0.04)", text: "#f472b6" },
-    "แม่จริม": { border: "rgba(239, 68, 68, 0.3)", bg: "rgba(239, 68, 68, 0.04)", text: "var(--color-accent-rose)" },
-    "บ่อเกลือ": { border: "rgba(251, 191, 36, 0.3)", bg: "rgba(251, 191, 36, 0.04)", text: "var(--color-accent-gold)" },
-    "บ้านหลวง": { border: "rgba(14, 165, 233, 0.3)", bg: "rgba(14, 165, 233, 0.04)", text: "#38bdf8" },
-    "นาหมื่น": { border: "rgba(79, 70, 229, 0.3)", bg: "rgba(79, 70, 229, 0.04)", text: "#6366f1" },
-    "เชียงกลาง": { border: "rgba(34, 197, 94, 0.3)", bg: "rgba(34, 197, 94, 0.04)", text: "#4ade80" },
-    "สองแคว": { border: "rgba(234, 179, 8, 0.3)", bg: "rgba(234, 179, 8, 0.04)", text: "#facc15" },
-    "ภูเพียง": { border: "rgba(217, 70, 239, 0.3)", bg: "rgba(217, 70, 239, 0.04)", text: "#e879f9" },
-    "เฉลิมพระเกียรติ": { border: "rgba(244, 63, 94, 0.3)", bg: "rgba(244, 63, 94, 0.04)", text: "#fb7185" }
+    "เมืองน่าน": { border: "rgba(20, 184, 166, 0.3)", bg: "rgba(20, 184, 166, 0.04)", text: "#0f766e" },
+    "ท่าวังผา": { border: "rgba(16, 185, 129, 0.3)", bg: "rgba(16, 185, 129, 0.04)", text: "#047857" },
+    "ปัว": { border: "rgba(59, 130, 246, 0.3)", bg: "rgba(59, 130, 246, 0.04)", text: "#1d4ed8" },
+    "สา": { border: "rgba(168, 85, 247, 0.3)", bg: "rgba(168, 85, 247, 0.04)", text: "#6d28d9" },
+    "นาน้อย": { border: "rgba(99, 102, 241, 0.3)", bg: "rgba(99, 102, 241, 0.04)", text: "#4338ca" },
+    "ทุ่งช้าง": { border: "rgba(245, 158, 11, 0.3)", bg: "rgba(245, 158, 11, 0.04)", text: "#b45309" },
+    "สันติสุข": { border: "rgba(236, 72, 153, 0.3)", bg: "rgba(236, 72, 153, 0.04)", text: "#be185d" },
+    "แม่จริม": { border: "rgba(239, 68, 68, 0.3)", bg: "rgba(239, 68, 68, 0.04)", text: "#be123c" },
+    "บ่อเกลือ": { border: "rgba(251, 191, 36, 0.3)", bg: "rgba(251, 191, 36, 0.04)", text: "#b45309" },
+    "บ้านหลวง": { border: "rgba(14, 165, 233, 0.3)", bg: "rgba(14, 165, 233, 0.04)", text: "#0369a1" },
+    "นาหมื่น": { border: "rgba(79, 70, 229, 0.3)", bg: "rgba(79, 70, 229, 0.04)", text: "#3730a3" },
+    "เชียงกลาง": { border: "rgba(34, 197, 94, 0.3)", bg: "rgba(34, 197, 94, 0.04)", text: "#15803d" },
+    "สองแคว": { border: "rgba(234, 179, 8, 0.3)", bg: "rgba(234, 179, 8, 0.04)", text: "#a16207" },
+    "ภูเพียง": { border: "rgba(217, 70, 239, 0.3)", bg: "rgba(217, 70, 239, 0.04)", text: "#a21caf" },
+    "เฉลิมพระเกียรติ": { border: "rgba(244, 63, 94, 0.3)", bg: "rgba(244, 63, 94, 0.04)", text: "#be123c" }
   };
 
-  const defaultColor = { border: "rgba(251, 191, 36, 0.25)", bg: "rgba(251, 191, 36, 0.03)", text: "var(--color-accent-gold)" };
+  const defaultColor = { border: "rgba(251, 191, 36, 0.25)", bg: "rgba(251, 191, 36, 0.03)", text: "#b45309" };
 
   let html = "";
   SCHOOLS.forEach(sch => {
@@ -4869,21 +4871,21 @@ function renderSchoolCoordinatorsCards() {
         <div>
           <div style="font-size: 10px; font-weight: 700; color: ${color.text}; letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;">
             <span>📍 อ.${profile.amphoe}</span>
-            <span class="badge" style="font-size: 9px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.06); color: white;">ID: ${sch.id}</span>
+            <span class="badge" style="font-size: 9px; padding: 1.5px 6px; border-radius: 4px; background: rgba(15, 23, 42, 0.06); color: var(--color-text-muted); font-weight: 700;">ID: ${sch.id}</span>
           </div>
-          <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: white; font-weight: 700; line-height: 1.4;">${sch.name}</h4>
+          <h4 style="margin: 0 0 10px 0; font-size: 13.5px; color: var(--color-text-main); font-weight: 700; line-height: 1.4;">${sch.name}</h4>
           
-          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+          <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(15, 23, 42, 0.08); padding-top: 10px;">
             <span style="font-size: 11px; color: var(--color-text-dim); font-weight: 600;">เจ้าหน้าที่ประสานงาน สสมน.:</span>
-            <span style="font-size: 13px; font-weight: 700; color: white; display: flex; align-items: center; gap: 6px;">👤 ${coordinatorName}</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--color-text-main); display: flex; align-items: center; gap: 6px;">👤 ${coordinatorName}</span>
             <span style="font-size: 12px; font-family: var(--font-number); color: ${color.text}; font-weight: 700; margin-top: 2px;">
               📞 <a href="tel:${coordinatorPhone.replace(/-/g, '')}" style="color: inherit; text-decoration: none; border-bottom: 1px dashed ${color.text};">${coordinatorPhone}</a>
             </span>
           </div>
         </div>
 
-        <div style="margin-top: 14px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.06); font-size: 10.5px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 2px;">
-          <div>👑 ผอ: <strong>${profile.director || '-'}</strong></div>
+        <div style="margin-top: 14px; padding-top: 8px; border-top: 1px dashed rgba(15, 23, 42, 0.08); font-size: 10.5px; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 2px;">
+          <div>👑 ผอ: <strong style="color: var(--color-text-main);">${profile.director || '-'}</strong></div>
           <div style="display: flex; justify-content: space-between;">
             <span>📞 โทรโรงเรียน: ${profile.phone || '-'}</span>
           </div>
