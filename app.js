@@ -1598,6 +1598,159 @@ function renderMembersDirectory() {
 
     tableWrapper.innerHTML = foldersHtml;
   }
+
+  // เรียกใช้ฟังก์ชันแสดงผลรายชื่อบุคลากรที่ยังไม่ได้สมัครสมาชิก สสมน.
+  renderUnregisteredPersonnel(schoolFilter);
+}
+
+// ข้อมูลชื่อ-นามสกุลจำลองสำหรับบุคลากรที่ยังไม่สมัคร
+const MOCK_THAI_NAMES = [
+  "สมศักดิ์", "สมชาย", "วิชัย", "มานะ", "อภิชาติ", "วีระ", "เกียรติ", "อนันต์", "สุรพล", "ประเสริฐ",
+  "ธนพล", "พิชิต", "อดิเรก", "ชัชวาล", "ศักดิ์ชัย", "กฤษณะ", "กิตติ", "ทรงพล", "ปกรณ์", "ทวีศักดิ์",
+  "สมศรี", "สมใจ", "สิริพร", "ดวงใจ", "เพ็ญศรี", "สุดา", "วิภา", "มาลี", "วรรณดี", "นงลักษณ์",
+  "จิราภรณ์", "สุชาดา", "นภาพร", "พัชรา", "ยุพา", "อารียา", "รุ่งนภา", "ชลดา", "กมลวรรณ", "กิตติยา"
+];
+
+const MOCK_THAI_SURNAMES = [
+  "ใจดี", "รักเรียน", "แสนสุข", "ยอดเยี่ยม", "จิตใจดี", "ก้าวหน้า", "มั่นคง", "ใจงาม", "แก้วมณี", "ทองรุ่ง",
+  "สุขเกษม", "สว่างเวียง", "แสนคำ", "ปัญญาใจ", "ดินดี", "ยศกลาง", "ใจสว่าง", "แก้วเกตุ", "รุ่งเรือง", "เลิศล้ำ",
+  "ทรัพย์สมบัติ", "เจริญชัย", "บุญทวี", "ภักดี", "สติปัญญา", "สุภาพ", "วัฒนา", "ศรีสุวรรณ", "ธรรมดี", "ประชารักษ์"
+];
+
+// ฟังก์ชันสร้างชื่อจำลองแบบคงที่ (Deterministic) เพื่อให้ผลการโหลดแต่ละครั้งคงที่
+function getDeterministicMockName(schoolId, position, index) {
+  const seedString = `${schoolId}-${position}-${index}`;
+  let hash = 0;
+  for (let i = 0; i < seedString.length; i++) {
+    hash = seedString.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  const isFemale = (position === "แม่บ้าน" || Math.abs(hash) % 2 !== 0);
+  const firstNames = isFemale ? MOCK_THAI_NAMES.slice(20) : MOCK_THAI_NAMES.slice(0, 20);
+  
+  const firstNameIdx = Math.abs(hash) % firstNames.length;
+  const lastNameIdx = Math.abs(hash >> 3) % MOCK_THAI_SURNAMES.length;
+  
+  const title = isFemale ? "นางสาว" : "นาย";
+  return {
+    title: title,
+    firstname: firstNames[firstNameIdx],
+    lastname: MOCK_THAI_SURNAMES[lastNameIdx]
+  };
+}
+
+// ฟังก์ชันเปิดฟอร์มสมัครสมาชิกใหม่พร้อมป้อนข้อมูลล่วงหน้า
+window.openAddMemberModalWithPreset = function(title, firstname, lastname, position) {
+  openAddMemberModal(); // เปิดและรีเซ็ตหน้าต่างสมัคร
+  
+  // ป้อนข้อมูลที่เลือก
+  document.getElementById("member-title").value = title;
+  document.getElementById("member-firstname").value = firstname;
+  document.getElementById("member-lastname").value = lastname;
+  document.getElementById("member-position").value = position;
+  
+  // แจ้งเตือนอัปเดตฟิลด์เพื่อซ่อน/แสดงหน้าต่างป้อนค่าเพิ่มเติม (เช่น คำนำหน้าชื่อแบบอื่นๆ)
+  const titleSelect = document.getElementById("member-title");
+  if (titleSelect) {
+    titleSelect.dispatchEvent(new Event('change'));
+  }
+};
+
+// เรนเดอร์ตารางบุคลากรที่ยังไม่ได้สมัคร
+function renderUnregisteredPersonnel(schoolId) {
+  const block = document.getElementById("block-unregistered-personnel");
+  const tbody = document.getElementById("tbl-body-unregistered");
+  const counter = document.getElementById("count-unregistered-results");
+  if (!block || !tbody) return;
+
+  if (!schoolId || schoolId === "all") {
+    block.style.display = "none";
+    return;
+  }
+
+  const sch = SCHOOLS.find(s => s.id === schoolId);
+  if (!sch) {
+    block.style.display = "none";
+    return;
+  }
+
+  // ดึงข้อมูลจำนวนกำลังพลจากประวัติโรงเรียน
+  const p = getSchoolPersonnel(schoolId);
+  const positionMapping = [
+    { key: "director", positionName: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
+    { key: "deputy", positionName: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)" },
+    { key: "teacher", positionName: "ครู", label: "ข้าราชการครู" },
+    { key: "govTeacher", positionName: "พนักงานราชการ", label: "พนักงานราชการ" },
+    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง" },
+    { key: "adminStaff", positionName: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน" },
+    { key: "other", positionName: "นักภารโรง", label: "นักภารโรง" },
+    { key: "maid", positionName: "แม่บ้าน", label: "แม่บ้าน" },
+    { key: "service", positionName: "เจ้าหน้าที่", label: "เจ้าหน้าที่" }
+  ];
+
+  // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active"
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  
+  let unregisteredList = [];
+  
+  positionMapping.forEach(pos => {
+    const totalRequired = p[pos.key] || 0;
+    const registeredCount = activeMembers.filter(m => m.position === pos.positionName).length;
+    const unregisteredCount = totalRequired - registeredCount;
+    
+    if (unregisteredCount > 0) {
+      for (let i = 0; i < unregisteredCount; i++) {
+        const mockPerson = getDeterministicMockName(schoolId, pos.positionName, i);
+        unregisteredList.push({
+          title: mockPerson.title,
+          firstname: mockPerson.firstname,
+          lastname: mockPerson.lastname,
+          position: pos.positionName,
+          positionLabel: pos.label
+        });
+      }
+    }
+  });
+
+  if (counter) {
+    counter.textContent = `ยังไม่สมัคร: ${unregisteredList.length} คน`;
+  }
+
+  if (unregisteredList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="color: var(--color-accent-emerald); padding: 24px; font-weight: 600;">🎉 ยอดเยี่ยม! บุคลากรทุกคนในสังกัดนี้สมัครเป็นสมาชิก สสมน. ครบถ้วนตามเป้าหมายแล้ว</td></tr>`;
+    block.style.display = "block";
+    return;
+  }
+
+  let html = "";
+  unregisteredList.forEach((person, idx) => {
+    const clickHandler = `openAddMemberModalWithPreset('${person.title}', '${person.firstname}', '${person.lastname}', '${person.position}')`;
+    
+    html += `
+      <tr>
+        <td class="text-center" style="font-family: var(--font-number); color: var(--color-text-dim);">${idx + 1}</td>
+        <td class="font-weight-bold" style="color: var(--color-text-main);">👤 ${person.title}${person.firstname} ${person.lastname}</td>
+        <td>
+          <span style="font-weight: 600; color: var(--color-text-muted);">${person.position}</span>
+          <span style="font-size: 11px; color: var(--color-text-dim); margin-left: 6px;">(${person.positionLabel})</span>
+        </td>
+        <td>
+          <span class="badge" style="background: rgba(244, 63, 94, 0.08); border: 1px solid rgba(244, 63, 94, 0.25); color: var(--color-accent-rose); font-size: 10.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+            <span style="width: 5.5px; height: 5.5px; border-radius: 50%; background: var(--color-accent-rose);"></span>
+            ยังไม่ได้สมัครสมาชิก
+          </span>
+        </td>
+        <td class="text-center">
+          <button class="btn btn-primary btn-mini" style="font-size: 11px; padding: 4.5px 12px; font-family: inherit; display: inline-flex; align-items: center; gap: 4.5px; font-weight: 600;" onclick="${clickHandler}">
+            <span>📝</span><span>กรอกใบสมัคร</span>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = html;
+  block.style.display = "block";
 }
 
 // ยื่นสมัครหรือลงทะเบียนสมาชิกใหม่พร้อมอัปโหลดไฟล์ประกอบการสมัคร

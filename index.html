@@ -904,6 +904,37 @@
             </div>
           </div>
         </div>
+
+        <!-- Unregistered Personnel Card -->
+        <div class="widget-card glass full-width-widget scrollable-card flex-grow-widget" id="block-unregistered-personnel" style="margin-top: 24px; display: none;">
+          <div class="widget-header table-summary-header" style="border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 12px;">
+            <div>
+              <h3 style="color: var(--color-text-main); font-weight: 700;">รายชื่อบุคลากรที่ยังไม่ได้สมัครสมาชิก สสมน. (Unregistered Personnel) ⚠️</h3>
+              <p>รายชื่อบุคลากรประมาณการแยกตามตำแหน่งงานที่ยังไม่ได้ลงทะเบียนสมัครสมาชิกในระบบ สำหรับโรงเรียนที่เลือกอยู่</p>
+            </div>
+            <div class="widget-actions">
+              <span class="badge badge-arrears" id="count-unregistered-results" style="font-size: 13px; padding: 4px 10px; font-weight: 700; background: rgba(244, 63, 94, 0.12); color: var(--color-accent-rose); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 6px;">ยังไม่สมัคร: 0 คน</span>
+            </div>
+          </div>
+          <div class="widget-body no-padding">
+            <div class="main-table-wrapper" style="max-height: 400px; overflow-y: auto;">
+              <table class="premium-data-table" id="tbl-unregistered-directory">
+                <thead>
+                  <tr>
+                    <th style="width: 80px;" class="text-center">ลำดับ</th>
+                    <th>ชื่อ - นามสกุล (จำลองสำหรับเตรียมสมัคร)</th>
+                    <th>ตำแหน่งที่ว่างอยู่</th>
+                    <th>สถานะการสมัคร</th>
+                    <th class="text-center">การดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody id="tbl-body-unregistered">
+                  <!-- Populated dynamically via app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- VIEW 3: CREMATION & PAYMENTS TRACKING -->
