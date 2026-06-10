@@ -770,7 +770,7 @@ function calculateStats() {
       <line x1="5" y1="12" x2="19" y2="12"></line>
     `;
 
-    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId);
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
     const schoolFunds = schoolMembers.reduce((sum, m) => sum + parseFloat(m.prepayBalance), 0);
     const schoolArrears = schoolMembers.filter(m => parseFloat(m.prepayBalance) < 0).length;
 
@@ -939,7 +939,7 @@ function calculateStats() {
     if (graphicsTitle) graphicsTitle.querySelector("span").textContent = "สรุปสถานะการสมัครสมาชิก สสมน. (Nan Province Membership Status Visualizer)";
     if (graphicsSubtitle) graphicsSubtitle.textContent = "กราฟิกเปรียบเทียบสัดส่วนยอดการเป็นสมาชิกและผู้ประสงค์ไม่เป็นสมาชิก สสมน. ทั้งจังหวัดน่าน";
   } else {
-    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId);
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
     let schoolPersonnelTotal = 0;
     if (appState.activeSchoolId === "33") {
       schoolPersonnelTotal = schoolMembers.length;
@@ -1158,7 +1158,7 @@ function renderSchoolRankingsTable() {
   const activeMembers = appState.members.filter(m => m.status === "active");
 
   let data = SCHOOLS.map(school => {
-    const schoolMembersCount = activeMembers.filter(m => m.schoolId === school.id).length;
+    const schoolMembersCount = activeMembers.filter(m => m.schoolId === school.id && (school.id === "33" || m.position !== "ข้าราชการบำนาญ")).length;
     let totalWorking = 0;
     if (school.id === "33") {
       totalWorking = schoolMembersCount; 
@@ -1677,19 +1677,19 @@ function renderUnregisteredPersonnel(schoolId) {
   // ดึงข้อมูลจำนวนกำลังพลจากประวัติโรงเรียน
   const p = getSchoolPersonnel(schoolId);
   const positionMapping = [
-    { key: "director", positionName: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
-    { key: "deputy", positionName: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)" },
-    { key: "teacher", positionName: "ครู", label: "ข้าราชการครู" },
-    { key: "govTeacher", positionName: "พนักงานราชการ", label: "พนักงานราชการ" },
-    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง" },
-    { key: "adminStaff", positionName: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักภารโรง", label: "นักภารโรง" },
-    { key: "maid", positionName: "แม่บ้าน", label: "แม่บ้าน" },
-    { key: "service", positionName: "เจ้าหน้าที่", label: "เจ้าหน้าที่" }
+    { key: "director", positionName: "ผอ.", altNames: ["ผอ.", "ผู้อำนวยการ"], label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
+    { key: "deputy", positionName: "รอง ผอ.", altNames: ["รอง ผอ.", "รองผู้อำนวยการ"], label: "รองผู้อำนวยการ (รอง ผอ.)" },
+    { key: "teacher", positionName: "ครู", altNames: ["ครู", "ข้าราชการครู"], label: "ข้าราชการครู" },
+    { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
+    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
+    { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
+    { key: "other", positionName: "นักภารโรง", altNames: ["นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักภารโรง" },
+    { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
+    { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
 
-  // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active"
-  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active" และไม่ใช่ "ข้าราชการบำนาญ" (ยกเว้นสังกัดบำนาญ 33)
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
   const profile = appState.schoolProfiles[schoolId] || {};
   const importedNames = profile.unregisteredNames || [];
   
@@ -1697,7 +1697,10 @@ function renderUnregisteredPersonnel(schoolId) {
   
   positionMapping.forEach(pos => {
     const totalRequired = p[pos.key] || 0;
-    const registeredCount = activeMembers.filter(m => m.position === pos.positionName).length;
+    const registeredCount = activeMembers.filter(m => {
+      const altNames = pos.altNames || [pos.positionName];
+      return altNames.includes(m.position);
+    }).length;
     const unregisteredCount = totalRequired - registeredCount;
     
     if (unregisteredCount > 0) {
@@ -1782,18 +1785,18 @@ window.exportUnregisteredToExcel = function(schoolId) {
 
   const p = getSchoolPersonnel(schoolId);
   const positionMapping = [
-    { key: "director", positionName: "ผอ.", label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
-    { key: "deputy", positionName: "รอง ผอ.", label: "รองผู้อำนวยการ (รอง ผอ.)" },
-    { key: "teacher", positionName: "ครู", label: "ข้าราชการครู" },
-    { key: "govTeacher", positionName: "พนักงานราชการ", label: "พนักงานราชการ" },
-    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง" },
-    { key: "adminStaff", positionName: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักภารโรง", label: "นักภารโรง" },
-    { key: "maid", positionName: "แม่บ้าน", label: "แม่บ้าน" },
-    { key: "service", positionName: "เจ้าหน้าที่", label: "เจ้าหน้าที่" }
+    { key: "director", positionName: "ผอ.", altNames: ["ผอ.", "ผู้อำนวยการ"], label: "ผู้อำนวยการ (ผอ. หรือ รก.ผอ.)" },
+    { key: "deputy", positionName: "รอง ผอ.", altNames: ["รอง ผอ.", "รองผู้อำนวยการ"], label: "รองผู้อำนวยการ (รอง ผอ.)" },
+    { key: "teacher", positionName: "ครู", altNames: ["ครู", "ข้าราชการครู"], label: "ข้าราชการครู" },
+    { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
+    { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
+    { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
+    { key: "other", positionName: "นักภารโรง", altNames: ["นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักภารโรง" },
+    { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
+    { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
 
-  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active");
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
   const profile = appState.schoolProfiles[schoolId] || {};
   const importedNames = profile.unregisteredNames || [];
   
@@ -1801,7 +1804,10 @@ window.exportUnregisteredToExcel = function(schoolId) {
   
   positionMapping.forEach(pos => {
     const totalRequired = p[pos.key] || 0;
-    const registeredCount = activeMembers.filter(m => m.position === pos.positionName).length;
+    const registeredCount = activeMembers.filter(m => {
+      const altNames = pos.altNames || [pos.positionName];
+      return altNames.includes(m.position);
+    }).length;
     const unregisteredCount = totalRequired - registeredCount;
     
     if (unregisteredCount > 0) {
