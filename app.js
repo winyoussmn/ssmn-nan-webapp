@@ -4903,6 +4903,7 @@ function updateSchoolProfileTotals() {
 
 // โหลดข้อมูลโรงเรียนเข้าฟอร์มตั้งค่าโปรไฟล์ (สำหรับแอดมินโรงเรียน)
 function initSchoolProfileForm() {
+  ensureSchoolProfilesStats();
   const schoolId = appState.activeSchoolId;
   const profile = appState.schoolProfiles[schoolId];
   if (!profile) return;
@@ -5043,7 +5044,7 @@ function initSchoolProfileForm() {
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
-      <strong>เชื่อมโยงสำเร็จ:</strong> ข้อมูลสมาชิกและผู้เกษียณ สสมน. คำนวณอัตโนมัติจากรายชื่อสมาชิกในฐานข้อมูลกลางเรียบร้อย
+      <strong>เชื่อมโยงสำเร็จ:</strong> ข้อมูลสมาชิกปฏิบัติราชการ ข้าราชการ/ลูกจ้างบำนาญ และสมาชิกเกษียณ/ย้าย คำนวณอัตโนมัติจากรายชื่อสมาชิกในฐานข้อมูลกลางเรียบร้อย
     `;
 
     const targetRow = activeInput ? activeInput.closest(".form-row") : null;
@@ -5156,6 +5157,7 @@ if (schoolProfileForm) {
 
 // เรนเดอร์ตารางทำเนียบผู้ประสานงานของจังหวัด (33 สังกัด) พร้อมระบบค้นหาและ Live Filter อำเภอ
 function renderSchoolsDirectory() {
+  ensureSchoolProfilesStats();
   const tbody = document.getElementById("tbl-body-schools-directory");
   if (!tbody) return;
 
