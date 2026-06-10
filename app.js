@@ -1707,17 +1707,20 @@ function renderUnregisteredPersonnel(schoolId) {
       const importedForPos = importedNames.filter(item => item.position === pos.positionName);
       for (let i = 0; i < unregisteredCount; i++) {
         let person = null;
+        let isMock = false;
         if (i < importedForPos.length) {
           person = importedForPos[i];
         } else {
-          person = getDeterministicMockName(schoolId, pos.positionName, i);
+          person = { title: "", firstname: "(ยังไม่ได้นำเข้าข้อมูล)", lastname: "" };
+          isMock = true;
         }
         unregisteredList.push({
-          title: person.title || "นาย",
+          title: person.title || "",
           firstname: person.firstname || "",
           lastname: person.lastname || "",
           position: pos.positionName,
-          positionLabel: pos.label
+          positionLabel: pos.label,
+          isMock: isMock
         });
       }
     }
@@ -1741,12 +1744,19 @@ function renderUnregisteredPersonnel(schoolId) {
     const safeLastname = person.lastname.replace(/'/g, "\\'");
     const safePosition = person.position.replace(/'/g, "\\'");
     
-    const clickHandler = `openAddMemberModalWithPreset('${safeTitle}', '${safeFirstname}', '${safeLastname}', '${safePosition}')`;
+    const isMock = person.isMock;
+    const clickHandler = isMock
+      ? `openAddMemberModalWithPreset('', '', '', '${safePosition}')`
+      : `openAddMemberModalWithPreset('${safeTitle}', '${safeFirstname}', '${safeLastname}', '${safePosition}')`;
+    
+    const displayName = isMock
+      ? `<span style="color: var(--color-text-dim); font-style: italic; font-weight: normal;">${person.firstname}</span>`
+      : `👤 ${person.title}${person.firstname} ${person.lastname}`;
     
     html += `
       <tr>
         <td class="text-center" style="font-family: var(--font-number); color: var(--color-text-dim);">${idx + 1}</td>
-        <td class="font-weight-bold" style="color: var(--color-text-main);">👤 ${person.title}${person.firstname} ${person.lastname}</td>
+        <td class="font-weight-bold" style="color: var(--color-text-main);">${displayName}</td>
         <td>
           <span style="font-weight: 600; color: var(--color-text-muted);">${person.position}</span>
           <span style="font-size: 11px; color: var(--color-text-dim); margin-left: 6px;">(${person.positionLabel})</span>
@@ -1816,16 +1826,22 @@ window.exportUnregisteredToExcel = function(schoolId) {
         let person = null;
         if (i < importedForPos.length) {
           person = importedForPos[i];
+          unregisteredList.push({
+            title: person.title || "",
+            firstname: person.firstname || "",
+            lastname: person.lastname || "",
+            position: pos.positionName,
+            positionLabel: pos.label
+          });
         } else {
-          person = getDeterministicMockName(schoolId, pos.positionName, i);
+          unregisteredList.push({
+            title: "",
+            firstname: "",
+            lastname: "",
+            position: pos.positionName,
+            positionLabel: pos.label
+          });
         }
-        unregisteredList.push({
-          title: person.title || "นาย",
-          firstname: person.firstname || "",
-          lastname: person.lastname || "",
-          position: pos.positionName,
-          positionLabel: pos.label
-        });
       }
     }
   });
