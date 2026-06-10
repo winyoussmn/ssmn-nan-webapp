@@ -1017,7 +1017,7 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
     { key: "พนักงานราชการ", label: "พนักงานราชการ", dbKey: "govTeacher" },
     { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
     { key: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน", dbKey: "adminStaff" },
-    { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
+    { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
     { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
@@ -1115,7 +1115,7 @@ function renderSchoolPositionStats(schoolMembers, school) {
     { key: "พนักงานราชการ", label: "พนักงานราชการ", dbKey: "govTeacher" },
     { key: "ครูอัตราจ้าง", label: "ครูอัตราจ้าง", dbKey: "tempTeacher" },
     { key: "ธุรการโรงเรียน", label: "ธุรการโรงเรียน", dbKey: "adminStaff" },
-    { key: "นักภารโรง", label: "นักภารโรง", dbKey: "other" },
+    { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
     { key: "บุคลากรอื่น ๆ", label: "บุคลากรอื่น ๆ", dbKey: "other" }
@@ -1683,7 +1683,7 @@ function renderUnregisteredPersonnel(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักภารโรง", altNames: ["นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
@@ -1801,7 +1801,7 @@ window.exportUnregisteredToExcel = function(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักภารโรง", altNames: ["นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
@@ -5175,7 +5175,7 @@ function renderSchoolsDirectory() {
               ` : ""}
             </div>
             <div style="font-size: 11.5px; color: var(--color-accent-emerald); margin-top: 5px; line-height: 1.45; display: flex; flex-direction: column; gap: 2.5px;">
-              <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | พนักงานราชการ ${personnel.govTeacher || 0} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | ธุรการโรงเรียน ${personnel.adminStaff || 0} | นักภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | เจ้าหน้าที่ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
+              <span style="font-weight: 500;">👥 บุคลากร: ผอ./รก.ผอ. ${personnel.director} | รอง ผอ. ${personnel.deputy} | ครู ${personnel.teacher} | พนักงานราชการ ${personnel.govTeacher || 0} | ครูอัตราจ้าง ${personnel.tempTeacher || 0} | ธุรการโรงเรียน ${personnel.adminStaff || 0} | นักการภารโรง ${personnel.other} | แม่บ้าน ${personnel.maid || 0} | เจ้าหน้าที่ ${personnel.service || 0} (รวม ${totalP} คน) | บำนาญในสังกัด: ${pensioners} คน</span>
               <span style="color: var(--color-accent-gold); font-weight: 500;">🎓 นักเรียน: 10 มิ.ย.: ${juneStudents} คน | 10 พ.ย.: ${novStudents} คน</span>
               <span style="color: var(--color-accent-teal); font-weight: 500; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
                 <span>💳 สมาชิก สสมน.: ปฏิบัติราชการปัจจุบัน ${activeMembers} คน | เกษียณ/ย้าย ${retiredTransferredMembers} คน (รวม ${totalM} คน)</span>
