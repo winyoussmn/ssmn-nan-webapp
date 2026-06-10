@@ -128,6 +128,10 @@ let appState = {
 
 // บันทึกและดึงข้อมูลจาก LocalStorage
 function saveStateToLocalStorage() {
+  // ตรวจสอบความสอดคล้องของข้อมูลสถิติโรงเรียนก่อนทำการบันทึกและซิงค์คลาวด์
+  if (typeof ensureSchoolProfilesStats === "function") {
+    ensureSchoolProfilesStats();
+  }
   if (appState.members) {
     appState.members.forEach(m => {
       // Sync camelCase and lowercase name keys
@@ -232,6 +236,9 @@ function loadStateFromLocalStorage() {
     appState.members = JSON.parse(cachedMembers);
     appState.members.forEach(m => {
       // Self-Healing Migration
+      if (m.position === "บุคลากรอื่น ๆ") {
+        m.position = "นักการเกษียณ";
+      }
       if (m.firstName && !m.firstname) m.firstname = m.firstName;
       if (m.firstname && !m.firstName) m.firstName = m.firstname;
       if (m.lastName && !m.lastname) m.lastname = m.lastName;
@@ -407,6 +414,9 @@ async function loadStateFromCloudflare() {
     if (hasCloudProfiles) {
       data.members.forEach(m => {
         // กู้คืนโครงสร้างชื่อคู่ขนาน
+        if (m.position === "บุคลากรอื่น ๆ") {
+          m.position = "นักการเกษียณ";
+        }
         if (m.firstName && !m.firstname) m.firstname = m.firstName;
         if (m.firstname && !m.firstName) m.firstName = m.firstname;
         if (m.lastName && !m.lastname) m.lastname = m.lastName;
@@ -600,7 +610,7 @@ function generateMemberId(schoolId, position) {
     } else if (pos.includes("ครู") || pos === "teacher") {
       positionCode = "3";
     } else {
-      positionCode = "4"; // นักการเกษียณ / บุคลากรอื่น ๆ
+      positionCode = "4"; // นักการเกษียณ
     }
   }
 
@@ -770,7 +780,7 @@ function calculateStats() {
       <line x1="5" y1="12" x2="19" y2="12"></line>
     `;
 
-    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || (m.position !== "ข้าราชการบำนาญ" && m.position !== "นักการเกษียณ")));
     const schoolFunds = schoolMembers.reduce((sum, m) => sum + parseFloat(m.prepayBalance), 0);
     const schoolArrears = schoolMembers.filter(m => parseFloat(m.prepayBalance) < 0).length;
 
@@ -939,7 +949,7 @@ function calculateStats() {
     if (graphicsTitle) graphicsTitle.querySelector("span").textContent = "สรุปสถานะการสมัครสมาชิก สสมน. (Nan Province Membership Status Visualizer)";
     if (graphicsSubtitle) graphicsSubtitle.textContent = "กราฟิกเปรียบเทียบสัดส่วนยอดการเป็นสมาชิกและผู้ประสงค์ไม่เป็นสมาชิก สสมน. ทั้งจังหวัดน่าน";
   } else {
-    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
+    const schoolMembers = activeMembers.filter(m => m.schoolId === appState.activeSchoolId && (appState.activeSchoolId === "33" || (m.position !== "ข้าราชการบำนาญ" && m.position !== "นักการเกษียณ")));
     let schoolPersonnelTotal = 0;
     if (appState.activeSchoolId === "33") {
       schoolPersonnelTotal = schoolMembers.length;
@@ -1027,7 +1037,7 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
   roles.forEach(role => {
     const membersCount = activeMembers.filter(m => {
       if (role.key === "นักการเกษียณ") {
-        return m.position === "นักการเกษียณ" || m.position === "บุคลากรอื่น ๆ";
+        return m.position === "นักการเกษียณ";
       }
       return m.position === role.key;
     }).length;
@@ -1040,7 +1050,7 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
 
     let label = role.label;
     if (role.key === "ครู") {
-      const pensionersCount = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ").length;
+      const pensionersCount = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ" || m.position === "นักการเกษียณ").length;
       label = "ข้าราชการครู & ครูบำนาญ";
     }
 
@@ -1067,12 +1077,12 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
     `;
   });
 
-  const activePensioners = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ").length;
+  const activePensioners = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ" || m.position === "นักการเกษียณ").length;
   html += `
     <div class="stat-item-row">
       <div class="stat-row-meta">
         <div class="position-label-wrapper">
-          <span class="position-name">ข้าราการบำนาญ (สังกัดบำนาญหน่วย 33)</span>
+          <span class="position-name">ข้าราชการและลูกจ้างบำนาญในสังกัด (ข้าราชการบำนาญรวมกับนักการเกษียณ)</span>
           <span class="personnel-ratio-detail">เป็นสมาชิก สสมน. แล้วทั้งหมด ${activePensioners} คน</span>
         </div>
         <div class="stat-percentages-text">
@@ -1130,7 +1140,7 @@ function renderSchoolPositionStats(schoolMembers, school) {
   roles.forEach(role => {
     const membersCount = schoolMembers.filter(m => {
       if (role.key === "นักการเกษียณ") {
-        return m.position === "นักการเกษียณ" || m.position === "บุคลากรอื่น ๆ";
+        return m.position === "นักการเกษียณ";
       }
       return m.position === role.key;
     }).length;
@@ -1168,7 +1178,7 @@ function renderSchoolRankingsTable() {
   const activeMembers = appState.members.filter(m => m.status === "active");
 
   let data = SCHOOLS.map(school => {
-    const schoolMembersCount = activeMembers.filter(m => m.schoolId === school.id && (school.id === "33" || m.position !== "ข้าราชการบำนาญ")).length;
+    const schoolMembersCount = activeMembers.filter(m => m.schoolId === school.id && (school.id === "33" || (m.position !== "ข้าราชการบำนาญ" && m.position !== "นักการเกษียณ"))).length;
     let totalWorking = 0;
     if (school.id === "33") {
       totalWorking = schoolMembersCount; 
@@ -1347,7 +1357,12 @@ function renderMembersDirectory() {
   });
 
   if (positionFilter !== "all") {
-    filtered = filtered.filter(m => m.position === positionFilter);
+    filtered = filtered.filter(m => {
+      if (positionFilter === "นักการเกษียณ") {
+        return m.position === "นักการเกษียณ";
+      }
+      return m.position === positionFilter;
+    });
   }
 
   if (statusFilter === "active") {
@@ -1716,13 +1731,13 @@ function renderUnregisteredPersonnel(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง", "นักการเกษียณ"], label: "นักการภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "ภารโรง"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
 
-  // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active" และไม่ใช่ "ข้าราชการบำนาญ" (ยกเว้นสังกัดบำนาญ 33)
-  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
+  // คัดกรองสมาชิกในโรงเรียนที่สถานะเป็น "active" และไม่ใช่ข้าราชการบำนาญ/นักการเกษียณ (ยกเว้นสังกัดบำนาญ 33)
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || (m.position !== "ข้าราชการบำนาญ" && m.position !== "นักการเกษียณ")));
   const profile = appState.schoolProfiles[schoolId] || {};
   const importedNames = profile.unregisteredNames || [];
   
@@ -1834,12 +1849,12 @@ window.exportUnregisteredToExcel = function(schoolId) {
     { key: "govTeacher", positionName: "พนักงานราชการ", altNames: ["พนักงานราชการ"], label: "พนักงานราชการ" },
     { key: "tempTeacher", positionName: "ครูอัตราจ้าง", altNames: ["ครูอัตราจ้าง"], label: "ครูอัตราจ้าง" },
     { key: "adminStaff", positionName: "ธุรการโรงเรียน", altNames: ["ธุรการโรงเรียน", "ธุรการ"], label: "ธุรการโรงเรียน" },
-    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "บุคลากรอื่น ๆ", "ภารโรง", "นักการเกษียณ"], label: "นักการภารโรง" },
+    { key: "other", positionName: "นักการภารโรง", altNames: ["นักการภารโรง", "นักภารโรง", "ภารโรง"], label: "นักการภารโรง" },
     { key: "maid", positionName: "แม่บ้าน", altNames: ["แม่บ้าน"], label: "แม่บ้าน" },
     { key: "service", positionName: "เจ้าหน้าที่", altNames: ["เจ้าหน้าที่", "พนักงานบริการ"], label: "เจ้าหน้าที่" }
   ];
 
-  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || m.position !== "ข้าราชการบำนาญ"));
+  const activeMembers = appState.members.filter(m => m.schoolId === schoolId && m.status === "active" && (schoolId === "33" || (m.position !== "ข้าราชการบำนาญ" && m.position !== "นักการเกษียณ")));
   const profile = appState.schoolProfiles[schoolId] || {};
   const importedNames = profile.unregisteredNames || [];
   
@@ -3524,7 +3539,8 @@ document.getElementById("import-excel-file").addEventListener("change", function
           let first = (row["ชื่อจริง"] || row["ชื่อ"] || row["firstName"] || "").toString().trim();
           let last = (row["นามสกุล"] || row["lastName"] || "").toString().trim();
           const citizen = String(row["เลขประจำตัวประชาชน"] || row["เลขบัตร"] || row["citizenId"] || "").trim();
-          const position = row["ตำแหน่ง"] || row["position"] || "ครู";
+          const rawPosition = row["ตำแหน่ง"] || row["position"] || "ครู";
+          const position = rawPosition === "บุคลากรอื่น ๆ" ? "นักการเกษียณ" : rawPosition;
           const phone = String(row["เบอร์โทรศัพท์"] || row["เบอร์โทร"] || row["phone"] || "080-000-0000").trim();
           const prepay = parseFloat(row["ยอดเงินฝากสะสมสำรอง"] || row["เงินสะสมล่วงหน้า"] || row["เงินฝาก"] || row["prepayBalance"] || 150);
 
@@ -3706,7 +3722,8 @@ function parseExcelCSVContent(csvText) {
     let firstname = columns[idxFirstName] || "";
     let lastname = columns[idxLastName] || "";
     const citizenId = columns[idxCitizen] ? columns[idxCitizen].replace(/['"]/g, "") : "";
-    const position = columns[idxPosition] || "ครู";
+    const rawPosition = columns[idxPosition] || "ครู";
+    const position = rawPosition === "บุคลากรอื่น ๆ" ? "นักการเกษียณ" : rawPosition;
     const phone = columns[idxPhone] ? columns[idxPhone].replace(/['"]/g, "") : "";
     const gender = columns[idxGender] || "ชาย";
     const schoolId = String(columns[idxSchoolId] || "33").padStart(2, "0").replace(/['"]/g, "");
@@ -4834,9 +4851,9 @@ function ensureSchoolProfilesStats() {
     const totalPersonnel = profile.directorCount + profile.deputyCount + profile.teacherCount + (profile.govTeacherCount || 0) + (profile.tempTeacherCount || 0) + (profile.adminStaffCount || 0) + profile.otherCount + (profile.maidCount || 0) + (profile.serviceCount || 0);
 
     // คำนวณเชื่อมโยงโดยตรงจากฐานข้อมูลจริง
-    const dbActive = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position !== 'ข้าราชการบำนาญ').length;
-    const dbPensioners = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position === 'ข้าราชการบำนาญ').length;
-    const dbRetiredTransferred = appState.members.filter(m => m.schoolId === sch.id && (m.status === 'transferred' || (m.status === 'active' && m.position === 'ข้าราชการบำนาญ'))).length;
+    const dbActive = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && m.position !== 'ข้าราชการบำนาญ' && m.position !== 'นักการเกษียณ').length;
+    const dbPensioners = appState.members.filter(m => m.schoolId === sch.id && m.status === 'active' && (m.position === 'ข้าราชการบำนาญ' || m.position === 'นักการเกษียณ')).length;
+    const dbRetiredTransferred = appState.members.filter(m => m.schoolId === sch.id && (m.status === 'transferred' || (m.status === 'active' && (m.position === 'ข้าราชการบำนาญ' || m.position === 'นักการเกษียณ')))).length;
 
     const hasMembersInDB = appState.members.some(m => m.schoolId === sch.id);
 
