@@ -802,7 +802,7 @@ body {
 }
 
 .premium-data-table th {
-  background: rgba(15, 23, 42, 0.04);
+  background: #ffffff;
   padding: 14px 16px;
   font-weight: 700;
   color: var(--color-text-muted);
@@ -813,6 +813,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 2;
+  white-space: nowrap;
 }
 
 .premium-data-table td {
@@ -821,6 +822,7 @@ body {
   color: var(--color-text-main);
   vertical-align: middle;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
 .premium-data-table tbody tr:hover td {
