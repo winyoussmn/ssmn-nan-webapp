@@ -1030,7 +1030,8 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
     { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
-    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "other" }
+    { key: "ข้าราชการบำนาญ", label: "ข้าราชการบำนาญ", dbKey: "pensionersCivil" },
+    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "pensionersJanitor" }
   ];
   
   let html = "";
@@ -1041,18 +1042,38 @@ function renderProvincialPositionStats(activeMembers, totalProvincePersonnel) {
       }
       return m.position === role.key;
     }).length;
+    
     let totalWorking = 0;
-    SCHOOLS.forEach(s => {
-      if (s.id !== "33") {
-        totalWorking += getSchoolPersonnel(s.id)[role.dbKey];
-      }
-    });
+    if (role.key === "ข้าราชการบำนาญ") {
+      SCHOOLS.forEach(s => {
+        if (s.id !== "33") {
+          const profile = appState.schoolProfiles[s.id];
+          const hasMembers = appState.members.some(m => m.schoolId === s.id);
+          if (hasMembers) {
+            totalWorking += appState.members.filter(m => m.schoolId === s.id && m.status === 'active' && m.position === 'ข้าราชการบำนาญ').length;
+          } else if (profile) {
+            totalWorking += profile.pensionersCount || 0;
+          }
+        }
+      });
+    } else if (role.key === "นักการเกษียณ") {
+      SCHOOLS.forEach(s => {
+        if (s.id !== "33") {
+          const hasMembers = appState.members.some(m => m.schoolId === s.id);
+          if (hasMembers) {
+            totalWorking += appState.members.filter(m => m.schoolId === s.id && m.status === 'active' && m.position === 'นักการเกษียณ').length;
+          }
+        }
+      });
+    } else {
+      SCHOOLS.forEach(s => {
+        if (s.id !== "33") {
+          totalWorking += getSchoolPersonnel(s.id)[role.dbKey];
+        }
+      });
+    }
 
     let label = role.label;
-    if (role.key === "ครู") {
-      const pensionersCount = activeMembers.filter(m => m.position === "ข้าราชการบำนาญ" || m.position === "นักการเกษียณ").length;
-      label = "ข้าราชการครู & ครูบำนาญ";
-    }
 
     const percentage = totalWorking > 0 ? Math.round((membersCount / totalWorking) * 100) : 100;
     const boundedPercent = percentage > 100 ? 100 : percentage;
@@ -1133,7 +1154,8 @@ function renderSchoolPositionStats(schoolMembers, school) {
     { key: "นักการภารโรง", label: "นักการภารโรง", dbKey: "other" },
     { key: "แม่บ้าน", label: "แม่บ้าน", dbKey: "maid" },
     { key: "เจ้าหน้าที่", label: "เจ้าหน้าที่", dbKey: "service" },
-    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "other" }
+    { key: "ข้าราชการบำนาญ", label: "ข้าราชการบำนาญ", dbKey: "pensionersCivil" },
+    { key: "นักการเกษียณ", label: "นักการเกษียณ", dbKey: "pensionersJanitor" }
   ];
   
   let html = "";
@@ -1144,7 +1166,25 @@ function renderSchoolPositionStats(schoolMembers, school) {
       }
       return m.position === role.key;
     }).length;
-    const totalWorking = getSchoolPersonnel(school.id)[role.dbKey];
+    
+    let totalWorking = 0;
+    if (role.key === "ข้าราชการบำนาญ") {
+      const profile = appState.schoolProfiles[school.id];
+      const hasMembers = schoolMembers.length > 0;
+      if (hasMembers) {
+        totalWorking = schoolMembers.filter(m => m.status === 'active' && m.position === 'ข้าราชการบำนาญ').length;
+      } else if (profile) {
+        totalWorking = profile.pensionersCount || 0;
+      }
+    } else if (role.key === "นักการเกษียณ") {
+      const hasMembers = schoolMembers.length > 0;
+      if (hasMembers) {
+        totalWorking = schoolMembers.filter(m => m.status === 'active' && m.position === 'นักการเกษียณ').length;
+      }
+    } else {
+      totalWorking = getSchoolPersonnel(school.id)[role.dbKey];
+    }
+    
     const percentage = totalWorking > 0 ? Math.round((membersCount / totalWorking) * 100) : 0;
     const nonMembers = totalWorking - membersCount < 0 ? 0 : totalWorking - membersCount;
 
