@@ -907,7 +907,7 @@ function calculateStats() {
           if (countEl) countEl.style.color = "var(--color-accent-rose)";
         } else {
           progressEl.style.background = "var(--color-accent-amber)";
-          if (countEl) countEl.style.color = "white";
+          if (countEl) countEl.style.color = "";
         }
       }
     }
